@@ -1,0 +1,43 @@
+{{{
+
+../configure \
+--prefix=/home/rppawlo/trilinos-local-install \
+--disable-default-packages \
+--enable-tests \
+--enable-examples \
+--enable-nox --enable-prerelease \
+--enable-nox-lapack \
+--enable-nox-epetra --with-nox-epetraext --with-nox-epetra-ml=yes \
+--disable-nox-belos \
+--disable-nox-thyra \
+--enable-loca \
+--enable-sacado \
+--enable-epetra \
+--enable-epetraext \
+--enable-galeri \
+--enable-ifpack \
+--enable-aztecoo \
+--enable-triutils \
+--enable-anasazi \
+--enable-belos \
+--enable-teuchos --enable-teuchos-complex --enable-teuchos-extended \
+--enable-ml \
+--enable-amesos \
+--disable-komplex \
+--disable-python \
+--disable-stratimikos \
+--disable-rtop \
+--disable-thyra \
+--disable-moocho \
+--disable-rythmos \
+--disable-didasko \
+--enable-trilinoscouplings \
+--with-blas=/home/rppawlo/local/lib/libblas.a \
+--with-lapack=/home/rppawlo/local/lib/liblapack.a \
+CXX=g++ CC=gcc F77=gfortran \
+CXXFLAGS="-fPIC -g -ansi -Wall -ftrapv -pedantic -Wno-long-long" CFLAGS="-fPIC -g -ansi -Wall" FFLAGS="-fPIC -g -ansi -Wall" \
+--cache-file=config.cache \
+--with-gnumake \
+--enable-export-makefiles
+
+}}}
