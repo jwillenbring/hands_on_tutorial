@@ -1,6 +1,5 @@
 #summary Trilinos Hands-on Tutorial Page
 #labels Featured,Phase-Deploy
-#label Trilinos,Tutorial
 #sidebar TrilinosTutorialContents
 = Trilinos Hands-on Tutorial =
 
