@@ -1,73 +1,71 @@
 *Welcome to the Trilinos Tutorial *
 
-[ trilinos.png |http://trilinos.sandia.gov]
+*Tenth DOE ACTS Collection Workshop *
+
+[http://trilinos.sandia.gov  [trilinos.png] ]
 
 *First things first: *
 
-* The Trilinos Project relies heavily upon its [website|http://trilinos.sandia.gov] (click on logo above).
-* For future reference, a lot of information can be found on the [Trilinos "Getting Started"|http://trilinos.sandia.gov/getting_started.html] page.
-* Trilinos has a Tutorial document that you can find [here|http://trilinos.sandia.gov/Trilinos8.0Tutorial.pdf].
+  * The Trilinos Project relies heavily upon its [http://trilinos.sandia.gov website] (click on logo above).
+  * For future reference, a lot of information can be found on the [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
+  * Trilinos has a Tutorial document that you can find [http://trilinos.sandia.gov/Trilinos8.0Tutorial.pdf here].
 
 *Let's dive in, you have two options: *
 
-\\
-
-* *WebTrilinos*
-** [WebTrilinos|http://trilinos.sandia.gov/packages/webtrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
-** *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
-** Installed at [St. John's University|http://research.cs.csbsju.edu/webtrilinos/WebTrilinos/index.html].
-** Login: "demo" (without quotes)
-** Password: "trilinos"
-** Click on the *"C++ interface"* module, #2 on the module list.
-** *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the WebTrilinos window.\\
-* *Download and build the examples on your machine*
-** Download [Trilinos|http://trilinos.sandia.gov/download]
-** Build and install Trilinos. An example script is [here|BuildScript.htm]
-** Get Makefile from [here|Makefile.htm]
-** Add Example code into a file called main.cpp and build away!
-
-\\
+  * *WebTrilinos*
+    * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
+    * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
+    * Installed at [http://research.cs.csbsju.edu/webtrilinos/WebTrilinos/index.html St. John's University].
+    * Login: "demo" (without quotes)
+    * Password: "trilinos"
+    * Click on the *"C++ interface"* module, #2 on the module list.
+    * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the WebTrilinos window.
+  * *Download and build the examples on your machine*
+    * Download [http://trilinos.sandia.gov/download Trilinos]
+    * Build and install Trilinos. An example script is [BuildScript.htm here]
+    * Get Makefile from [Makefile.htm here]
+    * Add Example code into a file called main.cpp and build away!
 
 *Now for some examples: *
 
-**
-# Start with some tools using the [Teuchos|http://trilinos.sandia.gov/packages/teuchos] package.*Basic Support Tools*
-#* [Build a parameter list (used to pass parameters to all Trilinos packages).|TeuchosPL.htm]
-#* [Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).|TeuchosRCP.htm]
-#* [Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).|TeuchosCLP.htm] [[unhighlighted]|TeuchosCLP_unhighlighted.htm]
-#* [Build a time monitor (tool for timing individual methods or operations in a program).|TeuchosTime.htm]*Template Support Tools*
-#* [Create a templated BLAS wrapper.|TeuchosBLAS.htm]
-#* [Create a templated LAPACK wrapper.|TeuchosLAPACK.htm]
-#* [Create a templated serial, dense matrix.|TeuchosSDM.htm]**
-# Write a program using the [Epetra|http://trilinos.sandia.gov/packages/epetra] package.
-#* [Beginner: Construct some vectors and perform basic operations.|EpetraSimpleVector.htm]
-#* [Intermediate: Find the dominant eigenpair of a matrix using the power method.|EpetraPowerMethod.htm]**
-# Generate a linear system using the [Galeri|http://trilinos.sandia.gov/packages/galeri] package.
-#* [Generate a matrix, discretized 2D Laplacian on a Cartesian grid.|GaleriLinearSystem.htm]
-#* Try generating matrices for some different operators, the list of supported operators is [here|http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html].**
-# Create an algebraic preconditioner using the [ Ifpack|http://trilinos.sandia.gov/packages/ifpack] package.
-#* [Create a preconditioner using the Ifpack preconditioner factory.|IfpackFactory.htm]
-#* Try generating different preconditioners:
-#** The preconditioners supported in the factory interface are: "IC", "ICT", "ILU", "ILUT", and "Amesos".
-#** The list of supported parameters for the factory is [here|http://trilinos.sandia.gov/packages/docs/dev/packages/ifpack/doc/html/index.html#ifp_params].**
-# Solve a linear system using the [Ifpack|http://trilinos.sandia.gov/packages/ifpack] and [AztecOO|http://trilinos.sandia.gov/packages/aztecoo] packages.
-#* [Solve a linear system _Ax=b_ using Ifpack and AztecOO|IfpackAztecOO.htm]**
-# Solve a linear system using the [ML|http://trilinos.sandia.gov/packages/ml] and [AztecOO|http://trilinos.sandia.gov/packages/aztecoo] packages.
-#* [Solve a linear system _Ax=b_ using ML(two level DD) and AztecOO|MLAztecOO.htm] [[unhighlighted]|MLAztecOO_unhighlighted.htm]
-#* [Solve a linear system _Ax=b_ using ML(black-box) and AztecOO|MLAztecOO2.htm]**
-# Solve a linear system using the [Ifpack|http://trilinos.sandia.gov/packages/ifpack] and [Belos|http://trilinos.sandia.gov/packages/belos] packages.
-#* [Solve a linear system _Ax=b_ using Ifpack and Belos|IfpackBelos2.htm]**
-# Compute some eigenpairs using the [Anasazi|http://trilinos.sandia.gov/packages/anasazi] package.
-#* [Compute the smallest eigenpairs of a discretized 2D Laplacian using the block Davidson solver.|AnasaziBlockDavidson.htm]
-#* [Compute the smallest eigenpairs of a discretized 2D Laplacian using the LOBPCG solver.|AnasaziLOBPCG.htm]
-#* [Compute the dominant singular values of a 2D discretization of a simple kernel using the block Krylov-Schur solver.|AnasaziBlockKrylovSchurSVD.htm]**
-# Solve a nonlinear system using the [NOX|http://trilinos.sandia.gov/packages/nox] package.
-#* [Solve a simple nonlinear system using NOX|NOXNewton.htm]
-#* [Solve a simple nonlinear system using NOX|NOXNewton2.htm]
+  **
+  # Start with some tools using the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*Basic Support Tools*
+    * [TeuchosPL.htm Build a parameter list (used to pass parameters to all Trilinos packages).]
+    * [TeuchosRCP.htm Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).]
+    * [TeuchosCLP.htm Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted.htm [unhighlighted]]
+    * [TeuchosTime.htm Build a time monitor (tool for timing individual methods or operations in a program).]*Template Support Tools*
+    * [TeuchosBLAS.htm Create a templated BLAS wrapper.]
+    * [TeuchosLAPACK.htm Create a templated LAPACK wrapper.]
+    * [TeuchosSDM.htm Create a templated serial, dense matrix.]**
+  # Write a program using the [http://trilinos.sandia.gov/packages/epetra Epetra] package.
+    * [EpetraSimpleVector.htm Beginner: Construct some vectors and perform basic operations.]
+    * [EpetraPowerMethod.htm Intermediate: Find the dominant eigenpair of a matrix using the power method.]**
+  # Generate a linear system using the [http://trilinos.sandia.gov/packages/galeri Galeri] package.
+    * [GaleriLinearSystem.htm Generate a matrix, discretized 2D Laplacian on a Cartesian grid.]
+    * Try generating matrices for some different operators, the list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
+  # Create an algebraic preconditioner using the [http://trilinos.sandia.gov/packages/ifpack  Ifpack] package.
+    * [IfpackFactory.htm Create a preconditioner using the Ifpack preconditioner factory.]
+    * Try generating different preconditioners:
+      * The preconditioners supported in the factory interface are: "IC", "ICT", "ILU", "ILUT", and "Amesos".
+      * The list of supported parameters for the factory is [http://trilinos.sandia.gov/packages/docs/dev/packages/ifpack/doc/html/index.html#ifp_params here].**
+  # Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/aztecoo AztecOO] packages.
+    * [IfpackAztecOO.htm Solve a linear system _Ax=b_ using Ifpack and AztecOO]**
+  # Solve a linear system using the [http://trilinos.sandia.gov/packages/ml ML] and [http://trilinos.sandia.gov/packages/aztecoo AztecOO] packages.
+    * [MLAztecOO.htm Solve a linear system _Ax=b_ using ML(two level DD) and AztecOO] [MLAztecOO_unhighlighted.htm [unhighlighted]]
+    * [MLAztecOO2.htm Solve a linear system _Ax=b_ using ML(black-box) and AztecOO]**
+  # Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/belos Belos] packages.
+    * [IfpackBelos2.htm Solve a linear system _Ax=b_ using Ifpack and Belos]**
+  # Compute some eigenpairs using the [http://trilinos.sandia.gov/packages/anasazi Anasazi] package.
+    * [AnasaziBlockDavidson.htm Compute the smallest eigenpairs of a discretized 2D Laplacian using the block Davidson solver.]
+    * [AnasaziLOBPCG.htm Compute the smallest eigenpairs of a discretized 2D Laplacian using the LOBPCG solver.]
+    * [AnasaziBlockKrylovSchurSVD.htm Compute the dominant singular values of a 2D discretization of a simple kernel using the block Krylov-Schur solver.]**
+  # Solve a nonlinear system using the [http://trilinos.sandia.gov/packages/nox NOX] package.
+    * [NOXNewton.htm Solve a simple nonlinear system using NOX]
+    * [NOXNewton2.htm Solve a simple nonlinear system using NOX]
 
 *Learning more: *
 
-* [Online reference documentation|http://trilinos.sandia.gov].
-* [Trilinos User Group Meeting (2008).|http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html]
-* [Trilinos User Group Meeting (2007).|http://trilinos.sandia.gov/events/trilinos_user_group_2007/index.html]
-* [Mail lists.|http://trilinos.sandia.gov/mail_lists.html]
+  * [http://trilinos.sandia.gov Online reference documentation].
+  * [http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html Trilinos User Group Meeting (2008).]
+  * [http://trilinos.sandia.gov/events/trilinos_user_group_2007/index.html Trilinos User Group Meeting (2007).]
+  * [http://trilinos.sandia.gov/mail_lists.html Mail lists.]
