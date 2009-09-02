@@ -40,7 +40,7 @@
     * [EpetraPowerMethod Intermediate: Find the dominant eigenpair of a matrix using the power method.]**
   # Generate a linear system using the [http://trilinos.sandia.gov/packages/galeri Galeri] package.
     * [GaleriLinearSystem Generate a matrix, discretized 2D Laplacian on a Cartesian grid.]
-    * Try generating matrices for some different operators, the list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrixl here].**
+    * Try generating matrices for some different operators, the list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
   # Create an algebraic preconditioner using the [http://trilinos.sandia.gov/packages/ifpack  Ifpack] package.
     * [IfpackFactory Create a preconditioner using the Ifpack preconditioner factory.]
     * Try generating different preconditioners:
