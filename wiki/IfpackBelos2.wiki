@@ -1,0 +1,145 @@
+{{{
+
+#include "Epetra_CrsMatrix.h"
+#include "Epetra_MultiVector.h"
+#include "Epetra_LinearProblem.h"
+#include "Galeri_Maps.h"
+#include "Galeri_CrsMatrices.h"
+#include "Teuchos_ParameterList.hpp"
+#include "Teuchos_RCP.hpp"
+#include "Ifpack.h"
+#include "Ifpack_AdditiveSchwarz.h"
+#include "BelosLinearProblem.hpp"
+#include "BelosBlockGmresSolMgr.hpp"
+#include "BelosEpetraAdapter.hpp"
+#ifdef HAVE_MPI
+#include "Epetra_MpiComm.h"
+#else
+#include "Epetra_SerialComm.h"
+#endif
+
+int main(int argc, char *argv[])
+{
+
+#ifdef HAVE_MPI
+  MPI_Init(&argc,&argv);
+  Epetra_MpiComm Comm( MPI_COMM_WORLD );
+#else
+  Epetra_SerialComm Comm;
+#endif
+
+  Teuchos::ParameterList GaleriList;
+
+  // The problem is defined on a 2D grid, global size is nx * nx.
+  int nx = 30; 
+  GaleriList.set("n", nx * nx);
+  GaleriList.set("nx", nx);
+  GaleriList.set("ny", nx);
+  Teuchos::RCP<Epetra_Map> Map = Teuchos::rcp( Galeri::CreateMap("Linear", Comm, GaleriList) );
+  Teuchos::RCP<Epetra_RowMatrix> A = Teuchos::rcp( Galeri::CreateCrsMatrix("Laplace2D", &*Map, GaleriList) );
+  assert(A != Teuchos::null);
+
+  // =============================================================== //
+  // B E G I N N I N G   O F   I F P A C K   C O N S T R U C T I O N //
+  // =============================================================== //
+
+  Teuchos::ParameterList List;
+
+  // allocates an IFPACK factory. No data is associated 
+  // to this object (only method Create()).
+  Ifpack Factory;
+
+  // create the preconditioner. For valid PrecType values,
+  // please check the documentation
+  string PrecType = "ILU"; // incomplete LU
+  int OverlapLevel = 1; // must be >= 0. If Comm.NumProc() == 1,
+                        // it is ignored.
+
+  Teuchos::RCP<Ifpack_Preconditioner> Prec = Teuchos::rcp( Factory.Create(PrecType, &*A, OverlapLevel) );
+  assert(Prec != Teuchos::null);
+
+  // specify parameters for ILU
+  List.set("fact: drop tolerance", 1e-9);
+  List.set("fact: level-of-fill", 1);
+  // the combine mode is on the following:
+  // "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+  // Their meaning is as defined in file Epetra_CombineMode.h   
+  List.set("schwarz: combine mode", "Add");
+  // sets the parameters
+  IFPACK_CHK_ERR(Prec->SetParameters(List));
+
+  // initialize the preconditioner. At this point the matrix must
+  // have been FillComplete()'d, but actual values are ignored.
+  IFPACK_CHK_ERR(Prec->Initialize());
+
+  // Builds the preconditioners, by looking for the values of 
+  // the matrix.
+  IFPACK_CHK_ERR(Prec->Compute());
+
+  // Create the Belos preconditioned operator from the Ifpack preconditioner.
+  // NOTE:  This is necessary because Belos expects an operator to apply the
+  //        preconditioner with Apply() NOT ApplyInverse().
+  RCP<Belos::EpetraPrecOp> belosPrec = rcp( new Belos::EpetraPrecOp( Prec ) );
+  assert(belosPrec != Teuchos::null);
+
+  // =================================================== //
+  // E N D   O F   I F P A C K   C O N S T R U C T I O N //
+  // =================================================== //
+
+  // At this point, we need some additional objects
+  // to define and solve the linear system.
+
+  // defines LHS and RHS
+  Teuchos::RCP<Epetra_MultiVector> LHS = Teuchos::rcp( new Epetra_MultiVector(A->OperatorDomainMap(), 1) );
+  Teuchos::RCP<Epetra_MultiVector> RHS = Teuchos::rcp( new Epetra_MultiVector(A->OperatorDomainMap(), 1) );
+
+  // solution is constant
+  LHS->PutScalar(1.0);
+  // now build corresponding RHS
+  A->Apply(*LHS,*RHS);
+
+  // now randomize the solution
+  RHS->Random();
+
+  // need a Belos::LinearProblem to define a Belos solver   
+  typedef Epetra_MultiVector                MV;
+  typedef Epetra_Operator                   OP;    
+  Teuchos::RCP<Belos::LinearProblem<double,MV,OP> > problem
+    = Teuchos::rcp( new Belos::LinearProblem<double,MV,OP>(A, LHS, RHS) );
+
+  // HERE WE SET THE IFPACK PRECONDITIONER
+  problem->setRightPrec(belosPrec);
+
+  bool set = problem->setProblem();
+  if (set == false) {
+    std::cout 
+      << std::endl 
+      << "ERROR:  Belos::LinearProblem failed to set up correctly!" 
+      << std::endl;
+    return -1;
+  }
+
+  // create a parameter list to define the Belos solver
+  Teuchos::RCP<ParameterList> belosList = Teuchos::rcp( new Teuchos::ParameterList() );
+  belosList->set( "Block Size", 1 );              // Blocksize to be used by iterative solver
+  belosList->set( "Maximum Iterations", 1550 );   // Maximum number of iterations allowed
+  belosList->set( "Convergence Tolerance", 1e-8 );// Relative convergence tolerance requested
+  belosList->set( "Verbosity", Belos::Errors+Belos::Warnings+Belos::TimingDetails+Belos::FinalSummary );
+
+  // now we can create an iterative solver manager.
+  Belos::BlockGmresSolMgr<double,MV,OP> belosSolver( problem, belosList );
+
+  // perform solve
+  Belos::ReturnType ret = belosSolver.solve();
+
+  // print out the preconditioner
+  std::cout << *Prec;
+
+#ifdef HAVE_MPI
+  MPI_Finalize() ; 
+#endif
+
+  return 0;
+}
+
+}}}
