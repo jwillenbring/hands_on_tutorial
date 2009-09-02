@@ -27,8 +27,8 @@
 
   **
   # Start with some tools using the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*Basic Support Tools*
-    * [TeuchosPL.htm Build a parameter list (used to pass parameters to all Trilinos packages).]
-    * [TeuchosRCP.htm Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).]
+    * [TeuchosPL Build a parameter list (used to pass parameters to all Trilinos packages).]
+    * [TeuchosRCP Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).]
     * [TeuchosCLP.htm Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted.htm [unhighlighted]]
     * [TeuchosTime.htm Build a time monitor (tool for timing individual methods or operations in a program).]*Template Support Tools*
     * [TeuchosBLAS.htm Create a templated BLAS wrapper.]
