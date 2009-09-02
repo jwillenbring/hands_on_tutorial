@@ -5,13 +5,13 @@
 
 [http://trilinos.sandia.gov  http://trilinos.sandia.gov/common/logo_trilinos_moon.png]
 
-*First things first: *
+== First things first: ==
 
   * The Trilinos Project relies heavily upon its [http://trilinos.sandia.gov website] (click on logo above).
   * For future reference, a lot of information can be found on the [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
   * Trilinos has a Tutorial document that you can find [http://trilinos.sandia.gov/Trilinos9.0Tutorial.pdf here].
 
-*Let's dive in, you have two options: *
+== Let's dive in, you have two options: ==
 
   * *!WebTrilinos*
     * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
@@ -26,7 +26,7 @@
     * Get Makefile from [Makefile here]
     * Add Example code into a file called main.cpp and build away!
 
-*Now for some examples: *
+== Now for some examples: ==
 
   # *Start with some tools using the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*
     * *Basic Support Tools*
@@ -64,7 +64,7 @@
     * [NOXNewton Solve a simple nonlinear system using NOX]
     * [NOXNewton2 Solve a simple nonlinear system using NOX]
 
-*Learning more: *
+== Learning more: ==
 
   * [http://trilinos.sandia.gov Online reference documentation].
   * [http://trilinos.sandia.gov/events/trilinos_user_group_2009/index.html 2009 Trilinos User Group Meeting, November 3-4, 2009, Albuquerque, NM.]
