@@ -1,2 +1,3 @@
 * [http://trilinos.sandia.gov/ Trilinos Home Page]
-* [https://research.cs.csbsju.edu/ http://research.cs.csbsju.edu/webtrilinos/WebTrilinos/index.html]
+* [http://research.cs.csbsju.edu/webtrilinos/WebTrilinos/index.html WebTrilinos Portal]
+* [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"]
