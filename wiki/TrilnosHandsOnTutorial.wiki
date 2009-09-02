@@ -1,8 +1,6 @@
 *Welcome to the Trilinos Tutorial *
 
-*Tenth DOE ACTS Collection Workshop *
-
-[http://trilinos.sandia.gov  [trilinos.png] ]
+[http://trilinos.sandia.gov  http://trilinos.sandia.gov/common/logo_trilinos_moon.png]
 
 *First things first: *
 
