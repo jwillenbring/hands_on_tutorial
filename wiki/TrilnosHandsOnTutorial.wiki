@@ -1,5 +1,5 @@
 #labels Featured,Phase-Deploy
-*Welcome to the Trilinos Tutorial *
+= Trilinos Hands-on Tutorial =
 
 [http://trilinos.sandia.gov  http://trilinos.sandia.gov/common/logo_trilinos_moon.png]
 
