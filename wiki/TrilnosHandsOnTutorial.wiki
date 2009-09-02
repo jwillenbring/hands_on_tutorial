@@ -19,8 +19,8 @@
     * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the WebTrilinos window.
   * *Download and build the examples on your machine*
     * Download [http://trilinos.sandia.gov/download Trilinos]
-    * Build and install Trilinos. An example script is [BuildScript.htm here]
-    * Get Makefile from [Makefile.htm here]
+    * Build and install Trilinos. An example script is [BuildScript here]
+    * Get Makefile from [Makefile here]
     * Add Example code into a file called main.cpp and build away!
 
 *Now for some examples: *
@@ -29,36 +29,36 @@
   # Start with some tools using the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*Basic Support Tools*
     * [TeuchosPL Build a parameter list (used to pass parameters to all Trilinos packages).]
     * [TeuchosRCP Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).]
-    * [TeuchosCLP.htm Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted.htm [unhighlighted]]
-    * [TeuchosTime.htm Build a time monitor (tool for timing individual methods or operations in a program).]*Template Support Tools*
-    * [TeuchosBLAS.htm Create a templated BLAS wrapper.]
-    * [TeuchosLAPACK.htm Create a templated LAPACK wrapper.]
-    * [TeuchosSDM.htm Create a templated serial, dense matrix.]**
+    * [TeuchosCLP Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted [unhighlighted]]
+    * [TeuchosTime Build a time monitor (tool for timing individual methods or operations in a program).]*Template Support Tools*
+    * [TeuchosBLAS Create a templated BLAS wrapper.]
+    * [TeuchosLAPACK Create a templated LAPACK wrapper.]
+    * [TeuchosSDM Create a templated serial, dense matrix.]**
   # Write a program using the [http://trilinos.sandia.gov/packages/epetra Epetra] package.
-    * [EpetraSimpleVector.htm Beginner: Construct some vectors and perform basic operations.]
-    * [EpetraPowerMethod.htm Intermediate: Find the dominant eigenpair of a matrix using the power method.]**
+    * [EpetraSimpleVector Beginner: Construct some vectors and perform basic operations.]
+    * [EpetraPowerMethod Intermediate: Find the dominant eigenpair of a matrix using the power method.]**
   # Generate a linear system using the [http://trilinos.sandia.gov/packages/galeri Galeri] package.
-    * [GaleriLinearSystem.htm Generate a matrix, discretized 2D Laplacian on a Cartesian grid.]
-    * Try generating matrices for some different operators, the list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
+    * [GaleriLinearSystem Generate a matrix, discretized 2D Laplacian on a Cartesian grid.]
+    * Try generating matrices for some different operators, the list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrixl here].**
   # Create an algebraic preconditioner using the [http://trilinos.sandia.gov/packages/ifpack  Ifpack] package.
-    * [IfpackFactory.htm Create a preconditioner using the Ifpack preconditioner factory.]
+    * [IfpackFactory Create a preconditioner using the Ifpack preconditioner factory.]
     * Try generating different preconditioners:
       * The preconditioners supported in the factory interface are: "IC", "ICT", "ILU", "ILUT", and "Amesos".
       * The list of supported parameters for the factory is [http://trilinos.sandia.gov/packages/docs/dev/packages/ifpack/doc/html/index.html#ifp_params here].**
   # Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/aztecoo AztecOO] packages.
-    * [IfpackAztecOO.htm Solve a linear system _Ax=b_ using Ifpack and AztecOO]**
+    * [IfpackAztecOO Solve a linear system _Ax=b_ using Ifpack and AztecOO]**
   # Solve a linear system using the [http://trilinos.sandia.gov/packages/ml ML] and [http://trilinos.sandia.gov/packages/aztecoo AztecOO] packages.
-    * [MLAztecOO.htm Solve a linear system _Ax=b_ using ML(two level DD) and AztecOO] [MLAztecOO_unhighlighted.htm [unhighlighted]]
-    * [MLAztecOO2.htm Solve a linear system _Ax=b_ using ML(black-box) and AztecOO]**
+    * [MLAztecOO Solve a linear system _Ax=b_ using ML(two level DD) and AztecOO] [MLAztecOO_unhighlighted [unhighlighted]]
+    * [MLAztecOO2 Solve a linear system _Ax=b_ using ML(black-box) and AztecOO]**
   # Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/belos Belos] packages.
-    * [IfpackBelos2.htm Solve a linear system _Ax=b_ using Ifpack and Belos]**
+    * [IfpackBelos2 Solve a linear system _Ax=b_ using Ifpack and Belos]**
   # Compute some eigenpairs using the [http://trilinos.sandia.gov/packages/anasazi Anasazi] package.
-    * [AnasaziBlockDavidson.htm Compute the smallest eigenpairs of a discretized 2D Laplacian using the block Davidson solver.]
-    * [AnasaziLOBPCG.htm Compute the smallest eigenpairs of a discretized 2D Laplacian using the LOBPCG solver.]
-    * [AnasaziBlockKrylovSchurSVD.htm Compute the dominant singular values of a 2D discretization of a simple kernel using the block Krylov-Schur solver.]**
+    * [AnasaziBlockDavidson Compute the smallest eigenpairs of a discretized 2D Laplacian using the block Davidson solver.]
+    * [AnasaziLOBPCG Compute the smallest eigenpairs of a discretized 2D Laplacian using the LOBPCG solver.]
+    * [AnasaziBlockKrylovSchurSVD Compute the dominant singular values of a 2D discretization of a simple kernel using the block Krylov-Schur solver.]**
   # Solve a nonlinear system using the [http://trilinos.sandia.gov/packages/nox NOX] package.
-    * [NOXNewton.htm Solve a simple nonlinear system using NOX]
-    * [NOXNewton2.htm Solve a simple nonlinear system using NOX]
+    * [NOXNewton Solve a simple nonlinear system using NOX]
+    * [NOXNewton2 Solve a simple nonlinear system using NOX]
 
 *Learning more: *
 
