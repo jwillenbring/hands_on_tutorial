@@ -14,8 +14,7 @@
     * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
     * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
     * Installed at [http://research.cs.csbsju.edu/webtrilinos/WebTrilinos/index.html St. John's University].
-    * Login: "demo" (without quotes)
-    * Password: "trilinos"
+    * Access to this site is password protected.  Login information will be given during live tutorials as needed.
     * Click on the *"C++ interface"* module, #2 on the module list.
     * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the WebTrilinos window.
   * *Download and build the examples on your machine*
