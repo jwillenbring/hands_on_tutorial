@@ -66,6 +66,7 @@
 *Learning more: *
 
   * [http://trilinos.sandia.gov Online reference documentation].
+  * [http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html Trilinos User Group Meeting, November 3-4, 2009, Albuquerque, NM.]
   * [http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html Trilinos User Group Meeting (2008).]
   * [http://trilinos.sandia.gov/events/trilinos_user_group_2007/index.html Trilinos User Group Meeting (2007).]
   * [http://trilinos.sandia.gov/mail_lists.html Mail lists.]
