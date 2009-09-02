@@ -13,7 +13,7 @@
 
 *Let's dive in, you have two options: *
 
-  * *WebTrilinos*
+  * *!WebTrilinos*
     * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
     * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
     * Installed at [http://research.cs.csbsju.edu/webtrilinos/WebTrilinos/index.html St. John's University].
@@ -28,7 +28,6 @@
 
 *Now for some examples: *
 
-  **
   # Start with some tools using the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*Basic Support Tools*
     * [TeuchosPL Build a parameter list (used to pass parameters to all Trilinos packages).]
     * [TeuchosRCP Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).]
