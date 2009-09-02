@@ -19,7 +19,7 @@
     * Installed at [http://research.cs.csbsju.edu/webtrilinos/WebTrilinos/index.html St. John's University].
     * Access to this site is password protected.  Login information will be given during live tutorials as needed.
     * Click on the *"C++ interface"* module, #2 on the module list.
-    * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the WebTrilinos window.
+    * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
   * *Download and build the examples on your machine*
     * Download [http://trilinos.sandia.gov/download Trilinos]
     * Build and install Trilinos. An example script is [BuildScript here]
