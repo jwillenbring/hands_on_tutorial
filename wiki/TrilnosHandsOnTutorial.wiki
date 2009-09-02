@@ -3,8 +3,6 @@
 #sidebar TrilinosTutorialContents
 = Trilinos Hands-on Tutorial =
 
-[http://trilinos.sandia.gov  http://trilinos.sandia.gov/common/logo_trilinos_moon.png]
-
 == First things first: ==
 
   * The Trilinos Project relies heavily upon its [http://trilinos.sandia.gov website] (click on logo above).
