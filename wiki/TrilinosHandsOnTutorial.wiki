@@ -32,7 +32,7 @@
     # Get Makefile from [Makefile here].  
           * You can find similar makefiles once you have built and installed Trilinos.  
           * They will be in the include directory of your installation directory.  
-          * Example: TrilinosInstall/include/Makefile.client.Epetra.
+          * Example: {{{TrilinosInstall/include/Makefile.client.Epetra.}}}
     # Add Example code into a file called main.cpp and build away!
 
 == Now for some examples: ==
