@@ -7,7 +7,7 @@
 
   * The Trilinos Project relies heavily upon its [http://trilinos.sandia.gov website] (click on logo above).
   * For future reference, a lot of information can be found on the [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
-  * Trilinos has a Tutorial document that you can find [http://trilinos.sandia.gov/Trilinos9.0Tutorial.pdf here].
+  * Trilinos has a Tutorial document that you can find [http://trilinos.sandia.gov/Trilinos10.2Tutorial.pdf here].
 
 == Let's dive in, you have two options: ==
 
@@ -76,7 +76,7 @@
 == Learning more: ==
 
   * [http://trilinos.sandia.gov Online reference documentation].
-  * [http://trilinos.sandia.gov/events/trilinos_user_group_2009/index.html 2009 Trilinos User Group Meeting, November 3-4, 2009, Albuquerque, NM.]
+  * [http://trilinos.sandia.gov/events/trilinos_user_group_2009/index.html Trilinos User Group Meeting (2009).]
   * [http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html Trilinos User Group Meeting (2008).]
   * [http://trilinos.sandia.gov/events/trilinos_user_group_2007/index.html Trilinos User Group Meeting (2007).]
   * [http://trilinos.sandia.gov/mail_lists.html Mail lists.]
