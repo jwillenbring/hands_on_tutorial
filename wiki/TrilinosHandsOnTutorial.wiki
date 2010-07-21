@@ -16,12 +16,12 @@
     * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
     * Installed at [http://research.cs.csbsju.edu/webtrilinos/WebTrilinos/index.html St. John's University].
     * Access to this site is password protected.  Login information will be given during live tutorials as needed.
-    * Click on the *"C++ interface"* module, #2 on the module list.
+    * Click on the *"C++ interface"* module, #2 on the module list.  (This is the only supported feature at this time.)
     * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
   * *Download and build the examples on your machine*
     # Download [http://trilinos.sandia.gov/download Trilinos]
     # Download and install CMake (if not already done).  
-          * Get the latest 2.8 release candidate from [http://www.cmake.org/files/v2.8/ here].
+          * The latest CMake release can be downloaded from [http://www.cmake.org/cmake/resources/software.html here].
     # Download and install Clapack (if you don't have LAPACK and BLAS already).  
           * Get Clapack from [http://www.netlib.org/clapack/clapack-3.2.1-CMAKE.tgz here].  
           * Use CMake to build Clapack.
