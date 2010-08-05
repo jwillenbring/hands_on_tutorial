@@ -31,10 +31,10 @@
           * You can also use the CMake gui, or the text-gui ccmake.
     # Get Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
           * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
-          * You can find similar makefiles once you have built and installed Trilinos.  
+          * You can find the Makefile.export.<package> files once you have built and installed Trilinos.  
           * They will be in the include directory of your installation directory.  
           * Example: {{{TrilinosInstall/include/Makefile.export.Epetra.}}}
-    # Customize the Makefile to your situation.
+    # Customize the Makefile to your situation (the example Makefile uses only the Epetra package, but Makefile.export.<package> files are available for all packages).
     # Add Example code into a file called main.cpp and build away!
 
 == Now for some examples: ==
