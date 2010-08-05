@@ -29,10 +29,12 @@
           * An example script is [BuildScript here].  
           * You can find other scripts in the Trilinos distribution Trilinos/sample_scripts directory.  
           * You can also use the CMake gui, or the text-gui ccmake.
-    # Get Makefile from [Makefile here].  
+    # Get Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
+          * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
           * You can find similar makefiles once you have built and installed Trilinos.  
           * They will be in the include directory of your installation directory.  
-          * Example: {{{TrilinosInstall/include/Makefile.client.Epetra.}}}
+          * Example: {{{TrilinosInstall/include/Makefile.export.Epetra.}}}
+    # Customize the Makefile to your situation.
     # Add Example code into a file called main.cpp and build away!
 
 == Now for some examples: ==
