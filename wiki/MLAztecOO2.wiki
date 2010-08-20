@@ -1,6 +1,5 @@
 {{{
-
-// Use of ML as a black-box smoothed aggregation preconditioner
+// Use of ML as a preconditioner.  Set some non-default options.
 
 #include "Epetra_ConfigDefs.h"
 #ifdef HAVE_MPI
@@ -16,6 +15,8 @@
 #include "Epetra_LinearProblem.h"
 #include "Epetra_Time.h"
 #include "AztecOO.h"
+
+#include "Teuchos_ParameterList.hpp"
 
 // includes required by ML
 #include "ml_epetra_preconditioner.h"
@@ -45,7 +46,7 @@ int main(int argc, char *argv[])
 
   Gallery.Set("problem_size", 1000);
 
-  // retrive pointers to matrix and linear problem
+  // retrieve pointers to matrix and linear problem
   Epetra_RowMatrix * A = Gallery.GetMatrix();
 
   Epetra_LinearProblem * Problem = Gallery.GetLinearProblem();
@@ -53,17 +54,43 @@ int main(int argc, char *argv[])
   // Construct a solver object for this problem
   AztecOO solver(*Problem);
 
-  // create the preconditioner object and compute hierarchy
-  ML_Epetra::MultiLevelPreconditioner * MLPrec = 
-    new ML_Epetra::MultiLevelPreconditioner(*A, true);
+  Teuchos::ParameterList MLList;
+  //set multigrid defaults based on problem type
+  //  SA is appropriate for Laplace-like systems
+  //  NSSA is appropriate for nonsymmetric problems such as convection-diffusion
+  ML_Epetra::SetDefaults("SA",MLList);
+
+  // output level, 0 being silent and 10 verbose
+  MLList.set("ML output", 10);
+
+  // maximum number of levels possible
+  MLList.set("max levels",5);
+
+  //common smoother options: Chebyshev, Gauss-Seidel, symmetric Gauss-Seidel, Jacobi, ILU, IC
+  MLList.set("smoother: type","Chebyshev");
+  MLList.set("smoother: sweeps",2);
+
+  //set a different smoother on the first coarse level (finest level = 0)
+  MLList.set("smoother: type (level 1)","symmetric Gauss-Seidel");
+  MLList.set("smoother: sweeps (level 1)",4);
+
+  // use both pre and post smoothing
+  MLList.set("smoother: pre or post", "both");
+
+  //coarsest level solve.  One can use any smoother here, as well.
+  MLList.set("coarse: type","Amesos-KLU");
+
+  // coarsening options:  Uncoupled, MIS, Uncoupled-MIS (uncouple on the finer grids, then switch to MIS)
+  MLList.set("aggregation: type", "Uncoupled");
+
+  // create the preconditioner object based on options in MLList and compute hierarchy
+  ML_Epetra::MultiLevelPreconditioner * MLPrec = new ML_Epetra::MultiLevelPreconditioner(*A, MLList);
 
   // tell AztecOO to use this preconditioner, then solve
   solver.SetPrecOperator(MLPrec);
 
-  solver.SetAztecOption(AZ_solver, AZ_gmres_condnum);
-
-  solver.SetAztecOption(AZ_output, 32);
-  solver.SetAztecOption(AZ_kspace, 160);
+  solver.SetAztecOption(AZ_solver, AZ_cg);
+  solver.SetAztecOption(AZ_output, 1);
 
   int Niters = 500;
   solver.Iterate(Niters, 1e-12);
@@ -96,5 +123,4 @@ int main(int argc, char *argv[])
 #endif
   return(EXIT_SUCCESS);
 }
-
 }}}
