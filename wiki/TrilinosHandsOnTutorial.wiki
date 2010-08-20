@@ -67,7 +67,7 @@
     * [IfpackAztecOO Solve a linear system _Ax=b_ using Ifpack and AztecOO]**
   # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ml ML] and [http://trilinos.sandia.gov/packages/aztecoo AztecOO] packages.*
     * [MLAztecOO Solve a linear system _Ax=b_ using ML(black-box) and AztecOO]**
-    * [MLAztecOO2 Solve a linear system _Ax=b_ using ML and AztecOO, but setting some multigrid options] [MLAztecOO_unhighlighted]
+    * [MLAztecOO2 Solve a linear system _Ax=b_ using ML and AztecOO, but setting some multigrid options]
   # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/belos Belos] packages.*
     * [IfpackBelos2 Solve a linear system _Ax=b_ using Ifpack and Belos]**
   # *Compute some eigenpairs using the [http://trilinos.sandia.gov/packages/anasazi Anasazi] package.*
