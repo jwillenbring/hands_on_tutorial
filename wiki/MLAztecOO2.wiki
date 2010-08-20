@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
   //coarsest level solve.  One can use any smoother here, as well.
   MLList.set("coarse: type","Amesos-KLU");
 
-  // coarsening options:  Uncoupled, MIS, Uncoupled-MIS (uncouple on the finer grids, then switch to MIS)
+  // coarsening options:  Uncoupled, MIS, Uncoupled-MIS (uncoupled on the finer grids, then switch to MIS)
   MLList.set("aggregation: type", "Uncoupled");
 
   // create the preconditioner object based on options in MLList and compute hierarchy
