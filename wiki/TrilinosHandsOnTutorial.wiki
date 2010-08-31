@@ -14,11 +14,12 @@
   * *!WebTrilinos*
     * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
     * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
-    * Installed at St. John's University, MN.  The following versions are available:
+    * Installed at St. John's University, MN.  The following versions of the C++ interface are available (the examples below use the C++ interface):
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/c++/index.html Trilinos 10.4, MPI-enabled]
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-10.4/c++/index.html Trilinos 10.4, serial]
            * [http://research.cs.csbsju.edu/webtrilinos/WebTrilinosMPI/c++/index.html Trilinos 10.0, MPI-enabled, old server]
            * [http://research.cs.csbsju.edu/webtrilinos/WebTrilinos/c++/index.html Trilinos 10.0, serial, old server].
+    * In addition to the C++ interfaces, a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/MatrixPortal/index.html Matrix Portal interface] and a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/python/index.html Python interface] are also available.
     * Access to this site is password protected.  Login information will be given during live tutorials as needed.
     * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
   * *Download and build the examples on your machine*
