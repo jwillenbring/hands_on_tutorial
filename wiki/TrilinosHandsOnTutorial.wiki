@@ -80,7 +80,7 @@
     * [NOXNewton2 Solve a simple nonlinear system using NOX]
   # *[http://trilinos.sandia.gov/packages/pytrilinos PyTrilinos] tutorial materials.*
     * [http://trilinos.sandia.gov/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
-    * PyTrilinosExample  Solve a simple 2D Laplace problem using PyTrilinos]
+    * [PyTrilinosExample Solve a simple 2D Laplace problem using PyTrilinos]
 
 
 == Learning more: ==
