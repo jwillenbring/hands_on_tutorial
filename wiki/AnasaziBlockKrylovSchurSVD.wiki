@@ -54,7 +54,7 @@ buildSparseMatrix (const Epetra_Comm& Comm,
 // nev: Number of eigenvalues (n. e. v.) to compute.
 //
 Teuchos::RCP<Teuchos::ParameterList> 
-getParameterList (const int nev);
+getParameterList (const int nev, const int blockSize);
 
 //
 // The "main" driver routine.
@@ -63,6 +63,7 @@ int
 main (int argc, char *argv[]) 
 {
   // "using" statements make the code more concise.
+  using Teuchos::ParameterList;
   using Teuchos::RCP;
   using Teuchos::rcp;
   typedef Teuchos::ScalarTraits<double> STS;
@@ -86,6 +87,9 @@ main (int argc, char *argv[])
 
   // Number of eigenvalues (n. e. v.) to compute.
   const int nev = 4; 
+
+  // The number of columns in the starting vector.
+  const int blockSize = 1; 
 
   // Dimensions of the matrix A: m rows and n columns.
   int m = 500;
@@ -114,7 +118,7 @@ main (int argc, char *argv[])
   //////////////////////////////////////////////////////////////////////
 
   // Get solver parameters for Block Krylov-Schur.
-  RCP<ParameterList> plist = getParameterList ();
+  RCP<ParameterList> plist = getParameterList (nev, blockSize);
 
   // Set the data type of the matrix operator and multivectors.
   //
@@ -379,17 +383,13 @@ buildSparseMatrix (const Epetra_Comm& Comm,
 
 
 Teuchos::RCP<Teuchos::ParameterList> 
-getParameterList (const int nev)
+getParameterList (const int nev, const int blockSize)
 {
   using Teuchos::RCP;
   using Teuchos::rcp;
   using Teuchos::ParameterList;
 
   RCP<ParameterList> plist = rcp (new ParameterList ("Block Krylov-Schur"));
-
-  // "Block Size" parameter is 1, because we only have one initial
-  // guess ("right-hand side").
-  const int blockSize = 1; 
 
   // "Num Blocks" parameter is the Krylov basis length to use.
   const int numBlocks = 10;
