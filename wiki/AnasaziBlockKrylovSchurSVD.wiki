@@ -33,6 +33,131 @@
 #endif
 #include "Epetra_Map.h"
 
+class EpetraSymOp : public Epetra_Operator {
+private:
+  Teuchos::RCP<const Epetra_Operator> op_;
+  mutable Teuchos::RCP<Epetra_MultiVector> tempVec_;
+  bool isTrans_;
+
+public:
+  EpetraSymOp (const Teuchos::RCP<const Epetra_Operator>& op, 
+	       const bool isTrans = false) :
+    op_ (op), isTrans_ (isTrans) {}
+
+  virtual ~EpetraSymOp () {}
+
+  int SetUseTranspose (bool useTranspose) {
+    isTrans_ = useTranspose;
+  }
+
+  double NormInf() const {
+    throw std::runtime_error ("*** NO NormInf() FOR YOU!!! ***");
+  }
+
+  bool HasNormInf() const {
+    return false;
+  }
+
+  const char* Label() const {
+    return "A^T * A";
+  }
+
+  bool UseTranspose() const {
+    return isTrans_;
+  }
+
+  const Epetra_Comm& Comm() const {
+    return op_->Comm();
+  }
+
+  const Epetra_Map& 
+  OperatorDomainMap() const 
+  {
+    if (isTrans_) 
+      // Applying A * A^T, so the domain is that of A^T, namely the
+      // range of A.
+      return op_->OperatorRangeMap();
+    else
+      // Applying A^T * A, so the domain is that of A.
+      return op_->OperatorDomainMap();
+  }
+
+  const Epetra_Map& 
+  OperatorRangeMap() const 
+  {
+    // The domain of A^T * A is the same as the range of A^T * A.
+    // Ditto for A * A^T: the domain is the same as the range.
+    if (isTrans_) 
+      // Applying A * A^T, so the range is that of A.
+      return op_->OperatorRangeMap();
+    else
+      // Applying A^T * A, so the range is that of A^T, namely the
+      // domain of A.
+      return op_->OperatorDomainMap();
+  }
+
+  int
+  Apply (const Epetra_MultiVector &X, 
+	 Epetra_MultiVector &Y) const
+  {
+    using Teuchos::rcp;
+    using Teuchos::rcp_const_cast;
+    typedef Epetra_MultiVector MV;
+    int info = 0;
+
+    // Keep the original transpose state of the operator A, so that we
+    // can restore it on exit.
+    const bool origTransState = op_->UseTranspose ();
+
+    if (tempVec_.is_null()) {
+      if (isTrans_)
+	tempVec_ = rcp (new MV (op_->OperatorDomainMap(), Y.NumVectors()));
+      else
+	tempVec_ = rcp (new MV (op_->OperatorRangeMap(), Y.NumVectors()));
+    }
+
+    try {
+      // Transpose the operator first if computing Y = A * (A^T * X).
+      // We call SetUseTranspose() anyway because we need to check
+      // whether the operator A allows applying the transpose.
+      info = rcp_const_cast<Epetra_Operator> (op_)->SetUseTranspose (isTrans_); 
+      if (info != 0) {
+	throw std::runtime_error ("Failed to set the transpose state");
+      }
+      // tempVec_ := A*X or A^T*X 
+      info = op_->Apply (X, *tempVec_);
+      if (info != 0) { 
+	throw std::runtime_error ("Failed to apply the first operator");
+      }
+      // (Un)transpose the operator based on value of isTrans_.
+      info = rcp_const_cast<Epetra_Operator> (op_)->SetUseTranspose (! isTrans_);
+      if (info!=0) { 
+	throw std::runtime_error ("Failed to toggle the transpose state");
+      }
+      // Compute A^T*(A*X) or A*A^T.
+      info = op_->Apply (*tempVec_, Y);
+      if (info!=0) { 
+	throw std::runtime_error ("Failed to apply the second operator");
+      }
+    } catch (std::runtime_error& e) {
+      cerr << "EpetraSymOp::Apply: " << e.what() << endl;
+    }
+    // We've got a shallow copy of the operator that other parts of
+    // the code may be using, so we need to be polite and restore the
+    // original transpose state.
+    const int info2 = 
+      rcp_const_cast<Epetra_Operator> (op_)->SetUseTranspose (origTransState);
+    return info || info2;
+  }
+
+  int 
+  ApplyInverse (const Epetra_MultiVector &X, 
+			     Epetra_MultiVector &Y) const
+  {
+    throw std::runtime_error ("*** NO INVERSE FOR YOU!!! ***");
+  }
+};
+
 //
 // Build an m by n sparse matrix with entries
 //
@@ -43,10 +168,10 @@
 //
 Teuchos::RCP<Epetra_CrsMatrix> 
 buildSparseMatrix (const Epetra_Comm& Comm,
-		   const Epetra_Map& RowMap,
-		   const Epetra_Map& ColMap,
-		   const int m, 
-		   const int n);
+                   const Epetra_Map& RowMap,
+                   const Epetra_Map& ColMap,
+                   const int m, 
+                   const int n);
 //
 // Return a list of parameters to pass into Anasazi's Block
 // Krylov-Schur solver.
@@ -95,17 +220,10 @@ main (int argc, char *argv[])
   int m = 500;
   int n = 100;
 
-  // Construct a Map that puts approximately the same number of
-  // equations on each processor.
+  // Construct a Map that puts approximately the same number of rows
+  // of the matrix A on each processor.
   Epetra_Map RowMap(m, 0, Comm);
   Epetra_Map ColMap(n, 0, Comm);
-
-  // Get update list and number of local equations from newly created Map.
-
-  int NumMyRowElements = RowMap.NumMyElements ();
-
-  std::vector<int> MyGlobalRowElements (NumMyRowElements);
-  RowMap.MyGlobalElements (&MyGlobalRowElements[0]);
 
   // Create an Epetra_CrsMatrix using the above row and column maps,
   // and the given matrix dimensions m and n.
@@ -146,23 +264,39 @@ main (int argc, char *argv[])
   //
   // The starting vector must have the same number of columns as the
   // "Block Size" parameter's value.  In this case, the initial vector
-  // is in the domain of the matrix A, so it uses ColMap as its map.
-  RCP<MV> initVec = rcp (new MV (ColMap, blockSize));
+  // is in the domain of the matrix A, so it uses A's domain map as
+  // its map.
+  RCP<MV> initVec = rcp (new MV (A->OperatorDomainMap(), blockSize));
+
+  if (MyPID == 0)
+    cerr << "Built starting vector with " << blockSize << " column"
+	 << (blockSize != 1 ? "s" : "") << endl;
 
   // Fill the initial vector with random data.
   MVT::MvRandom (*initVec);
+
+  if (MyPID == 0)
+    cerr << "Randomized starting vector" << endl;
 
   // Create the operator that uses the matrix A to represent the A^T *
   // A operator.  ATA does not copy the matrix A; it just keeps a
   // pointer.  An Anasazi::EpetraSymOp "is-an" (inherits from)
   // Epetra_Operator.
-  RCP<OP> ATA = rcp (new Anasazi::EpetraSymOp (A));
+  //RCP<OP> ATA = rcp (new Anasazi::EpetraSymOp (A));
+
+  RCP<OP> ATA = rcp (new EpetraSymOp (A));
+
+  if (MyPID == 0)
+    cerr << "Built ATA operator" << endl;
 
   // Create the object that holds the eigenvalue problem to solve.
   // The problem object is templated on the Scalar, MultiVector (MV),
   // and Operator (OP) types.
   RCP<Anasazi::BasicEigenproblem<double, MV, OP> > problem =
     rcp (new Anasazi::BasicEigenproblem<double, MV, OP> (ATA, initVec));
+
+  if (MyPID == 0)
+    cerr << "Built BasicEigenproblem" << endl;
 
   // Inform the eigenproblem that the operator (A^T * A) is symmetric.
   problem->setHermitian (true);
@@ -174,8 +308,11 @@ main (int argc, char *argv[])
   // Inform the eigenvalue problem that you are finished passing it
   // information.
   TEST_FOR_EXCEPTION( ! problem->setProblem(), 
-		      std::runtime_error,
-		      "Failed to set the eigenvalue problem." );
+                      std::runtime_error,
+                      "Failed to set the eigenvalue problem." );
+
+  if (MyPID == 0)
+    cerr << "Called setProblem()" << endl;
 
   // Initialize the Block Krylov-Schur solver.  The solver may fill in
   // the given parameter list with defaults for any parameters that
@@ -183,11 +320,18 @@ main (int argc, char *argv[])
   // parameters, just those that matter to you.
   Anasazi::BlockKrylovSchurSolMgr<double, MV, OP> MySolverMgr (problem, *plist);
 
+  if (MyPID == 0)
+    cerr << "Built solution manager" << endl;
+
   // Solve the problem to the specified tolerance or number of iterations.
   Anasazi::ReturnType returnCode = MySolverMgr.solve();
+
+  if (MyPID == 0)
+    cerr << "Called solve()" << endl;
+
   if (returnCode != Anasazi::Converged && MyPID==0) {
     cout << "The Anasazi solver's solve() routine returned Unconverged." 
-	 << endl;
+         << endl;
   }
 
   // Get the eigenvalues and eigenvectors from the eigenproblem.
@@ -243,9 +387,12 @@ main (int argc, char *argv[])
     for (i = 0; i < numev; ++i) { 
       index[i] = i; 
     }
-    RCP<MV> evecs = MVT::CloneView (*(sol.Evecs), index);
+    // CloneView() produces a non-modifying ("const") view, so we have
+    // to store that view in a pointer that contains a "const MV"
+    // object.
+    RCP<const MV> evecs = MVT::CloneView (*(sol.Evecs), index);
     OPT::Apply (*A, *evecs, Av); // Av = A * evecs
-    MVT::MvNorm (Av, temprnm);   // tempnrm_j := || (Av)_j ||_2
+    MVT::MvNorm (Av, tempnrm);   // tempnrm_j := || (Av)_j ||_2
 
     Teuchos::SerialDenseMatrix<int,double> S (numev, numev);
     for (i = 0; i < numev; ++i) { 
@@ -266,7 +413,7 @@ main (int argc, char *argv[])
     MVT::MvTimesMatAddMv (-one, u, S, one, Av);
 
     // directnrm_j = || (Av)_j ||_2
-    MVT::MvNorm (Av, &directnrm);
+    MVT::MvNorm (Av, directnrm);
 
     //////////////////////////////////////////////////////////////////////
     // Print results to stdout on MPI process 0.
@@ -275,13 +422,13 @@ main (int argc, char *argv[])
     if (MyPID==0) {
       cout.setf (std::ios_base::right, std::ios_base::adjustfield);
       cout << std::setw(16) << "Singular Value"
-	   << std::setw(20) << "Direct Residual"
-	   << endl;
+           << std::setw(20) << "Direct Residual"
+           << endl;
       cout << "------------------------------------------------------" << endl;
       for (i=0; i<numev; ++i) {
-	cout << std::setw(16) << evals[i].realpart
-	     << std::setw(20) << directnrm[i] 
-	     << endl;
+        cout << std::setw(16) << evals[i].realpart
+             << std::setw(20) << directnrm[i] 
+             << endl;
       }  
       cout << "------------------------------------------------------" << endl;
     }
@@ -296,66 +443,86 @@ main (int argc, char *argv[])
 
 Teuchos::RCP<Epetra_CrsMatrix> 
 buildSparseMatrix (const Epetra_Comm& Comm,
-		   const Epetra_Map& RowMap,
-		   const Epetra_Map& ColMap,
-		   const int m, 
-		   const int n)
+                   const Epetra_Map& RowMap,
+                   const Epetra_Map& ColMap,
+                   const int m, 
+                   const int n)
 {
   using Teuchos::RCP;
   using Teuchos::rcp;
+  typedef Teuchos::ScalarTraits<double> STS;
+
+  const double one = STS::one();
+  const double zero = STS::zero();
+
+  // My MPI process rank.
+  const int MyPID = Comm.MyPID();
+
+  if (MyPID == 0)
+    cerr << "Building the sparse matrix" << endl;
+
+  // Get update list and number of local equations from newly created Map.
+  const int NumMyRowElements = RowMap.NumMyElements ();
+  std::vector<int> MyGlobalRowElements (NumMyRowElements);
+  RowMap.MyGlobalElements (&MyGlobalRowElements[0]);
 
   // Create an Epetra_CrsMatrix using the given row map.
   RCP<Epetra_CrsMatrix> A = rcp (new Epetra_CrsMatrix (Copy, RowMap, n));
 
   // We use info to catch any errors that may have happened during
-  // matrix assembly, and report them globally.
+  // matrix assembly, and report them globally.  We do this so that
+  // the MPI processes won't call FillComplete() unless they all
+  // successfully filled their parts of the matrix.
   int info = 0;
   try {
     //
     // Compute coefficients for the discrete integral operator.
     //
-    std::vector<double> Values(n);
-    std::vector<int> Indices(n);
-    double inv_mp1 = one/(m+1);
-    double inv_np1 = one/(n+1);
-    for (i=0; i<n; i++) { 
+    std::vector<double> Values (n);
+    std::vector<int> Indices (n);
+    const double inv_mp1 = one / (m+1);
+    const double inv_np1 = one / (n+1);
+    for (int i = 0; i < n; ++i) { 
       Indices[i] = i; 
     }
-    for (i = 0; i < NumMyRowElements; ++i) {
-      for (j = 0; j < n; ++j) 
-	{
-	  if (MyGlobalRowElements[i] <= j) {
-	    Values[j] = inv_np1 * 
-	      ( (MyGlobalRowElements[i]+one)*inv_mp1 ) * 
-	      ( (j+one)*inv_np1 - one );  // k*(si)*(tj-1)
-	  }
-	  else {
-	    Values[j] = inv_np1 * 
-	      ( (j+one)*inv_np1 ) * 
-	      ( (MyGlobalRowElements[i]+one)*inv_mp1 - one );  // k*(tj)*(si-1)
-	  }
-	}
+    for (int i = 0; i < NumMyRowElements; ++i) {
+      for (int j = 0; j < n; ++j) 
+        {
+          if (MyGlobalRowElements[i] <= j) {
+            Values[j] = inv_np1 * 
+              ( (MyGlobalRowElements[i]+one)*inv_mp1 ) * 
+              ( (j+one)*inv_np1 - one );  // k*(si)*(tj-1)
+          }
+          else {
+            Values[j] = inv_np1 * 
+              ( (j+one)*inv_np1 ) * 
+              ( (MyGlobalRowElements[i]+one)*inv_mp1 - one );  // k*(tj)*(si-1)
+          }
+        }
       info = A->InsertGlobalValues (MyGlobalRowElements[i], n, 
-				    &Values[0], &Indices[0]);
+                                    &Values[0], &Indices[0]);
       // Make sure that the insertion succeeded.  Teuchos'
       // TEST_FOR_EXCEPTION macro gives a nice error message if the
       // thrown exception isn't caught.  We'll report this on the
       // offending MPI process.
       TEST_FOR_EXCEPTION( info != 0, std::runtime_error, "Failed to insert n=" 
-			  << n << " global value" << (n != 1 ? "s" : "") 
-			  << " in row " << MyGlobalRowElements[i] 
-			  << " of the matrix." );
+                          << n << " global value" << (n != 1 ? "s" : "") 
+                          << " in row " << MyGlobalRowElements[i] 
+                          << " of the matrix." );
+    } // for i = 0...
+    
+    if (MyPID == 0)
+      cerr << "Calling FillComplete" << endl;
 
-      // Call FillComplete on the matrix.  Since the matrix isn't square,
-      // we have to give FillComplete the domain and range maps, which in
-      // this case are the column resp. row maps.
-      info = A->FillComplete (ColMap, RowMap);
-      TEST_FOR_EXCEPTION( info != 0, std::runtime_error, 
-			  "FillComplete failed with INFO = " << info << ".");
-      info = A->OptimizeStorage();
-      TEST_FOR_EXCEPTION( info != 0, std::runtime_error, 
-			  "OptimizeStorage failed with INFO = " << info << ".");
-    }
+    // Call FillComplete on the matrix.  Since the matrix isn't square,
+    // we have to give FillComplete the domain and range maps, which in
+    // this case are the column resp. row maps.
+    info = A->FillComplete (ColMap, RowMap);
+    TEST_FOR_EXCEPTION( info != 0, std::runtime_error, 
+			"FillComplete failed with INFO = " << info << ".");
+    info = A->OptimizeStorage();
+    TEST_FOR_EXCEPTION( info != 0, std::runtime_error, 
+			"OptimizeStorage failed with INFO = " << info << ".");
   } catch (std::runtime_error& e) {
     // If multiple MPI processes are reporting errors, sometimes
     // forming the error message as a string and then writing it to
@@ -363,17 +530,25 @@ buildSparseMatrix (const Epetra_Comm& Comm,
     // from being interleaved.
     std::ostringstream os;
     os << "*** Error on MPI process " << MyPID << ": " << e.what();
-    cerr << os << endl;
+    cerr << os.str() << endl;
+    if (info == 0)
+      info = -1; // All procs will share info later on.
   }
 
   // Do a reduction on the value of info, to ensure that all the MPI
   // processes successfully filled the sparse matrix.
   {
-    int globalInfo = 0;
-    TEST_FOR_EXCEPTION( Comm->MaxAll (&info, &globalInfo, 1) != 0,
-			std::runtime_error,
-			"Filling and assembling the sparse matrix failed." );
+    int minInfo = 0;
+    int maxInfo = 0;
+
+    // Test both info < 0 and info > 0.
+    Comm.MinAll (&info, &minInfo, 1);
+    Comm.MaxAll (&info, &maxInfo, 1);
+    TEST_FOR_EXCEPTION( minInfo != 0 || maxInfo != 0, std::runtime_error,
+                        "Filling and assembling the sparse matrix failed." );
+    cerr << "Successfully built the sparse matrix" << endl;
   }
+  
   
   // Shut down Epetra Warning tracebacks.
   A->SetTracebackMode (1);
@@ -424,11 +599,12 @@ getParameterList (const int nev, const int blockSize)
   // Tell Anasazi to print output for errors, warnings, timing
   // details, and the final summary of results.
   plist->set ("Verbosity",  
-	      Anasazi::Errors + 
-	      Anasazi::Warnings + 
-	      Anasazi::TimingDetails + 
-	      Anasazi::FinalSummary);
+              Anasazi::Errors + 
+              Anasazi::Warnings + 
+              Anasazi::TimingDetails + 
+              Anasazi::FinalSummary);
+
+  cerr << "Constructed parameter list" << endl;
   return plist;
 }
-
 }}}
