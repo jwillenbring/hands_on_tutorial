@@ -4,16 +4,22 @@
 // corresponding right singular vectors (v) for the matrix A by
 // solving the symmetric problem:
 //
-//                             (A'*A)*v = sigma*v
+//                  (A^T * (A * v) = sigma * v
 //
-//  where A is an m by n real matrix that is derived from the simplest
-//  finite difference discretization of the 2-dimensional kernel
-//  K(s,t)dt, where
+// where A is an m by n real matrix that is derived from the simplest
+// finite difference discretization of the 2-dimensional kernel
+// K(s,t)dt, where
 //
-//                    K(s,t) = s(t-1)   if 0 <= s <= t <= 1
-//                             t(s-1)   if 0 <= t <= s <= 1
+//                  K(s,t) = s(t-1)   if 0 <= s <= t <= 1
+//                           t(s-1)   if 0 <= t <= s <= 1
 //
-//  NOTE:  This example came from the ARPACK SVD driver dsvd.f
+// NOTE:  This example came from the ARPACK SVD driver dsvd.f
+//
+// The main solver parameters are the number of singular values to
+// compute (numSingularValues), and the number of starting vectors
+// (blockSize).  The implementation of getParameterList() below
+// includes other parameters, like the iteration tolerance and the
+// maximum number of restart cycles.
 //
 #include "AnasaziBlockKrylovSchurSolMgr.hpp"
 #include "AnasaziBasicEigenproblem.hpp"
@@ -21,7 +27,6 @@
 #include "AnasaziEpetraAdapter.hpp"
 
 #include "Epetra_CrsMatrix.h"
-#include "Teuchos_LAPACK.hpp"
 
 // Include the appropriate communicator include files based on whether
 // or not Trilinos was built with MPI.
@@ -33,138 +38,56 @@
 #endif
 #include "Epetra_Map.h"
 
-class EpetraSymOp : public Epetra_Operator {
-private:
-  Teuchos::RCP<const Epetra_Operator> op_;
-  mutable Teuchos::RCP<Epetra_MultiVector> tempVec_;
-  bool isTrans_;
-
-public:
-  EpetraSymOp (const Teuchos::RCP<const Epetra_Operator>& op, 
-	       const bool isTrans = false) :
-    op_ (op), isTrans_ (isTrans) {}
-
-  virtual ~EpetraSymOp () {}
-
-  int SetUseTranspose (bool useTranspose) {
-    isTrans_ = useTranspose;
-  }
-
-  double NormInf() const {
-    throw std::runtime_error ("*** NO NormInf() FOR YOU!!! ***");
-  }
-
-  bool HasNormInf() const {
-    return false;
-  }
-
-  const char* Label() const {
-    return "A^T * A";
-  }
-
-  bool UseTranspose() const {
-    return isTrans_;
-  }
-
-  const Epetra_Comm& Comm() const {
-    return op_->Comm();
-  }
-
-  const Epetra_Map& 
-  OperatorDomainMap() const 
-  {
-    if (isTrans_) 
-      // Applying A * A^T, so the domain is that of A^T, namely the
-      // range of A.
-      return op_->OperatorRangeMap();
-    else
-      // Applying A^T * A, so the domain is that of A.
-      return op_->OperatorDomainMap();
-  }
-
-  const Epetra_Map& 
-  OperatorRangeMap() const 
-  {
-    // The domain of A^T * A is the same as the range of A^T * A.
-    // Ditto for A * A^T: the domain is the same as the range.
-    if (isTrans_) 
-      // Applying A * A^T, so the range is that of A.
-      return op_->OperatorRangeMap();
-    else
-      // Applying A^T * A, so the range is that of A^T, namely the
-      // domain of A.
-      return op_->OperatorDomainMap();
-  }
-
-  int
-  Apply (const Epetra_MultiVector &X, 
-	 Epetra_MultiVector &Y) const
-  {
-    using Teuchos::rcp;
-    using Teuchos::rcp_const_cast;
-    typedef Epetra_MultiVector MV;
-    int info = 0;
-
-    // Keep the original transpose state of the operator A, so that we
-    // can restore it on exit.
-    const bool origTransState = op_->UseTranspose ();
-
-    if (tempVec_.is_null()) {
-      if (isTrans_)
-	tempVec_ = rcp (new MV (op_->OperatorDomainMap(), Y.NumVectors()));
-      else
-	tempVec_ = rcp (new MV (op_->OperatorRangeMap(), Y.NumVectors()));
-    }
-
-    try {
-      // Transpose the operator first if computing Y = A * (A^T * X).
-      // We call SetUseTranspose() anyway because we need to check
-      // whether the operator A allows applying the transpose.
-      info = rcp_const_cast<Epetra_Operator> (op_)->SetUseTranspose (isTrans_); 
-      if (info != 0) {
-	throw std::runtime_error ("Failed to set the transpose state");
-      }
-      // tempVec_ := A*X or A^T*X 
-      info = op_->Apply (X, *tempVec_);
-      if (info != 0) { 
-	throw std::runtime_error ("Failed to apply the first operator");
-      }
-      // (Un)transpose the operator based on value of isTrans_.
-      info = rcp_const_cast<Epetra_Operator> (op_)->SetUseTranspose (! isTrans_);
-      if (info!=0) { 
-	throw std::runtime_error ("Failed to toggle the transpose state");
-      }
-      // Compute A^T*(A*X) or A*A^T.
-      info = op_->Apply (*tempVec_, Y);
-      if (info!=0) { 
-	throw std::runtime_error ("Failed to apply the second operator");
-      }
-    } catch (std::runtime_error& e) {
-      cerr << "EpetraSymOp::Apply: " << e.what() << endl;
-    }
-    // We've got a shallow copy of the operator that other parts of
-    // the code may be using, so we need to be polite and restore the
-    // original transpose state.
-    const int info2 = 
-      rcp_const_cast<Epetra_Operator> (op_)->SetUseTranspose (origTransState);
-    return info || info2;
-  }
-
-  int 
-  ApplyInverse (const Epetra_MultiVector &X, 
-			     Epetra_MultiVector &Y) const
-  {
-    throw std::runtime_error ("*** NO INVERSE FOR YOU!!! ***");
-  }
-};
+//
+// Use Block Krylov-Schur iteration on A^T (A x) = (sigma)^2 x to
+// compute the approximate SVD of A.
+//
+// Inputs:
+//
+// A: The operator A for which to compute the SVD.
+// startingVector: One or more starting vectors for the iteration.
+// numSingularValues: Number of singular values to compute.
+//
+// Outputs:
+//
+// 1. Approximate eigenvalues of A^T A.
+// 2. Approximate eigenvectors of A^T A.
+//
+// Anasazi stores the eigenvalues of a real matrix as pairs of real
+// values, using the Value struct.  Our operator A^T * A is symmetric,
+// so the eigenvalues should all be real.  However, storing
+// eigenvalues as (real, imaginary) pairs allows us to solve
+// nonsymmetric problems as well.
+//
+std::pair< std::vector<Anasazi::Value<double> >, Teuchos::RCP<Epetra_MultiVector> >
+solve (const Teuchos::RCP<Epetra_Operator>& A, 
+       const Teuchos::RCP<Epetra_MultiVector>& startingVector,
+       const int numSingularValues);
 
 //
-// Build an m by n sparse matrix with entries
+// Return a read-and-write view of V as an Anasazi::MultiVec<double>.
+// We use this method in the solve() routine below.
+//
+Teuchos::RCP<Anasazi::MultiVec<double> >
+createMultiVectorView (const Teuchos::RCP<Epetra_MultiVector>& V);
+
+//
+// Return a list of parameters to pass into Anasazi's Block
+// Krylov-Schur solver.
+//
+// blockSize: Desired block size (number of starting vectors).
+//
+Teuchos::RCP<Teuchos::ParameterList> 
+getParameterList (const int blockSize);
+
+//
+// Build an m by n (nonsquare) sparse matrix with entries
 //
 //          A(i,j) = k*(si)*(tj - 1) if i <= j
 //                 = k*(tj)*(si - 1) if i  > j
 //
-// where si = i/(m+1) and tj = j/(n+1) and k = 1/(n+1).
+// where si = i/(m+1) and tj = j/(n+1) and k = 1/(n+1).  We use this
+// matrix to exercise Anasazi's Block Krylov-Schur solver.
 //
 Teuchos::RCP<Epetra_CrsMatrix> 
 buildSparseMatrix (const Epetra_Comm& Comm,
@@ -172,14 +95,6 @@ buildSparseMatrix (const Epetra_Comm& Comm,
                    const Epetra_Map& ColMap,
                    const int m, 
                    const int n);
-//
-// Return a list of parameters to pass into Anasazi's Block
-// Krylov-Schur solver.
-//
-// nev: Number of eigenvalues (n. e. v.) to compute.
-//
-Teuchos::RCP<Teuchos::ParameterList> 
-getParameterList (const int nev, const int blockSize);
 
 //
 // The "main" driver routine.
@@ -187,16 +102,17 @@ getParameterList (const int nev, const int blockSize);
 int 
 main (int argc, char *argv[]) 
 {
-  // "using" statements make the code more concise.
+  // These "using" statements make the code a bit more concise.
   using Teuchos::ParameterList;
   using Teuchos::RCP;
   using Teuchos::rcp;
-  typedef Teuchos::ScalarTraits<double> STS;
 
-  int i, j;
-  const double one = 1.0;
-  const double zero = 0.0;
-  Teuchos::LAPACK<int,double> lapack;
+  // Shorthand for a collection of operations on the Scalar=double type.
+  typedef Teuchos::ScalarTraits<double> STS;
+  // Shorthand for a collection of operations on Epetra vectors.
+  typedef Anasazi::MultiVecTraits<double, Epetra_MultiVector> MVT;
+  // Shorthand for a collection of operations on Epetra operators.
+  typedef Anasazi::OperatorTraits<double, Epetra_MultiVector, Epetra_Operator> OPT;
 
   // If Trilinos was built with MPI, initialize MPI, otherwise
   // initialize the serial "communicator" that stands in for MPI.
@@ -207,13 +123,10 @@ main (int argc, char *argv[])
   Epetra_SerialComm Comm;
 #endif
 
-  // My (MPI) process rank.
-  int MyPID = Comm.MyPID();
+  // Number of singular values to compute.
+  const int numSingularValues = 4; 
 
-  // Number of eigenvalues (n. e. v.) to compute.
-  const int nev = 4; 
-
-  // The number of columns in the starting vector.
+  // The number of columns in the starting (multi)vector.
   const int blockSize = 1; 
 
   // Dimensions of the matrix A: m rows and n columns.
@@ -222,34 +135,165 @@ main (int argc, char *argv[])
 
   // Construct a Map that puts approximately the same number of rows
   // of the matrix A on each processor.
-  Epetra_Map RowMap(m, 0, Comm);
-  Epetra_Map ColMap(n, 0, Comm);
+  Epetra_Map RowMap (m, 0, Comm);
+  Epetra_Map ColMap (n, 0, Comm);
 
   // Create an Epetra_CrsMatrix using the above row and column maps,
   // and the given matrix dimensions m and n.
   RCP<Epetra_CrsMatrix> A = buildSparseMatrix (Comm, RowMap, ColMap, m, n);
 
-  //////////////////////////////////////////////////////////////////////
+  // Create a vector to be the solver's starting vector.
   //
-  // Start the Block Krylov-Schur iteration.
-  //
-  //////////////////////////////////////////////////////////////////////
+  // The starting vector must have the same number of columns as the
+  // "Block Size" parameter's value.  In this case, the initial vector
+  // is in the domain of the matrix A, so it uses A's domain map as
+  // its map.
+  RCP<Epetra_MultiVector> initVec = 
+    rcp (new Epetra_MultiVector (A->OperatorDomainMap(), blockSize));
 
-  // Get solver parameters for Block Krylov-Schur.
-  RCP<ParameterList> plist = getParameterList (nev, blockSize);
+  // Fill the initial vector with random data.
+  MVT::MvRandom (*initVec);
+
+  // Compute the SVD by solving A^T A x = (sigma)^2 x as an eigenvalue
+  // problem.  Return the eigenvalues of A^T A, and the eigenvectors
+  // of A^T A.  The solve() method is declared above and defined below
+  // the definition of main(), in this file; it is a simple wrapper of
+  // Anasazi's solver.
+  std::pair< std::vector<Anasazi::Value<double> >, RCP<Epetra_MultiVector> > result = 
+    solve (A, initVec, numSingularValues);
+  std::vector<Anasazi::Value<double> >& evals = result.first;
+
+  const int computedNumSingularValues = evals.size();
+  if (computedNumSingularValues > 0) 
+    {
+      const double one = 1.0;
+      const double zero = 0.0;
+      // My (MPI) process rank.
+      int MyPID = Comm.MyPID();
+
+      //////////////////////////////////////////////////////////////////////
+      //
+      // Compute the singular values, singular vectors, and direct residuals.
+      //
+      //////////////////////////////////////////////////////////////////////    
+
+      // The singular values of the matrix A are the square roots of the
+      // eigenvalues of A^T * A.
+      if (MyPID == 0) {
+	cout << "------------------------------------------------------" << endl;
+	cout << "Computed Singular Values: " << endl;
+	cout << "------------------------------------------------------" << endl;
+      }
+      for (int i = 0; i < computedNumSingularValues; ++i) {
+	// The operator A^T * A is symmetric, so the eigenvalues
+	// should all have zero imaginary parts.
+	evals[i].realpart = STS::squareroot (evals[i].realpart); 
+      }
+
+      //////////////////////////////////////////////////////////////////////
+      // Compute the left singular vectors: u_j = (Av)_j / sigma_j
+      //////////////////////////////////////////////////////////////////////
+
+      std::vector<double> tempnrm (computedNumSingularValues);
+      std::vector<double> directnrm (computedNumSingularValues);
+
+      // The multivectors Av and u are in the range of the operator A,
+      // so we have to create them using the range map of A.
+      Epetra_MultiVector Av (A->OperatorRangeMap(), computedNumSingularValues);
+      Epetra_MultiVector u (A->OperatorRangeMap(), computedNumSingularValues);
+
+      // Compute Av = A*evecs and the norms of the columns of Av.
+      RCP<Epetra_MultiVector> evecs = result.second;
+      OPT::Apply (*A, *evecs, Av);
+      MVT::MvNorm (Av, tempnrm);
+
+      Teuchos::SerialDenseMatrix<int,double> S (computedNumSingularValues, 
+						computedNumSingularValues);
+      for (int i = 0; i < computedNumSingularValues; ++i) { 
+	S(i,i) = one / tempnrm[i]; 
+      }
+      // u := Av * S + zero * u
+      MVT::MvTimesMatAddMv (one, Av, S, zero, u);
+
+      //////////////////////////////////////////////////////////////////////
+      // Compute direct residuals: || (Av - sigma*u)_j ||_2
+      //////////////////////////////////////////////////////////////////////
+
+      for (int i = 0; i < computedNumSingularValues; ++i) { 
+	S(i,i) = evals[i].realpart; 
+      }
+      // Av := -one * u * S + one * Av
+      //     = Av - u*S.
+      MVT::MvTimesMatAddMv (-one, u, S, one, Av);
+
+      // directnrm_j = || (Av)_j ||_2
+      MVT::MvNorm (Av, directnrm);
+
+      //////////////////////////////////////////////////////////////////////
+      // Print results to stdout on MPI process 0.
+      //////////////////////////////////////////////////////////////////////
+
+      if (MyPID == 0) {
+	// It's rude to set the ostream flags without restoring their 
+	// original values when you're done.
+	std::ios_base::fmtflags originalFlags = cout.flags ();
+
+	// Set the flags on cout for nice neat output.
+	cout.setf (std::ios_base::right, std::ios_base::adjustfield);
+	cout << std::setw(16) << "Singular Value"
+	     << std::setw(20) << "Direct Residual"
+	     << endl;
+	cout << "------------------------------------------------------" << endl;
+	for (int i = 0; i < computedNumSingularValues; ++i) {
+	  cout << std::setw(16) << evals[i].realpart
+	       << std::setw(20) << directnrm[i] 
+	       << endl;
+	}  
+	cout << "------------------------------------------------------" << endl;
+
+	// Restore cout's original flags.
+	cout.flags (originalFlags);
+      }
+    }
+
+#ifdef EPETRA_MPI
+  MPI_Finalize() ;
+#endif
+  return 0;
+}
+
+
+std::pair< std::vector<Anasazi::Value<double> >, Teuchos::RCP<Epetra_MultiVector> >
+solve (const Teuchos::RCP<Epetra_Operator>& A, 
+       const Teuchos::RCP<Epetra_MultiVector>& startingVector,
+       const int numSingularValues)
+{
+  using Teuchos::ParameterList;
+  using Teuchos::RCP;
+  using Teuchos::rcp;
+  
+  const Epetra_Comm& Comm = A->Comm();
 
   // Set the data type of the matrix operator and multivectors.
   //
   // Anasazi solvers work with many different operator and multivector
-  // types.  You may use Epetra, Tpetra, or Thyra types directly, or
-  // even your own type.  If you use your own MV and OP types, you
-  // must either make them inherit from Anasazi::MultiVec
+  // types.  In general, you may use Epetra, Tpetra, or Thyra types
+  // directly, or even your own type.  If you use your own MV and OP
+  // types, you must either make them inherit from Anasazi::MultiVec
   // resp. Anasazi::Operator, or specialize the
   // Anasazi::MultiVecTraits and Anasazi::OperatorTraits traits
-  // classes for your MV and OP types.  Either of these options is
-  // about the same amount of effort.
-  typedef Epetra_MultiVector MV; // Anasazi::MultiVec<double> MV;
-  typedef Epetra_Operator OP; //  Anasazi::Operator<double> OP;
+  // classes for your MV and OP types.
+  //
+  // We choose MV and OP as we do below because of how we are solving
+  // the SVD.  Since we are solving it via A^T (A x) = (sigma)^2 x, we
+  // need to construct an operator that uses A to apply A^T * A.  The
+  // new operator is of type Anasazi::EpetraSymOp, which is-an
+  // Anasazi::Operator<double>.  As a result, in order to use the new
+  // operator in an Anasazi solver, we must set the template
+  // parameters to MV = Anasazi::MultiVec<double> and OP =
+  // Anasazi::Operator<double>.
+  typedef Anasazi::MultiVec<double> MV;
+  typedef Anasazi::Operator<double> OP;
 
   // The MultiVecTraits traits class maps from the Scalar and MV (see
   // above) types to a common set of operations on MV objects.  It is
@@ -260,34 +304,18 @@ main (int argc, char *argv[])
   typedef Anasazi::MultiVecTraits<double, MV> MVT;
   typedef Anasazi::OperatorTraits<double, MV, OP> OPT;
 
-  // Create a vector to be the solver's starting vector.
-  //
-  // The starting vector must have the same number of columns as the
-  // "Block Size" parameter's value.  In this case, the initial vector
-  // is in the domain of the matrix A, so it uses A's domain map as
-  // its map.
-  RCP<MV> initVec = rcp (new MV (A->OperatorDomainMap(), blockSize));
-
-  if (MyPID == 0)
-    cerr << "Built starting vector with " << blockSize << " column"
-	 << (blockSize != 1 ? "s" : "") << endl;
-
-  // Fill the initial vector with random data.
-  MVT::MvRandom (*initVec);
-
-  if (MyPID == 0)
-    cerr << "Randomized starting vector" << endl;
+  // Get solver parameters for Block Krylov-Schur.
+  RCP<ParameterList> plist = getParameterList (startingVector->NumVectors());
 
   // Create the operator that uses the matrix A to represent the A^T *
-  // A operator.  ATA does not copy the matrix A; it just keeps a
-  // pointer.  An Anasazi::EpetraSymOp "is-an" (inherits from)
-  // Epetra_Operator.
-  //RCP<OP> ATA = rcp (new Anasazi::EpetraSymOp (A));
+  // A operator.  ATA does not copy A; it just keeps a pointer.
+  RCP<OP> ATA = rcp (new Anasazi::EpetraSymOp (A));
 
-  RCP<OP> ATA = rcp (new EpetraSymOp (A));
-
-  if (MyPID == 0)
-    cerr << "Built ATA operator" << endl;
+  // As mentioned above, we must use MV = Anasazi::MultiVec<double>.
+  // However, our starting vector is an Epetra_MultiVector, not an
+  // Anasazi::MultiVec<double>.  Thus, we have to wrap it in an
+  // Anasazi::EpetraMultiVec, which is-an Anasazi::MultiVec<double>.
+  RCP<MV> initVec = createMultiVectorView (startingVector);
 
   // Create the object that holds the eigenvalue problem to solve.
   // The problem object is templated on the Scalar, MultiVector (MV),
@@ -295,15 +323,12 @@ main (int argc, char *argv[])
   RCP<Anasazi::BasicEigenproblem<double, MV, OP> > problem =
     rcp (new Anasazi::BasicEigenproblem<double, MV, OP> (ATA, initVec));
 
-  if (MyPID == 0)
-    cerr << "Built BasicEigenproblem" << endl;
-
   // Inform the eigenproblem that the operator (A^T * A) is symmetric.
   problem->setHermitian (true);
 
-  // Set the number of eigenvalues requested and the block size the
-  // solver should use.
-  problem->setNEV (nev);
+  // Set the number of eigenvalues (singular values, in this case) to
+  // compute.
+  problem->setNEV (numSingularValues);
 
   // Inform the eigenvalue problem that you are finished passing it
   // information.
@@ -311,25 +336,16 @@ main (int argc, char *argv[])
                       std::runtime_error,
                       "Failed to set the eigenvalue problem." );
 
-  if (MyPID == 0)
-    cerr << "Called setProblem()" << endl;
-
   // Initialize the Block Krylov-Schur solver.  The solver may fill in
   // the given parameter list with defaults for any parameters that
   // were not supplied.  Thus, you don't have to know all the
   // parameters, just those that matter to you.
   Anasazi::BlockKrylovSchurSolMgr<double, MV, OP> MySolverMgr (problem, *plist);
 
-  if (MyPID == 0)
-    cerr << "Built solution manager" << endl;
-
   // Solve the problem to the specified tolerance or number of iterations.
   Anasazi::ReturnType returnCode = MySolverMgr.solve();
 
-  if (MyPID == 0)
-    cerr << "Called solve()" << endl;
-
-  if (returnCode != Anasazi::Converged && MyPID==0) {
+  if (returnCode != Anasazi::Converged && Comm.MyPID() == 0) {
     cout << "The Anasazi solver's solve() routine returned Unconverged." 
          << endl;
   }
@@ -337,107 +353,44 @@ main (int argc, char *argv[])
   // Get the eigenvalues and eigenvectors from the eigenproblem.
   Anasazi::Eigensolution<double, MV> sol = problem->getSolution();
 
-  // Anasazi stores the eigenvalues of a real matrix as pairs of real
-  // values, using the Value struct.  Our operator A^T * A is
-  // symmetric, so the eigenvalues should all be real.  However,
-  // storing eigenvalues as (real, imaginary) pairs allows us to solve
-  // nonsymmetric problems as well.
-  std::vector<Anasazi::Value<double> > evals = sol.Evals;
-  int numev = sol.numVecs;
+  // sol.Evecs is-an Anasazi::EpetraMultiVec, which in turn is-an
+  // Epetra_MultiVector.  Cast it to Epetra_MultiVector so that the
+  // calling code knows how to deal with it.
+  using Teuchos::rcp_dynamic_cast;
+  RCP<Epetra_MultiVector> eigenvecs = 
+    rcp_dynamic_cast<Anasazi::EpetraMultiVec> (sol.Evecs);
 
-  if (numev > 0) {
-    //////////////////////////////////////////////////////////////////////
-    //
-    // Compute singular values/vectors and direct residuals.
-    //
-    //////////////////////////////////////////////////////////////////////    
+  // Return the eigenvalues and eigenvectors.  
+  return std::make_pair (sol.Evals, eigenvecs);
+}
 
-    // The singular values of the matrix A are the square roots of the
-    // eigenvalues of A^T * A.
-    if (MyPID==0) {
-      cout << "------------------------------------------------------" << endl;
-      cout << "Computed Singular Values: " << endl;
-      cout << "------------------------------------------------------" << endl;
-    }
-    for (i = 0; i < numev; ++i) {
-      // The operator A^T * A is symmetric, so the eigenvalues should
-      // all have zero imaginary parts.  We ignore the imaginary parts
-      // as a real.
-      evals[i].realpart = STS::squareroot (evals[i].realpart); 
-    }
 
-    //////////////////////////////////////////////////////////////////////
-    // Compute the left singular vectors: u_j = (Av)_j / sigma_j
-    //////////////////////////////////////////////////////////////////////
+Teuchos::RCP<Anasazi::MultiVec<double> >
+createMultiVectorView (const Teuchos::RCP<Epetra_MultiVector>& V)
+{
+  using Teuchos::rcp;
+  typedef Anasazi::MultiVecTraits<double, Epetra_MultiVector> MVT;
+  const int numVecs = MVT::GetNumberVecs (*V);
 
-    std::vector<double> tempnrm (numev), directnrm (numev);
+  // Creating a view of V requires telling Anasazi the indices of the
+  // columns of V to view.
+  //
+  // The current (10.6) release of Trilinos refers to a range of
+  // columns of a multivector using an std::vector of their
+  // (zero-based) column indices.  The development branch, and the
+  // next release, will also allow using a Teuchos::Range1D to refer
+  // to a range of columns of a multivector.
+  std::vector<int> index (numVecs);
+  for (int j = 0; j < numVecs; ++j)
+    index[j] = j;
 
-    // The multivectors Av and u are in the range of the operator A,
-    // so we have to create them using the row map of A.
-    MV Av (RowMap, numev), u (RowMap, numev);
-
-    // Make a view of the eigenvectors of interest.
-    //
-    // The current (10.6) release of Trilinos refers to a range of
-    // columns of a multivector using an std::vector of their
-    // (zero-based) column indices.  The development branch, and the
-    // next release, will also allow using a Teuchos::Range1D to refer
-    // to a range of columns of a multivector.
-    std::vector<int> index (numev);
-    for (i = 0; i < numev; ++i) { 
-      index[i] = i; 
-    }
-    // CloneView() produces a non-modifying ("const") view, so we have
-    // to store that view in a pointer that contains a "const MV"
-    // object.
-    RCP<const MV> evecs = MVT::CloneView (*(sol.Evecs), index);
-    OPT::Apply (*A, *evecs, Av); // Av = A * evecs
-    MVT::MvNorm (Av, tempnrm);   // tempnrm_j := || (Av)_j ||_2
-
-    Teuchos::SerialDenseMatrix<int,double> S (numev, numev);
-    for (i = 0; i < numev; ++i) { 
-      S(i,i) = one / tempnrm[i]; 
-    }
-    // u := Av * S + zero * u
-    MVT::MvTimesMatAddMv (one, Av, S, zero, u);
-
-    //////////////////////////////////////////////////////////////////////
-    // Compute direct residuals: || (Av - sigma*u)_j ||_2
-    //////////////////////////////////////////////////////////////////////
-
-    for (i = 0; i < numev; ++i) { 
-      S(i,i) = evals[i].realpart; 
-    }
-    // Av := -one * u * S + one * Av
-    //     = Av - u*S.
-    MVT::MvTimesMatAddMv (-one, u, S, one, Av);
-
-    // directnrm_j = || (Av)_j ||_2
-    MVT::MvNorm (Av, directnrm);
-
-    //////////////////////////////////////////////////////////////////////
-    // Print results to stdout on MPI process 0.
-    //////////////////////////////////////////////////////////////////////
-
-    if (MyPID==0) {
-      cout.setf (std::ios_base::right, std::ios_base::adjustfield);
-      cout << std::setw(16) << "Singular Value"
-           << std::setw(20) << "Direct Residual"
-           << endl;
-      cout << "------------------------------------------------------" << endl;
-      for (i=0; i<numev; ++i) {
-        cout << std::setw(16) << evals[i].realpart
-             << std::setw(20) << directnrm[i] 
-             << endl;
-      }  
-      cout << "------------------------------------------------------" << endl;
-    }
-  }
-
-#ifdef EPETRA_MPI
-  MPI_Finalize() ;
-#endif
-  return 0;
+  // Anasazi::EpetraMultiVec is-an Anasazi::MultiVec<double>.
+  //
+  // NOTE: If V is deleted, the view will no longer be valid.  Epetra
+  // views are not safe in that respect.  Tpetra views _are_ safe
+  // because the view holds an RCP to the original vector, preventing
+  // it from being deleted until after the view is deleted.
+  return rcp (new Anasazi::EpetraMultiVec (View, *V, index));
 }
 
 
@@ -457,9 +410,6 @@ buildSparseMatrix (const Epetra_Comm& Comm,
 
   // My MPI process rank.
   const int MyPID = Comm.MyPID();
-
-  if (MyPID == 0)
-    cerr << "Building the sparse matrix" << endl;
 
   // Get update list and number of local equations from newly created Map.
   const int NumMyRowElements = RowMap.NumMyElements ();
@@ -511,9 +461,6 @@ buildSparseMatrix (const Epetra_Comm& Comm,
                           << " of the matrix." );
     } // for i = 0...
     
-    if (MyPID == 0)
-      cerr << "Calling FillComplete" << endl;
-
     // Call FillComplete on the matrix.  Since the matrix isn't square,
     // we have to give FillComplete the domain and range maps, which in
     // this case are the column resp. row maps.
@@ -546,7 +493,6 @@ buildSparseMatrix (const Epetra_Comm& Comm,
     Comm.MaxAll (&info, &maxInfo, 1);
     TEST_FOR_EXCEPTION( minInfo != 0 || maxInfo != 0, std::runtime_error,
                         "Filling and assembling the sparse matrix failed." );
-    cerr << "Successfully built the sparse matrix" << endl;
   }
   
   
@@ -558,7 +504,7 @@ buildSparseMatrix (const Epetra_Comm& Comm,
 
 
 Teuchos::RCP<Teuchos::ParameterList> 
-getParameterList (const int nev, const int blockSize)
+getParameterList (const int blockSize)
 {
   using Teuchos::RCP;
   using Teuchos::rcp;
@@ -598,13 +544,9 @@ getParameterList (const int nev, const int blockSize)
   plist->set ("Convergence Tolerance", tol);
   // Tell Anasazi to print output for errors, warnings, timing
   // details, and the final summary of results.
-  plist->set ("Verbosity",  
-              Anasazi::Errors + 
-              Anasazi::Warnings + 
-              Anasazi::TimingDetails + 
-              Anasazi::FinalSummary);
+  plist->set ("Verbosity", Anasazi::Errors + Anasazi::Warnings + 
+              Anasazi::TimingDetails + Anasazi::FinalSummary);
 
-  cerr << "Constructed parameter list" << endl;
   return plist;
 }
 }}}
