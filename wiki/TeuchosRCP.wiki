@@ -1,4 +1,7 @@
 {{{
+//
+// Teuchos::RCP example.
+//
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_Version.hpp"
 
