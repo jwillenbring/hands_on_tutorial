@@ -1,3 +1,4 @@
+#summary Building an IFPACK preconditioner: Incomplete LU (ILU) factorization with overlapping Schwarz domain decomposition.
 {{{
 #include "Ifpack_ConfigDefs.h"
 
