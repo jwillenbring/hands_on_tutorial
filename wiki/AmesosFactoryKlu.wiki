@@ -297,7 +297,7 @@ main(int argc, char *argv[])
 	   << "- Numeric factorization:        " << nfact_time << endl
 	   << "- Solving the linear system:    " << solve_time << endl
 	   << "- Converting the matrix:        " << mtx_conv_time << endl
-	   << "- Redistributing the matrix:    " << mxt_redist_time << endl
+	   << "- Redistributing the matrix:    " << mtx_redist_time << endl
 	   << "- Redistributing the vector(s): " << vec_redist_time << endl
 	   << endl;
     }
@@ -329,4 +329,5 @@ main(int argc, char *argv[])
 #endif
   return EXIT_SUCCESS;
 }
+
 }}}
