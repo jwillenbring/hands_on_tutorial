@@ -24,7 +24,10 @@
 #  include "Epetra_MpiComm.h"
 #else
 #  include "Epetra_SerialComm.h"
-#endif
+#endif 
+
+
+
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 #include "Epetra_RowMatrix.h"
@@ -50,8 +53,8 @@ public:
   // The constructor accepts an initial guess and the exact solution
   // vector (which we know because we created the example).  We make
   // deep copies of each.
-  SimpleProblemInterface (Epetra_Vector & InitialGuess, 
-                          Epetra_Vector & ExactSolution) :
+  SimpleProblemInterface (Epetra_Vector& InitialGuess, 
+                          Epetra_Vector& ExactSolution) :
     InitialGuess_ (new Epetra_Vector (InitialGuess)),
     ExactSolution_ (new Epetra_Vector (ExactSolution))
   {}
@@ -147,26 +150,35 @@ main (int argc, char **argv)
 
   // The example problem is so small that we must run it on only one
   // process.  However, people might run this example code in MPI with
-  // any number of processes.  We handle this by using a serial
-  // communicator (Epetra_SerialComm), and quieting all processes but
+  // any number of processes.  We handle this by using a communicator
+  // containing only one MPI process, and quieting all processes but
   // Proc 0 (with respect to MPI_COMM_WORLD).
   if (CommWorld.MyPID() == 0)
     {
+#ifdef HAVE_MPI
+      Epetra_MpiComm Comm (MPI_COMM_SELF);
+#else
       Epetra_SerialComm Comm;
+#endif
 
       // Linear map for the 2 global elements.
       Epetra_Map Map (2, 0, Comm);
 
       // Build up initial guess and exact solution vectors.
-      RCP<Epetra_Vector> ExactSolution = rcp (new Epetra_Vector (Map));
+      Epetra_Vector ExactSolution (Map);
       ExactSolution[0] = sqrt (0.5 * (sqrt (5.0) - 1));
       ExactSolution[1] = 0.5 * (sqrt (5.0) - 1);
 
-      RCP<Epetra_Vector> InitialGuess = rcp (new Epetra_Vector (Map));
+      Epetra_Vector InitialGuess (Map);
       InitialGuess[0] = 0.5;
       InitialGuess[1] = 0.5;
 
-      // Set up the problem interface.
+      // Set up the problem interface.  Your application will define
+      // its own problem interface.  SimpleProblemInterface is our
+      // example interface, which you can use as a model.
+      // 
+      // Our SimpleProblemInterface makes a deep copy of the initial
+      // guess and exact solution vectors.
       RCP<SimpleProblemInterface> interface = 
 	rcp (new SimpleProblemInterface (InitialGuess, ExactSolution));
 
@@ -187,13 +199,22 @@ main (int argc, char **argv)
       printParams.set ("MyPID", Comm.MyPID ()); 
       printParams.set ("Output Precision", 3);
       printParams.set ("Output Processor", 0);
-      printParams.set ("Output Information", 
-		       NOX::Utils::OuterIteration + 
-		       NOX::Utils::OuterIterationStatusTest + 
-		       NOX::Utils::InnerIteration +
-		       NOX::Utils::Parameters + 
-		       NOX::Utils::Details + 
-		       NOX::Utils::Warning);
+
+      // Set verbose=true to see a whole lot of intermediate status
+      // output, during both linear and nonlinear iterations.
+      const bool verbose = false;
+      if (verbose) {
+	printParams.set ("Output Information", 
+			 NOX::Utils::OuterIteration + 
+			 NOX::Utils::OuterIterationStatusTest + 
+			 NOX::Utils::InnerIteration +
+			 NOX::Utils::Parameters + 
+			 NOX::Utils::Details + 
+			 NOX::Utils::Warning);
+      } else {
+	printParams.set ("Output Information", NOX::Utils::Warning);
+      }
+
       //
       // Set the nonlinear solver parameters.
       //
@@ -330,8 +351,10 @@ main (int argc, char **argv)
   // Remember how we quieted all MPI processes but Proc 0 above?
   // Now we're back in MPI_COMM_WORLD again.
 #ifdef HAVE_MPI
+  // Make sure that everybody is done before calling MPI_Finalize().
+  MPI_Barrier (MPI_COMM_WORLD);
   MPI_Finalize();
 #endif
-  return(EXIT_SUCCESS);
+  return EXIT_SUCCESS;
 }
 }}}
