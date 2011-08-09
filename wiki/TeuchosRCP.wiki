@@ -1,3 +1,4 @@
+#summary Using Teuchos::RCP reference-counted pointers for safer memory management.
 {{{
 //
 // Teuchos::RCP example.
