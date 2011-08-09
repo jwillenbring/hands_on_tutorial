@@ -1,3 +1,8 @@
+#summary Using Anasazi with Epetra objects to solve a sparse eigenproblem using the Block Davidson method.
+
+Reference:
+  * A Comparison of Eigensolvers for Large-scale 3D Modal Analysis Using AMG-Preconditioned Iterative Methods, P. Arbenz, U. L. Hetmaniuk, R. B. Lehoucq, R. S. Tuminaro, _Internat. J. for Numer. Methods Engrg._ 64 (2005), pp. 204-236.
+
 {{{
 
 #include "Epetra_CrsMatrix.h"
