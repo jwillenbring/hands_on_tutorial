@@ -1,4 +1,4 @@
-Using Anasazi's Block Krylov-Schur iterative eigensolver to compute an approximate SVD of a nonsquare matrix A, using A^T A as the operator (variant of AnasaziBlockKrylovSchurSVD).
+#summary Using Anasazi's Block Krylov-Schur iterative eigensolver to compute an approximate SVD of a nonsquare matrix A, using A^T * A as the operator (variant of AnasaziBlockKrylovSchurSVD).
 {{{
 // This example shows how to use the block Krylov-Schur method to
 // compute a few of the largest singular values (sigma) and
