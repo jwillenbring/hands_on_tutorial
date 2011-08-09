@@ -481,11 +481,21 @@ main (int argc, char **argv)
     dynamic_cast<const NOX::Epetra::Group&> (solver->getSolutionGroup ());
 
   const Epetra_Vector& finalSolution = 
-    dynamic_cast<const NOX::Epetra::Vector&> (finalGroup.getX ()).getEpetraVector ();
+    dynamic_cast<const NOX::Epetra::Vector&> (finalGroup.getX
+    ()).getEpetraVector ();
+
+  // Add a barrier, just to make it less likely that the output 
+  // will get mixed up when running with multiple MPI processes.
+  Comm.Barrier ();
 
   if (Comm.MyPID() == 0) {
     cout << "Computed solution : " << endl;
   }
+
+  // Another barrier, so that the above header line appears before
+  // the rest of the vector data.
+  Comm.Barrier ();
+
   // Epetra objects know how to print themselves politely when
   // their operator<<(std::ostream&) is invoked on all MPI
   // process(es) in the communicator to which they are associated.
