@@ -274,21 +274,36 @@ main(int argc, char *argv[])
   // 4) Converting the matrix to the specific solver's input format
   //    (always exists if SymbolicFactorization() is called)
   const double mtx_conv_time = 
-    getParameter<double> (TimingsList, "Total solve time");
+    getParameter<double> (TimingsList, "Total matrix conversion time");
 
   // 5) Redistributing the matrix for each solve to the accepted
   //    format for the solver.  (If the matrix to factor is
   //    distributed over processors, and the specific solver does not
   //    know how to operate on distributed data, then Amesos has to
-  //    gather the matrix onto one node for the factorization.)
+  //    gather the matrix onto one node for the factorization.)  
+  //
+  //    This may not exist in TimingsList if the matrix didn't need to
+  //    be redistributed, which is why we use the two-argument form of
+  //    get() that returns the second argument if the parameter with
+  //    the given name doesn't exist.
   const double mtx_redist_time = 
     TimingsList.get ("Total matrix redistribution time", 0.0);
 
-  // 6) Redistributing the vector for each solve to the accepted
+  // 6) Redistributing the vector(s) for each solve to the accepted
   //    format for the solver.
+  //
+  //    This may not exist in TimingsList if the vector(s) didn't need
+  //    to be redistributed, which is why we use the two-argument form
+  //    of get() that returns the second argument if the parameter
+  //    with the given name doesn't exist.
   const double vec_redist_time = 
     TimingsList.get ("Total vector redistribution time", 0.0);
 
+  // Just for fun, print out the timings here.  Recall, though, that
+  // we've already asked Amesos to print out both timings (via the
+  // "PrintTiming" solver parameter) and "status" (via the
+  // "PrintStatus" solver parameter).  "Status" in this case means
+  // interesting details about the factorization.
   if (Comm.MyPID() == 0)
     {
       cout << endl 
@@ -329,5 +344,4 @@ main(int argc, char *argv[])
 #endif
   return EXIT_SUCCESS;
 }
-
 }}}
