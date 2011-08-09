@@ -1,3 +1,4 @@
+#summary Teuchos::ParameterList example.
 {{{
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_StandardParameterEntryValidators.hpp"
