@@ -1,80 +1,90 @@
 {{{
 //
-// Simple nonlinear problem.
-// This file shows how to solve the nonlinear problem
+// Simple exampe of solving the following nonlinear system of
+// equations
 //
 // x(0)^2 + x(1)^2 -1 = 0 
 //      x(1) - x(0)^2 = 0
 //
-// using NOX. Due to the very small dimension of the problem,
-// it should be run with one process.
-
+// using NOX (Trilinos' Nonlinear Object-Oriented Solutions package).
+// For more details and documentation, see the NOX web site:
+//
+// http://trilinos.sandia.gov/packages/nox/
+//
+// NOTE: Due to the very small dimension of the problem, it should be
+// run with only one MPI process.  We enforce this below by creating a
+// subcommunicator containing only MPI Proc 0, and running the problem
+// on that communicator, quieting all the others.
+//
 #include <iostream>
 
 #include "Epetra_ConfigDefs.h"
 #ifdef HAVE_MPI
-#include "mpi.h"
-#include "Epetra_MpiComm.h"
+#  include "mpi.h"
+#  include "Epetra_MpiComm.h"
 #else
-#include "Epetra_SerialComm.h"
+#  include "Epetra_SerialComm.h"
 #endif
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 #include "Epetra_RowMatrix.h"
 #include "Epetra_CrsMatrix.h"
+
 #include "NOX.H"
 #include "NOX_Epetra_Interface_Required.H"
 #include "NOX_Epetra_Interface_Jacobian.H"
 #include "NOX_Epetra_LinearSystem_AztecOO.H"
 #include "NOX_Epetra_Group.H"
 
-class SimpleProblemInterface : public NOX::Epetra::Interface::Required,
-
-                               public NOX::Epetra::Interface::Jacobian
+// ==========================================================================
+// SimpleProblemInterface, the problem interface in this example,
+// defines the interface between NOX and our nonlinear problem to
+// solve.
+// ==========================================================================
+class SimpleProblemInterface : 
+  public NOX::Epetra::Interface::Required,
+  public NOX::Epetra::Interface::Jacobian
 {
-
 public:
 
-  //! Constructor
-  SimpleProblemInterface( Epetra_Vector & InitialGuess, 
-                          Epetra_Vector & ExactSolution )
-  {
+  // The constructor accepts an initial guess and the exact solution
+  // vector (which we know because we created the example).  We make
+  // deep copies of each.
+  SimpleProblemInterface (Epetra_Vector & InitialGuess, 
+                          Epetra_Vector & ExactSolution) :
+    InitialGuess_ (new Epetra_Vector (InitialGuess)),
+    ExactSolution_ (new Epetra_Vector (ExactSolution))
+  {}
 
-    InitialGuess_ = new Epetra_Vector(InitialGuess);
-    ExactSolution_ = new Epetra_Vector(ExactSolution);
-  };
+  // Destructor.
+  ~SimpleProblemInterface() {}
 
-  //! Destructor
-  ~SimpleProblemInterface() 
-  {
-  };
-
-  bool computeF(const Epetra_Vector & x, Epetra_Vector & f,
-
-                NOX::Epetra::Interface::Required::FillType F )
+  // Compute f := F(x), where x is the input vector and f the output
+  // vector.
+  bool 
+  computeF (const Epetra_Vector & x, 
+	    Epetra_Vector & f,
+	    NOX::Epetra::Interface::Required::FillType F)
   {
     f[0] = x[0]*x[0] + x[1]*x[1] - 1.0;
-
     f[1] = x[1] - x[0]*x[0];
 
     return true;
   };
 
-  bool computeJacobian(const Epetra_Vector & x, Epetra_Operator & Jac)
+  bool 
+  computeJacobian(const Epetra_Vector & x, Epetra_Operator & Jac)
   {
-
-    Epetra_CrsMatrix * J;
-    J = dynamic_cast<Epetra_CrsMatrix*>(&Jac);
+    Epetra_CrsMatrix* J = dynamic_cast<Epetra_CrsMatrix*>(&Jac);
 
     if (J == NULL) {
-      cout << "*ERR* Problem_Interface::computeJacobian() - The supplied" << endl;
-
-      cout << "*ERR* Epetra_Operator is NOT an Epetra_CrsMatrix!" << endl;
-      throw;
+      std::ostringstream os;
+      os << "*** Problem_Interface::computeJacobian() - The supplied "
+	 << "Epetra_Operator object is NOT an Epetra_CrsMatrix! ***";
+      throw std::runtime_error (os.str());
     }
 
     std::vector<int> indices(2);
-
     std::vector<double> values(2);
 
     indices[0] = 0; 
@@ -82,228 +92,246 @@ public:
 
     // Row 0
     values[0] = 2.0 * x[0];
-
     values[1] = 2.0 * x[1];
-    J->ReplaceGlobalValues(0, 2, &values[0], &indices[0]);
+    J->ReplaceGlobalValues (0, 2, &values[0], &indices[0]);
 
     // Row 1
     values[0] = - 2.0 * x[0];
-
     values[1] = 1.0;
-    J->ReplaceGlobalValues(1, 2, &values[0], &indices[0]);
+    J->ReplaceGlobalValues (1, 2, &values[0], &indices[0]);
 
     return true;
   }
 
-  bool computePrecMatrix(const Epetra_Vector & x, Epetra_RowMatrix & M) 
+  bool 
+  computePrecMatrix (const Epetra_Vector & x, 
+		     Epetra_RowMatrix & M) 
   {
-
-    cout << "*ERR* SimpleProblem::preconditionVector()\n";
-    cout << "*ERR* don't use explicit preconditioning" << endl;
-
-    exit( 0 );
-    throw 1;
+    throw std::runtime_error ("*** SimpleProblemInterface does not implement "
+			      "computing an explicit preconditioner from an "
+			      "Epetra_RowMatrix ***");
   }  
 
-  bool computePreconditioner(const Epetra_Vector & x, Epetra_Operator & O)
+  bool 
+  computePreconditioner (const Epetra_Vector & x, 
+			 Epetra_Operator & O)
   {
-
-    cout << "*ERR* SimpleProblem::preconditionVector()\n";
-    cout << "*ERR* don't use explicit preconditioning" << endl;
-
-    exit( 0 );
-        throw 1;
+    throw std::runtime_error ("*** SimpleProblemInterface does not implement "
+			      "computing an explicit preconditioner from an "
+			      "Epetra_Operator ***");
   }  
 
 private:
-
-  Epetra_Vector * InitialGuess_;
-  Epetra_Vector * ExactSolution_;
-
+  Teuchos::RCP<Epetra_Vector> InitialGuess_;
+  Teuchos::RCP<Epetra_Vector> ExactSolution_;
 };
 
 // =========== //
 // main driver //
 // =========== //
 
-int main( int argc, char **argv )
+int 
+main (int argc, char **argv)
 {
+  using Teuchos::ParameterList;
+  using Teuchos::parameterList;
+  using Teuchos::RCP;
+  using Teuchos::rcp;
 
 #ifdef HAVE_MPI
   MPI_Init(&argc, &argv);
-  Epetra_MpiComm Comm(MPI_COMM_WORLD);
+  Epetra_MpiComm CommWorld (MPI_COMM_WORLD);
 #else
-
-  Epetra_SerialComm Comm;
+  Epetra_SerialComm CommWorld;
 #endif
 
-  if (Comm.NumProc() != 1) {
+  // The example problem is so small that we must run it on only one
+  // process.  However, people might run this example code in MPI with
+  // any number of processes.  We handle this by using a serial
+  // communicator (Epetra_SerialComm), and quieting all processes but
+  // Proc 0 (with respect to MPI_COMM_WORLD).
+  if (CommWorld.MyPID() == 0)
+    {
+      Epetra_SerialComm Comm;
 
-    if (Comm.MyPID() == 0)
-      cerr << "Please run this test with one process only!" << endl;
+      // Linear map for the 2 global elements.
+      Epetra_Map Map (2, 0, Comm);
 
-#ifdef HAVE_MPI
-    MPI_Finalize();
-#endif
-    exit(EXIT_SUCCESS);
-  }
+      // Build up initial guess and exact solution vectors.
+      RCP<Epetra_Vector> ExactSolution = rcp (new Epetra_Vector (Map));
+      ExactSolution[0] = sqrt (0.5 * (sqrt (5.0) - 1));
+      ExactSolution[1] = 0.5 * (sqrt (5.0) - 1);
 
-  // linear map for the 2 global elements
-  Epetra_Map Map(2,0,Comm);
+      RCP<Epetra_Vector> InitialGuess = rcp (new Epetra_Vector (Map));
+      InitialGuess[0] = 0.5;
+      InitialGuess[1] = 0.5;
 
-  // build up initial guess and exact solution
-  Epetra_Vector ExactSolution(Map);
-  ExactSolution[0] = sqrt(0.5*(sqrt(5.0)-1));
+      // Set up the problem interface.
+      RCP<SimpleProblemInterface> interface = 
+	rcp (new SimpleProblemInterface (InitialGuess, ExactSolution));
 
-  ExactSolution[1] = 0.5*(sqrt(5.0)-1);
+      // Create the top-level parameter list to control NOX.
+      //
+      // "parameterList" (lowercase initial "p") is a "nonmember
+      // constructor" that returns an RCP<ParameterList> with the
+      // given name.
+      RCP<ParameterList> params = parameterList ("NOX");
 
-  Epetra_Vector InitialGuess(Map);
+      // Tell the nonlinear solver to use line search.
+      params->set ("Nonlinear Solver", "Line Search Based");
 
-  InitialGuess[0] = 0.5;
-  InitialGuess[1] = 0.5;
+      //
+      // Set the printing parameters in the "Printing" sublist.
+      //
+      ParameterList& printParams = params->sublist ("Printing");
+      printParams.set ("MyPID", Comm.MyPID ()); 
+      printParams.set ("Output Precision", 3);
+      printParams.set ("Output Processor", 0);
+      printParams.set ("Output Information", 
+		       NOX::Utils::OuterIteration + 
+		       NOX::Utils::OuterIterationStatusTest + 
+		       NOX::Utils::InnerIteration +
+		       NOX::Utils::Parameters + 
+		       NOX::Utils::Details + 
+		       NOX::Utils::Warning);
+      //
+      // Set the nonlinear solver parameters.
+      //
 
-  // Set up the problem interface
-  Teuchos::RCP<SimpleProblemInterface> interface = 
-    Teuchos::rcp(new SimpleProblemInterface(InitialGuess,ExactSolution) );
+      // Line search parameters.
+      ParameterList& searchParams = params->sublist ("Line Search");
+      searchParams.set ("Method", "Full Step");
 
-  // Create the top level parameter list
-  Teuchos::RCP<Teuchos::ParameterList> nlParamsPtr =
-    Teuchos::rcp(new Teuchos::ParameterList);
+      // Parameters for picking the search direction.
+      ParameterList& dirParams = params->sublist ("Direction");
+      // Use Newton's method to pick the search direction.
+      dirParams.set ("Method", "Newton");
 
-  Teuchos::ParameterList& nlParams = *(nlParamsPtr.get());
+      // Parameters for Newton's method.
+      ParameterList& newtonParams = dirParams.sublist ("Newton");
+      newtonParams.set ("Forcing Term Method", "Constant");
 
-  // Set the nonlinear solver method
-  nlParams.set("Nonlinear Solver", "Line Search Based");
+      //
+      // Newton's method invokes a linear solver repeatedly.
+      // Set the parameters for the linear solver.
+      //
+      ParameterList& lsParams = newtonParams.sublist ("Linear Solver");
 
-  // Set the printing parameters in the "Printing" sublist
-  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+      // Use Aztec's implementation of GMRES, with at most 800
+      // iterations, a residual tolerance of 1.0e-4, with output every
+      // 50 iterations, and Aztec's native ILU preconditioner.
+      lsParams.set ("Aztec Solver", "GMRES");  
+      lsParams.set ("Max Iterations", 800);  
+      lsParams.set ("Tolerance", 1e-4);
+      lsParams.set ("Output Frequency", 50);    
+      lsParams.set ("Aztec Preconditioner", "ilu"); 
 
-  printParams.set("MyPID", Comm.MyPID()); 
-  printParams.set("Output Precision", 3);
+      //
+      // Build the Jacobian matrix.
+      //
+      RCP<Epetra_CrsMatrix> A = rcp (new Epetra_CrsMatrix (Copy, Map, 2));
+      {
+	std::vector<int> indices(2);
+	std::vector<double> values(2);
 
-  printParams.set("Output Processor", 0);
-  printParams.set("Output Information", 
-			NOX::Utils::OuterIteration + 
-			NOX::Utils::OuterIterationStatusTest + 
-			NOX::Utils::InnerIteration +
+	indices[0]=0; 
+	indices[1]=1;
 
-			NOX::Utils::Parameters + 
-			NOX::Utils::Details + 
-			NOX::Utils::Warning);
+	values[0] = 2.0 * InitialGuess[0];
+	values[1] = 2.0 * InitialGuess[1];
+	A.get()->InsertGlobalValues (0, 2, &values[0], &indices[0]);
 
-  // start definition of nonlinear solver parameters
-  // Sublist for line search 
-  Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
+	values[0] = -2.0 * InitialGuess[0];
+	values[1] = 1.0;
+	A.get()->InsertGlobalValues (1, 2, &values[0], &indices[0]);
 
-  searchParams.set("Method", "Full Step");
+	A.get()->FillComplete();
+      }  
 
-  // Sublist for direction
-  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+      // Our SimpleProblemInterface implements both Required and
+      // Jacobian, so we can use the same object for each.
+      RCP<NOX::Epetra::Interface::Required> iReq = interface;
+      RCP<NOX::Epetra::Interface::Jacobian> iJac = interface;
 
-  dirParams.set("Method", "Newton");
+      RCP<NOX::Epetra::LinearSystemAztecOO> linSys = 
+	rcp (new NOX::Epetra::LinearSystemAztecOO (printParams, lsParams,
+						   iReq, iJac, A, InitialGuess));
 
-  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
+      // Need a NOX::Epetra::Vector for constructor.
+      NOX::Epetra::Vector noxInitGuess (InitialGuess, NOX::DeepCopy);
+      RCP<NOX::Epetra::Group> group = 
+	rcp (new NOX::Epetra::Group (printParams, iReq, noxInitGuess, linSys));
 
-  newtonParams.set("Forcing Term Method", "Constant");
+      //
+      // Set up NOX's iteration stopping criteria ("status tests").
+      //
 
-  // Sublist for linear solver for the Newton method
-  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+      // ||F(X)||_2 / N < 1.0e-4, where N is the length of F(X).
+      //
+      // NormF has many options for setting up absolute vs. relative
+      // (scaled by the norm of the initial guess) tolerances, scaling
+      // or not scaling by the length of F(X), and choosing a
+      // different norm (we use the 2-norm here).
+      RCP<NOX::StatusTest::NormF> testNormF = 
+	rcp (new NOX::StatusTest::NormF (1.0e-4));
 
-  lsParams.set("Aztec Solver", "GMRES");  
-  lsParams.set("Max Iterations", 800);  
-  lsParams.set("Tolerance", 1e-4);
+      // At most 20 (nonlinear) iterations.
+      RCP<NOX::StatusTest::MaxIters> testMaxIters = 
+	rcp (new NOX::StatusTest::MaxIters (20));
 
-  lsParams.set("Output Frequency", 50);    
-  lsParams.set("Aztec Preconditioner", "ilu"); 
+      // Combine the above two stopping criteria (normwise
+      // convergence, and maximum number of nonlinear iterations).
+      // The result tells NOX to stop if at least one of them is
+      // satisfied.
+      RCP<NOX::StatusTest::Combo> combo = 
+	rcp (new NOX::StatusTest::Combo (NOX::StatusTest::Combo::OR, 
+					 testNormF, testMaxIters));
 
-  // Build the Jacobian matrix
+      // Create the NOX nonlinear solver.
+      RCP<NOX::Solver::Generic> solver = 
+	NOX::Solver::buildSolver (group, combo, params);
 
-  Teuchos::RCP<Epetra_CrsMatrix> A = 
-    Teuchos::rcp(new Epetra_CrsMatrix(Copy,Map,2));
-  {
+      // Solve the nonlinear system.
+      NOX::StatusTest::StatusType status = solver->solve();
 
-    std::vector<int> indices(2);
-    std::vector<double> values(2);
+      // Print the result.
+      //
+      // For this particular example, Comm contains only one MPI
+      // process.  However, we check for Comm.MyPID() == 0 here just
+      // so that the example is fully general.  (If you're solving a
+      // larger nonlinear problem, you could safely use the code
+      // below.)
+      if (Comm.MyPID() == 0) {
+	cout << endl << "-- Parameter List From Solver --" << endl;
+	solver->getList ().print (cout);
+      }
 
-    indices[0]=0; 
-    indices[1]=1;
+      // Get the Epetra_Vector with the final solution from the solver.
+      const NOX::Epetra::Group& finalGroup = 
+	dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
 
-    values[0] = 2.0 * InitialGuess[0];
+      const Epetra_Vector& finalSolution = 
+	dynamic_cast<const NOX::Epetra::Vector&> (finalGroup.getX ()).getEpetraVector ();
 
-    values[1] = 2.0 * InitialGuess[1];
-    A.get()->InsertGlobalValues(0, 2, &values[0], &indices[0]);
+      if (Comm.MyPID() == 0) {
+	cout << "Computed solution: " << endl;
+      }
+      // Epetra objects know how to print themselves politely when
+      // their operator<<(std::ostream&) is invoked on all MPI
+      // process(es) in the communicator to which they are associated.
+      cout << finalSolution;
 
-    values[0] = - 2.0 * InitialGuess[0];
-    values[1] = 1.0;
+      if (Comm.MyPID() == 0) {
+	cout << "Exact solution: " << endl;
+      }
+      cout << ExactSolution;
+    }
 
-    A.get()->InsertGlobalValues(1, 2, &values[0], &indices[0]);
-
-    A.get()->FillComplete();
-  }  
-
-  Teuchos::RCP<NOX::Epetra::Interface::Required> iReq = interface;
-
-  Teuchos::RCP<NOX::Epetra::Interface::Jacobian> iJac = interface;
-
-  Teuchos::RCP<NOX::Epetra::LinearSystemAztecOO> linSys = 
-    Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
-
-						      iReq,
-						      iJac, A, 
-						      InitialGuess));
-
-  // Need a NOX::Epetra::Vector for constructor
-  NOX::Epetra::Vector noxInitGuess(InitialGuess, NOX::DeepCopy);
-
-  Teuchos::RCP<NOX::Epetra::Group> grpPtr = 
-    Teuchos::rcp(new NOX::Epetra::Group(printParams, 
-					iReq, 
-					noxInitGuess, 
-					linSys)); 
-
-  // Set up the status tests
-
-  Teuchos::RCP<NOX::StatusTest::NormF> testNormF = 
-    Teuchos::rcp(new NOX::StatusTest::NormF(1.0e-4));
-
-  Teuchos::RCP<NOX::StatusTest::MaxIters> testMaxIters = 
-    Teuchos::rcp(new NOX::StatusTest::MaxIters(20));
-
-  // this will be the convergence test to be used
-  Teuchos::RCP<NOX::StatusTest::Combo> combo = 
-    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR, 
-					    testNormF, testMaxIters));
-
-  // Create the solver
-  Teuchos::RCP<NOX::Solver::Generic> solver = 
-    NOX::Solver::buildSolver(grpPtr, combo, nlParamsPtr);
-
-  // Solve the nonlinear system
-  NOX::StatusTest::StatusType status = solver->solve();
-
-  // Print the answer
-  cout << "\n" << "-- Parameter List From Solver --" << "\n";
-  solver->getList().print(cout);
-
-  // Get the Epetra_Vector with the final solution from the solver
-  const NOX::Epetra::Group & finalGroup = 
-    dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
-
-  const Epetra_Vector & finalSolution = 
-      (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
-
-  if( Comm.MyPID() == 0 ) cout << "Computed solution : " << endl;
-
-  cout << finalSolution;
-
-  if( Comm.MyPID() == 0 ) cout << "Exact solution : " << endl;
-
-  cout << ExactSolution;
-
+  // Remember how we quieted all MPI processes but Proc 0 above?
+  // Now we're back in MPI_COMM_WORLD again.
 #ifdef HAVE_MPI
   MPI_Finalize();
 #endif
   return(EXIT_SUCCESS);
 }
-
 }}}
