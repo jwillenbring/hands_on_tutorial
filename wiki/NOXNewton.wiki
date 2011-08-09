@@ -1,6 +1,6 @@
 {{{
 //
-// Simple exampe of solving the following nonlinear system of
+// Simple example of solving the following nonlinear system of
 // equations
 //
 // x(0)^2 + x(1)^2 -1 = 0 
