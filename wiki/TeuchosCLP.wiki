@@ -1,3 +1,4 @@
+#summary Using Teuchos::CommandLineProcessor to define and parse command-line arguments.
 {{{
 #include "Teuchos_CommandLineProcessor.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
