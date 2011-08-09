@@ -368,6 +368,10 @@ main (int argc, char **argv)
     rcp (new SimpleProblemInterface (Problem));
 
   // Create the top-level parameter list to control NOX.
+  //
+  // "parameterList" (lowercase initial "p") is a "nonmember
+  // constructor" that returns an RCP<ParameterList> with the
+  // given name.
   RCP<ParameterList> params = parameterList ("NOX");
 
   // Tell the nonlinear solver to use line search.
@@ -387,13 +391,12 @@ main (int argc, char **argv)
 		   NOX::Utils::Parameters + 
 		   NOX::Utils::Details + 
 		   NOX::Utils::Warning);
-
   //
   // Set the nonlinear solver parameters.
   //
 
-  // Linear search parameters.
-  Teuchos::ParameterList& searchParams = params->sublist ("Line Search");
+  // Line search parameters.
+  ParameterList& searchParams = params->sublist ("Line Search");
   searchParams.set ("Method", "More'-Thuente");
 
   // Parameters for picking the search direction.
@@ -402,13 +405,15 @@ main (int argc, char **argv)
   dirParams.set ("Method", "Newton");
 
   // Parameters for Newton's method.
-  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  newtonParams.set("Forcing Term Method", "Constant");
+  ParameterList& newtonParams = dirParams.sublist ("Newton");
+  newtonParams.set ("Forcing Term Method", "Constant");
   
   //
-  // Set linear solver parameters for Newton's method.
+  // Newton's method invokes a linear solver repeatedly.
+  // Set the parameters for the linear solver.
   //
-  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+  ParameterList& lsParams = newtonParams.sublist ("Linear Solver");
+
   // Use Aztec's implementation of GMRES, with at most 800 iterations,
   // a residual tolerance of 1.0e-4, with output every 50 iterations,
   // and Aztec's native ILU preconditioner.
@@ -420,6 +425,8 @@ main (int argc, char **argv)
 
   RCP<Epetra_CrsMatrix> A = Problem->GetMatrix();
 
+  // Our SimpleProblemInterface implements both Required and
+  // Jacobian, so we can use the same object for each.
   RCP<NOX::Epetra::Interface::Required> iReq = interface;
   RCP<NOX::Epetra::Interface::Jacobian> iJac = interface;
 
@@ -427,7 +434,7 @@ main (int argc, char **argv)
     rcp (new NOX::Epetra::LinearSystemAztecOO (printParams, lsParams,
 					       iReq, iJac, A, InitialGuess));
 
-  // Need a NOX::Epetra::Vector for constructor
+  // Need a NOX::Epetra::Vector for constructor.
   NOX::Epetra::Vector noxInitGuess (InitialGuess, NOX::DeepCopy);
   RCP<NOX::Epetra::Group> group = 
     rcp (new NOX::Epetra::Group (printParams, iReq, noxInitGuess, linSys));
@@ -471,14 +478,17 @@ main (int argc, char **argv)
 
   // Get the Epetra_Vector with the final solution from the solver.
   const NOX::Epetra::Group& finalGroup = 
-    dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
+    dynamic_cast<const NOX::Epetra::Group&> (solver->getSolutionGroup ());
 
   const Epetra_Vector& finalSolution = 
-    (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX ())).getEpetraVector ();
+    dynamic_cast<const NOX::Epetra::Vector&> (finalGroup.getX ()).getEpetraVector ();
 
   if (Comm.MyPID() == 0) {
     cout << "Computed solution : " << endl;
   }
+  // Epetra objects know how to print themselves politely when
+  // their operator<<(std::ostream&) is invoked on all MPI
+  // process(es) in the communicator to which they are associated.
   cout << finalSolution;
 
 #ifdef HAVE_MPI
