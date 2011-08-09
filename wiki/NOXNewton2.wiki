@@ -1,3 +1,4 @@
+#summary Using NOX with Epetra objects to solve a nonlinear PDE.
 {{{
 //
 // Simple example of solving the following nonlinear partial
