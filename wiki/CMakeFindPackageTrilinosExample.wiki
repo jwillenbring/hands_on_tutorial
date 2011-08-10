@@ -1,8 +1,8 @@
-#summary Simple CMake FIND_PACKAGE(Trilinos ...) example.
+#summary How to use CMake's FIND_PACKAGE(Trilinos ...) command to build your application with Trilinos.
 
 = Introduction =
 
-This page includes a CMakeLists.txt and a do-configure script that invokes CMake, in order to build your C++ application with Trilinos.  If you wish to use them, you should edit both scripts as described in their comments.  This example assumes basic familiarity with CMake.  The alternative is to use the Makefile.export mechanism.  If you use CMake with FIND_PACKAGE(Trilinos ...) as below, you don't need to use Makefile.export files.
+This page includes a CMakeLists.txt and a do-configure script that invokes CMake, in order to build your application with Trilinos.  If you wish to use them, you should edit both scripts as described in their comments.  This example assumes basic familiarity with CMake.  The alternative is to use the Makefile.export mechanism.  If you use CMake with FIND_PACKAGE(Trilinos ...) as below, you don't need to use Makefile.export files.
 
 = Details =
 
@@ -21,6 +21,7 @@ cmake_minimum_required(VERSION 2.8)
 
 # Your "do-configure" script that invokes CMake should set
 # TRILINOS_PATH to the path to your Trilinos install.
+# You do _not_ need to edit this line.
 FIND_PACKAGE(Trilinos PATHS ${TRILINOS_PATH}/lib/cmake/Trilinos ${TRILINOS_PATH})
 
 # If FIND_PACKAGE successfully found your Trilinos install, it will
@@ -56,47 +57,68 @@ ELSE()
 ENDIF()
 
 # If you haven't already set the C++ compiler, use the same compiler
-# that was used to build Trilinos on your machine.
+# that was used to build Trilinos on your machine.  You do _not_ need
+# to edit this line.
 IF(NOT CMAKE_CXX_COMPILER)
   MESSAGE("Setting CXX compiler.")
   SET(CMAKE_CXX_COMPILER ${Trilinos_CXX_COMPILER})
 ENDIF()
 
 # If you haven't already set the C compiler, use the same compiler
-# that was used to build Trilinos on your machine.
+# that was used to build Trilinos on your machine.  You do _not_ 
+# need to edit this line.
 IF(NOT CMAKE_C_COMPILER)
   MESSAGE("Setting C compiler.")
   SET(CMAKE_C_COMPILER ${Trilinos_C_COMPILER})
 ENDIF()
 
-# Replace TrilinosExample with the name of your project.
+#
+# EDIT HERE: Replace TrilinosExample with your project's name.
+#
 project(TrilinosExample)
 
-# Source files in your project.  This is a very simple project with
-# one source file, main.cpp.
+# 
+# EDIT HERE: 
+#
+# Source file(s) in your project.  Here, we include one source file, 
+# main.cpp, which contains the main() function.  You may also want to 
+# set HEADERS to the list of header files in your project, if there 
+# are any.
+#
 set(SOURCES 
   main.cpp
   )
 
+# 
+# EDIT HERE:
+#
 # Add to the header include path the current directory, Trilinos'
 # include directory, and the include directories of the third-party
 # libraries (TPLs) with which Trilinos was built.
+#
 include_directories(".")
 include_directories(${Trilinos_TPL_INCLUDE_DIRS})
 include_directories(${Trilinos_INCLUDE_DIRS})
 
 # Add to the library path Trilinos' library path, and the library
 # paths of the third-party libraries (TPLs) with which Trilinos was
-# built.
+# built.  
 link_directories(${Trilinos_LIBRARY_DIRS})
 link_directories(${Trilinos_TPL_LIBRARY_DIRS})
 
-# Set up the executable to build.
+# 
+# EDIT HERE: Change trilinosExample to the name of the executable
+# file that you want to build.  This line tells CMake which source
+# file(s) to use to build the executable.
+#
 add_executable(trilinosExample ${SOURCES})
 
-# Tell the linker to link the executable with the Trilinos libraries,
-# and with the third-party libraries (TPLs) with which Trilinos was
-# built.
+#
+# EDIT HERE: Change trilinosExample to the name of the executable
+# file, as above.  This line tells the linker to link the executable 
+# with the Trilinos libraries, and with the third-party libraries 
+# (TPLs) with which Trilinos was built.
+#
 target_link_libraries(trilinosExample
   ${Trilinos_LIBRARIES} 
   ${Trilinos_TPL_LIBRARIES}
