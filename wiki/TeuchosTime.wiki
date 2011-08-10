@@ -1,3 +1,5 @@
+#summary Teuchos timers example: create global timers, use TimeMonitor as a scope guard for timers, and summarize results on all MPI processes.
+
 {{{
 #include "Teuchos_TimeMonitor.hpp"
 #include "Teuchos_Version.hpp"
