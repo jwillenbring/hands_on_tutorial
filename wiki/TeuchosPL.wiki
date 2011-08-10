@@ -1,4 +1,4 @@
-#summary Set and get parameters and create validators in a Teuchos::ParameterList
+#summary Set and get parameters and create validators in a Teuchos::ParameterList, and use validators to validate a list.
 
 = Introduction =
 
