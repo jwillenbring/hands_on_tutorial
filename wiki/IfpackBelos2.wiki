@@ -1,3 +1,5 @@
+#summary Create an IFPACK ILU preconditioner, and use it with Belos' GMRES solver.
+
 {{{
 
 #include "Epetra_CrsMatrix.h"
