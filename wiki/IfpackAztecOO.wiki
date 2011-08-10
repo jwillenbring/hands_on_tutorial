@@ -1,3 +1,5 @@
+#summary Build an IFPACK ILU preconditioner, and use it with AztecOO's GMRES solver.
+
 {{{
 #include "Ifpack_ConfigDefs.h"
 
