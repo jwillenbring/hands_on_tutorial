@@ -1,3 +1,5 @@
+#summary Example of a simple Makefile for building an Epetra-based application, using the Makefile.export mechanism.
+
 {{{
 # ------------------------------------------------------------------------
 #
