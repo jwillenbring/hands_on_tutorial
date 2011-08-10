@@ -1,3 +1,5 @@
+#summary Teuchos' SerialDenseMatrix implements a nondistributed dense matrix.
+
 {{{
 #include "Teuchos_SerialDenseMatrix.hpp"
 #include "Teuchos_Version.hpp"
