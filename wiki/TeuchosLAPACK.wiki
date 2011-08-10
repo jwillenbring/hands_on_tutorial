@@ -1,3 +1,5 @@
+#summary Teuchos::LAPACK is a Scalar type - generic interface to LAPACK (Linear Algebra PACKage), which implements dense matrix factorizations and solvers.
+
 {{{
 #include "Teuchos_LAPACK.hpp"
 #include "Teuchos_SerialDenseMatrix.hpp"
