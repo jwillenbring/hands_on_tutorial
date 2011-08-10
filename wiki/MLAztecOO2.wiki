@@ -1,3 +1,5 @@
+#summary Use ML with nondefault options to build a multigrid preconditioner, and solve with AztecOO's CG.
+
 {{{
 // Use of ML as a preconditioner.  Set some non-default options.
 
