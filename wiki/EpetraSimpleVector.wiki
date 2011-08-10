@@ -1,3 +1,5 @@
+#summary Create Epetra distributed vectors, and perform some vector operations.
+
 {{{
 #include "Epetra_SerialComm.h"
 #include "Epetra_Map.h"
