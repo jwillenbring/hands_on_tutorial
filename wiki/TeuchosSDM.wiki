@@ -1,4 +1,4 @@
-#summary Teuchos' SerialDenseMatrix implements a nondistributed dense matrix.
+#summary Teuchos' SerialDenseMatrix implements a nondistributed dense matrix, stored in a way suitable for BLAS and LAPACK routines.
 
 {{{
 #include "Teuchos_SerialDenseMatrix.hpp"
