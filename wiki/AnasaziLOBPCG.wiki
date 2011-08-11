@@ -1,7 +1,7 @@
 #summary Using Anasazi with Epetra objects to solve a sparse eigenproblem using Locally Optimal Block-Preconditioned Conjugate Gradient (LOBPCG).
 
 References: 
-  # "LOBPCG, a stable implementation of Toward the optimal preconditioned eigensolver: Locally optimal block preconditioned conjugate gradient method", _SIAM J. Sci. Comput._ 23 (2001), pp. 517-541.
+  # "Toward the optimal preconditioned eigensolver: Locally optimal block preconditioned conjugate gradient method", _SIAM J. Sci. Comput._ 23 (2001), pp. 517-541.
   # "Basis selection in LOBPCG", U. L. Hetmaniuk and R. B. Lehoucq, _J. Comput. Physics_ 218 (2006), pp. 324-332.
 
 {{{
