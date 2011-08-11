@@ -2,7 +2,7 @@
 
 References: 
 
-  * "Toward the optimal preconditioned eigensolver: Locally optimal block preconditioned conjugate gradient method", _SIAM J. Sci. Comput._ 23 (2001), pp. 517-541.
+  * "Toward the optimal preconditioned eigensolver: Locally optimal block preconditioned conjugate gradient method", U. L. Hetmaniuk and R. B. Lehoucq, _SIAM J. Sci. Comput._ 23 (2001), pp. 517-541.
 
   * "Basis selection in LOBPCG", U. L. Hetmaniuk and R. B. Lehoucq, _J. Comput. Physics_ 218 (2006), pp. 324-332.
 
