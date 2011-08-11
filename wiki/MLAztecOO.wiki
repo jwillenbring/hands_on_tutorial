@@ -106,9 +106,9 @@ main (int argc, char *argv[])
     cout << "||b-Ax||_2 = " << residual << endl
          << "||x_exact - x||_2 = " << diff << endl
          << "Min total time (s) over " << numProcs << " processes: " 
-         << minElapsedTime() << endl
+         << minElapsedTime << endl
          << "Max total time (s) over " << numProcs << " processes: "
-         << maxElapsedTime() << endl;
+         << maxElapsedTime << endl;
   }
 
 #ifdef EPETRA_MPI
