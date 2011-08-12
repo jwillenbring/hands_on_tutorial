@@ -1,4 +1,4 @@
-#summary Use Teuchos::TimeMonitor to create and use Teuchos::Time timers
+#summary Use Teuchos::TimeMonitor to start and stop timers safely, manage your timers, and summarize results on all MPI processes
 
 = Introduction =
 
