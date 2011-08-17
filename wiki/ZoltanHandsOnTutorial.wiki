@@ -1,4 +1,5 @@
 #summary Zoltan Hands-on Tutorial Page
+#labels Featured
 = Zoltan Hands-on Tutorial =
 
 == First things first: ==
