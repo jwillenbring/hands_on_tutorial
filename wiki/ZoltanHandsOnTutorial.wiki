@@ -44,11 +44,15 @@
 
 == Now for some examples: ==
 
-  # *Partitioning using Zoltan*
-    * [ZoltanSimpleRCB Example that uses Recursive Coordinate Bisection in Zoltan to partion a mesh input]
-    * [ZoltanSimpleGraph Example that uses Graph Partioning in Zoltan to partition a graph input]
-    * [ZoltanSimplePHG Example that uses Hypergraph Partioning in Zoltan to partition a hypergraph input]
-    * [ZoltanRepartitionGraph Example that uses Graph Repartioning in Zoltan to repartition a graph input]
+  # *Load balancing using Zoltan*
+    * [ZoltanSimpleRCB Example that uses Recursive Coordinate Bisection in Zoltan to partition a mesh input]
+    * [ZoltanSimpleGraph Example that uses Graph Partitioning in Zoltan to partition a graph input]
+    * [ZoltanSimplePHG Example that uses Hypergraph Partitooning in Zoltan to partition a hypergraph input]
+    * [ZoltanGraphRepartition Example that uses Graph Repartioning in Zoltan to repartition a graph input]
+    * [ZoltanGraphMigrate Example that uses Graph Partitioning in Zoltan to partition a graph input and migrate the data] 
+
+  # *Matrix Partitioning using Isorropia*
+    * [IsorropiaMatrixPartition Example that partitions an Epetra matrix in Trilinos and redistributes the matrix]
 
 
 == Learning more: ==
@@ -56,3 +60,4 @@
   * [http://www.cs.sandia.gov/Zoltan/Zoltan.html Zoltan website].
   * [http://www.cs.sandia.gov/Zoltan/ug_html/ug.html  Zoltan User Guide].
   * [http://www.cs.sandia.gov/Zoltan/Zoltan_pubs.html Zoltan Related Papers and Presentations]
+  * [http://trilinos.sandia.gov/packages/docs/dev/packages/isorropia/doc/html/index.html Isorropia website]
