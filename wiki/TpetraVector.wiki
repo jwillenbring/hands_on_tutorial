@@ -27,5 +27,226 @@ You'll find documentation for Tpetra's Vector class [http://trilinos.sandia.gov/
 The following example follows the same initialization steps as the TpetraInit example.  It then creates a distributed Tpetra map and some Tpetra vectors, and does a few computations with the vectors.
 
 {{{
+//@HEADER
+// ************************************************************************
+// 
+//               Tpetra: Linear Algebra Services Package 
+//                 Copyright (2009) Sandia Corporation
+// 
+// Under terms of Contract DE-AC04-94AL85000, there is a non-exclusive
+// license for use of this work by or on behalf of the U.S. Government.
+// 
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation; either version 2.1 of the
+// License, or (at your option) any later version.
+//  
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//  
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+// USA
+// Questions? Contact Michael A. Heroux (maherou@sandia.gov) 
+// 
+// ************************************************************************
+//@HEADER
 
+//
+// Example: Creating distributed Tpetra vectors.
+//
+
+#include <Tpetra_DefaultPlatform.hpp>
+#include <Tpetra_Vector.hpp>
+#include <Tpetra_Version.hpp>
+#include <Teuchos_GlobalMPISession.hpp>
+#include <Teuchos_oblackholestream.hpp>
+
+void
+exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
+		std::ostream& out)
+{
+  using std::endl;
+  using Teuchos::RCP;
+  using Teuchos::rcp;
+
+  // Print out the Tpetra software version information.
+  out << Tpetra::version() << endl << endl;
+
+  //
+  // The first thing you might notice that makes Tpetra objects
+  // different than their Epetra counterparts, is that Tpetra objects
+  // take several template parameters.  These template parameters give
+  // Tpetra its features of being able to solve very large problems
+  // (of more than 2 billion unknowns) and to exploit intranode
+  // parallelism.
+  //
+  // It's common to begin a Tpetra application with some typedefs to
+  // make the code more concise and readable.  They also make the code
+  // more maintainable, since you can change the typedefs without
+  // changing the rest of the program.
+  //
+
+  // The "Scalar" type is the type of the values stored in the Tpetra
+  // objects.  Valid Scalar types include real or complex
+  // (std::complex<T>) floating-point types, or more exotic objects
+  // with similar behavior.
+  typedef double scalar_type;
+
+  // The "LocalOrdinal" (LO) type is the type of "local" indices.
+  // Both Epetra and Tpetra index local elements differently than
+  // global elements.  Tpetra exploits this so that you can use a
+  // shorter integer type for local indices.  This saves bandwidth
+  // when computing sparse matrix-vector products.
+  typedef int local_ordinal_type;
+
+  // The "GlobalOrdinal" (GO) type is the type of "global" indices.
+  typedef long global_ordinal_type;
+
+  // The Kokkos "Node" type describes the type of shared-memory
+  // parallelism that Tpetra will use _within_ an MPI process.  The
+  // available Node types depend on Trilinos' build options and the
+  // availability of certain third-party libraries.  Here are a few
+  // examples:
+  //
+  // Kokkos::SerialNode: No parallelism
+  //
+  // Kokkos::TPINode: Uses a custom Pthreads wrapper
+  //
+  // Kokkos::TBBNode: Uses Intel's Threading Building Blocks
+  //
+  // Kokkos::ThrustNode: Uses Thrust, a C++ CUDA wrapper,
+  //   for GPU parallelism.
+  //
+  // Using a GPU-oriented Node means that Tpetra objects that store a
+  // lot of data (vectors and sparse matrices, for example) will store
+  // that data on the GPU, and operate on it there whenever possible.
+  //
+  // Kokkos::DefaultNode gives you a default Node type.
+  typedef Kokkos::DefaultNode::DefaultNodeType node_type;
+
+  // Maps know how to convert between local and global indices, so of
+  // course they are templated on the local and global Ordinal types.
+  // They are also templated on the Kokkos Node type, because Tpetra
+  // objects that use Tpetra::Map are.  It's important not to mix up
+  // Maps for different Kokkos Node types.
+  typedef Tpetra::Map<local_ordinal_type, global_ordinal_type, node_type> map_type;
+
+  // Get a pointer to the default Kokkos Node.  We'll need this when
+  // creating the Tpetra::Map objects.
+  RCP<node_type> node = Kokkos::DefaultNode::getDefaultNode ();
+
+  //////////////////////////////////////////////////////////////////////
+  // Create some Tpetra Map objects
+  //////////////////////////////////////////////////////////////////////
+
+  //
+  // Like Epetra, Tpetra has local and global Maps.  Local maps
+  // describe objects that are replicated over all participating MPI
+  // processes.  Global maps describe distributed objects.  You can do
+  // imports and exports between local and global maps; this is how
+  // you would turn locally replicated objects into distributed
+  // objects and vice versa.
+  //
+
+  // The total (global, i.e., over all MPI processes) number of
+  // elements in the Map.  Tpetra's global_size_t type is an unsigned
+  // type and is at least 64 bits long on 64-bit machines.
+  const Tpetra::global_size_t numGlobalElements = comm->getSize() * 5;
+
+  // Tpetra can index the elements of a Map starting with 0 (C style),
+  // 1 (Fortran style), or any base you want.  We choose 0-based
+  // indices here.
+  const global_ordinal_type indexBase = 0;
+
+  // Construct a Map that puts approximately the same number of
+  // equations on each processor.  Pass in the Kokkos Node, so that
+  // this line of code will work with any Kokkos Node type.
+  //
+  // It's typical to create a const Map.  Maps should be considered
+  // immutable objects.  If you want a new data distribution, create a
+  // new Map.
+  RCP<const map_type > map = 
+    rcp (new map_type (numGlobalElements, indexBase, comm, 
+		       Tpetra::GloballyDistributed, node));
+
+  //////////////////////////////////////////////////////////////////////
+  // We have a map now, so we can create vectors.
+  //////////////////////////////////////////////////////////////////////
+
+  // Tpetra::Vector takes four template parameters, so it's helpful to
+  // start with a typedef.
+  typedef Tpetra::Vector<scalar_type, local_ordinal_type, 
+    global_ordinal_type, node_type> vector_type;
+
+  // Create a Vector using the Vector constructor.
+  // The one-argument version will fill in the vector with zeros.
+  RCP<vector_type> x = rcp (new vector_type (map));
+
+  // Copy constructor performs a deep copy.
+  RCP<vector_type> y = rcp (new vector_type (*x));
+
+  // Don't fill in z with zeros; leave its data uninitialized.
+  RCP<vector_type> z = rcp (new vector_type (map, false));
+
+  // Set the entries of z to (pseudo)random numbers.  Please don't
+  // consider this a good parallel pseudorandom number generator.
+  z->randomize ();
+
+  // Set the entries of x to all ones.
+
+  // Using the ScalarTraits class ensures that the line of code below
+  // will work for any valid Scalar type, even for complex numbers or
+  // more exotic fields.
+  x->putScalar (Teuchos::ScalarTraits<scalar_type>::one());
+
+  const scalar_type alpha = 3.14159;
+  const scalar_type beta = 2.71828;
+  const scalar_type gamma = -10;
+
+  // x = beta*x + alpha*z
+  x->update (alpha, *z, beta);
+
+  y->putScalar (42);
+  // y = gamma*y + alpha*x + beta*z
+  y->update (alpha, *x, beta, *z, gamma);
+  
+  // Compute the 2-norm of y.  
+  //
+  // The norm may have a different type than Scalar.  For example, if
+  // Scalar is complex, then the norm is real.  We can use the traits
+  // class to get the type of the norm.
+  typedef Teuchos::ScalarTraits<scalar_type>::magnitudeType magnitude_type;
+  const magnitude_type theNorm = y->norm2 ();
+  
+  // Print the norm of y on Proc 0.
+  out << "Norm of y: " << theNorm << endl;
+}
+
+//
+// The same main() driver routine as in the TpetraInit example.
+//
+int 
+main (int argc, char *argv[]) 
+{
+  using std::endl;
+  using Teuchos::RCP;
+
+  Teuchos::oblackholestream blackHole;
+  Teuchos::GlobalMPISession mpiSession (&argc, &argv, &blackHole);
+  RCP<const Teuchos::Comm<int> > comm = 
+    Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
+
+  const int myRank = comm->getRank();
+  std::ostream& out = (myRank == 0) ? std::cout : blackHole;
+
+  // We have a communicator and an output stream.
+  // Let's do something with them!
+  exampleRoutine (comm, out);
+
+  return 0;
+}
 }}}
