@@ -1,0 +1,31 @@
+#summary Creating distributed Tpetra vectors
+
+= Introduction =
+
+Tpetra::Vector represents a distributed 1-D dense vector.  This class is templated on the following:
+  * Scalar: The type of data stored in the vector
+  * LocalOrdinal: The integer type of local indices
+  * GlobalOrdinal: The integer type of global indices
+  * Node: The implementation of intranode (within a node) parallelism
+
+== Maps and distributed objects ==
+
+[http://trilinos.sandia.gov/packages/tpetra/ Tpetra], like [http://trilinos.sandia.gov/packages/epetra/ Epetra], uses objects called "maps" to encapsulate the details of distributing data over MPI processes.  Maps make data distribution into a first-class citizen.  You can think of them abstractly as representing a vector space.  If two vectors have the same map, it's like they come from the same vector space.  For example, you can add them together without performing communication.  If they come from different vector spaces, then you can't add the vectors together unless Tpetra knows that their spaces are isometric (in Tpetra language, that "the maps are compatible").
+
+You can find documentation for Tpetra's Map class [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html here].  
+
+== Differences between Tpetra and Epetra ==
+
+Tpetra's maps look different than Epetra's maps because of all the template parameters, but they work similiarly.  One difference is that Tpetra maps tend to be handled by RCP (reference-counted smart pointer) rather than copied or passed by const reference.   
+
+== Tpetra::Vector ==
+
+You'll find documentation for Tpetra's Vector class [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Vector.html here].  
+
+= Code example =
+
+The following example follows the same initialization steps as the TpetraInit example.  It then creates a distributed Tpetra map and some Tpetra vectors, and does a few computations with the vectors.
+
+{{{
+
+}}}
