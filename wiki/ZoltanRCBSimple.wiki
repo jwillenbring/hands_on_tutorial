@@ -16,7 +16,7 @@
 
 /* Name of file containing the mesh to be partitioned */
 
-static char *fname="mesh.txt";
+static char *fname="/var/www/html/trilinos/WebTrilinos_dev_MPI_install/include/mesh.txt";
 
 /* Structure to hold mesh data */
 
