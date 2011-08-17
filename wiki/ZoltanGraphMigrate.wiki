@@ -1,4 +1,4 @@
-#summary Simple Example to do graph partition and migration using Zoltan
+#summary Simple Example to do graph partition and migration using Zoltan. This is the same examples as in zoltan/examples/C/problemGraph.c
 
 {{{
 /**************************************************************
