@@ -4,8 +4,8 @@
 
 Tpetra::Vector represents a distributed 1-D dense vector.  This class is templated on the following:
   * Scalar: The type of data stored in the vector
-  * LocalOrdinal: The integer type of local indices
-  * GlobalOrdinal: The integer type of global indices
+  * !LocalOrdinal: The integer type of local indices
+  * !GlobalOrdinal: The integer type of global indices
   * Node: The implementation of intranode (within a node) parallelism
 
 == Maps and distributed objects ==
