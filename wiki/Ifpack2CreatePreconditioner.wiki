@@ -1,4 +1,15 @@
-#summary Create an Ifpack2 ILUT preconditioner from a Tpetra::CrsMatrix.
+#summary Create an Ifpack2 ILUT preconditioner from a
+ Tpetra::CrsMatrix.
+
+= Introduction = 
+
+Ifpack2 is a new package that computes incomplete factorization and overlapping domain decomposition preconditioners, for Tpetra sparse matrix objects.  The resulting incomplete factors fully exploit manycore optimizations, and can be used as preconditioners in the iterative linear solvers package Belos.
+
+= Requirements =
+
+Building this example requires using the development (10.7) branch of
+Trilinos, because it uses a new feature of !Teuchos::TimeMonitor.  If
+you would like to run this example with Trilinos 10.6, 
 
 = Code example =
 
@@ -178,6 +189,11 @@ createMatrix (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   typedef TpetraMatrixType matrix_type;
 
   // Fetch the timer for sparse matrix creation.
+  //
+  // If you are using Trilinos 10.6 instead of the development branch
+  // (10.7), just create a new timer here, and remove the bit in
+  // main() that creates a timer.
+  //
   RCP<Time> timer = TimeMonitor::lookupCounter ("Sparse matrix creation");
   if (timer.is_null())
     timer = TimeMonitor::getNewCounter ("Sparse matrix creation");
@@ -319,6 +335,10 @@ main (int argc, char *argv[])
   std::ostream& err = (myRank == 0) ? std::cerr : blackHole;
 
   // Make a timer for sparse matrix creation.
+  //
+  // If you are using Trilinos 10.6 instead of the development branch
+  // (10.7), just delete this line of code, and make the other change
+  // mentioned above.
   RCP<Time> sparseMatrixCreationTimer = 
     TimeMonitor::getNewCounter ("Sparse matrix creation");
 
