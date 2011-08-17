@@ -7,7 +7,7 @@
 
   * The Trilinos Project relies heavily upon its [http://trilinos.sandia.gov website] (click on logo above).
   * For future reference, a lot of information can be found on the [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
-  * Trilinos has a Tutorial document that you can find [http://trilinos.sandia.gov/Trilinos10.2Tutorial.pdf here].
+  * Trilinos has a Tutorial document that you can find [http://trilinos.sandia.gov/Trilinos10.6Tutorial.pdf here].
 
 == Let's dive in, you have two options: ==
 
@@ -15,6 +15,7 @@
     * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
     * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
     * Installed at St. John's University, MN.  The following versions of the C++ interface are available (the examples below use the C++ interface):
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Trilinos development branch (10.7), MPI-enabled]
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.6/c++/index.html Trilinos 10.6, MPI-enabled]
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-10.4/c++/index.html Trilinos 10.4, serial]
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/c++/index.html Trilinos 10.4, MPI-enabled]
