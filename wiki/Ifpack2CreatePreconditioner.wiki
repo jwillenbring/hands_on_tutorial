@@ -1,15 +1,14 @@
-#summary Create an Ifpack2 ILUT preconditioner from a
- Tpetra::CrsMatrix.
+#summary Create an Ifpack2 ILUT preconditioner from a Tpetra::CrsMatrix.
 
 = Introduction = 
 
-Ifpack2 is a new package that computes incomplete factorization and overlapping domain decomposition preconditioners, for Tpetra sparse matrix objects.  The resulting incomplete factors fully exploit manycore optimizations, and can be used as preconditioners in the iterative linear solvers package Belos.
+Ifpack2 is a new package that computes incomplete factorization and overlapping domain decomposition preconditioners, for [http://trilinos.sandia.gov/packages/tpetra/ Tpetra] sparse matrix objects.  The resulting incomplete factors fully exploit manycore optimizations, and can be used as preconditioners in the iterative linear solvers package [http://trilinos.sandia.gov/packages/belos Belos].
 
 = Requirements =
 
 Building this example requires using the development (10.7) branch of
 Trilinos, because it uses a new feature of !Teuchos::TimeMonitor.  If
-you would like to run this example with Trilinos 10.6, 
+you would like to run this example with Trilinos 10.6, there are two places in the file (with comments) that require a tiny bit of editing. 
 
 = Code example =
 
