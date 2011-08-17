@@ -10,11 +10,17 @@ Building this example requires using the development (10.7) branch of
 Trilinos, because it uses a new feature of !Teuchos::TimeMonitor.  If
 you would like to run this example with Trilinos 10.6, there are two places in the file (with comments) that require a tiny bit of editing.
 
-= Code example =
+= What you might like to tweak =
 
-== What you might like to tweak ==
+== The matrix to factor ==
 
 We include a very simple test matrix: A tridiagonal 1-D Laplacian.  You might like to experiment building a different matrix here.  If you are running Trilinos directly rather than through the web interface, you might like to try reading in a file.  Otherwise, you might like to make the sparsity pattern of the matrix more complicated, so that the incomplete factorization is not an exact LU factorization.
+
+== Incomplete factorization parameters ==
+
+It might be interesting to adjust parameters like the fill level, and see how the time to compute the factorization changes.
+
+= Code example =
 
 {{{
 //
