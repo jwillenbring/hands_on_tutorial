@@ -81,6 +81,9 @@
   # *Solve a nonlinear system using the [http://trilinos.sandia.gov/packages/nox NOX] package.*
     * [NOXNewton Solve a simple nonlinear system using NOX]
     * [NOXNewton2 Solve a simple nonlinear system using NOX]
+  # *Tpetra is the new manycore-aware linear algebra stack.*
+    * [TpetraInit Basic application initialization for the Tpetra stack]
+    * [TpetraVector Basic creation and manipulation of Tpetra vectors]
   # *[http://trilinos.sandia.gov/packages/pytrilinos PyTrilinos] tutorial materials.*
     * [http://trilinos.sandia.gov/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
     * [PyTrilinosExample Solve a simple 2D Laplace problem using PyTrilinos]
