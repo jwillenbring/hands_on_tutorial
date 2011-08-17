@@ -1,0 +1,58 @@
+#summary Zoltan Hands-on Tutorial Page
+= Zoltan Hands-on Tutorial =
+
+== First things first: ==
+
+  * The Zoltan library is a collection of data management services for parallel, unstructured, adaptive, and dynamic applications. It simplifies the load-balancing, data movement, unstructured communication, and memory usage difficulties that arise in dynamic applications such as adaptive finite-element methods, particle methods, and crash simulations.
+  * Zoltan can be downloaded as a standalone library from the [http://www.cs.sandia.gov/~web1400/1400_download.html]. Zoltan is also part of the Trilinos project. For information on the Trilinos project visit  [http://trilinos.sandia.gov website] (click on logo above).
+  * For future reference, a lot of information can be found on the [http://www.cs.sandia.gov/Zoltan/Zoltan.html Zoltan] page.
+
+== Let's dive in, you have two options: ==
+
+  * *!WebTrilinos*
+    * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
+    * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
+    * Installed at St. John's University, MN.  The following versions of the C++ interface are available (the examples below use the C++ interface):
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Trilinos development branch (10.7), MPI-enabled]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.6/c++/index.html Trilinos 10.6, MPI-enabled]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-10.4/c++/index.html Trilinos 10.4, serial]
+
+<wiki:comment>
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.6.1/c++/index.html Trilinos 10.7 (dev), CUDA-enabled]
+</wiki:comment>
+    * In addition to the C++ interfaces, a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/MatrixPortal/index.html Matrix Portal interface] and a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/python/index.html Python interface] are also available.
+    * Access to this site is password protected.  Login information will be given during live tutorials as needed.
+    * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
+  * *Download and build the examples on your machine*
+    # Download [http://trilinos.sandia.gov/download Trilinos]
+    # Download and install CMake (if not already done).  
+          * The latest CMake release can be downloaded from [http://www.cmake.org/cmake/resources/software.html here].
+    # Download and install Clapack (if you don't have LAPACK and BLAS already).  
+          * Get Clapack from [http://www.netlib.org/clapack/clapack-3.2.1-CMAKE.tgz here].  
+          * Use CMake to build Clapack.
+    # Build and install Trilinos. 
+          * An example script is [BuildScript here].  
+          * You can find other scripts in the Trilinos distribution Trilinos/sample_scripts directory.  
+          * You can also use the CMake gui, or the text-gui ccmake.
+    # Get Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
+          * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
+          * You can find the Makefile.export.package_name files once you have built and installed Trilinos.  
+          * They will be in the include directory of your installation directory.  
+          * Example: {{{TrilinosInstall/include/Makefile.export.Epetra.}}}
+    # Customize the Makefile to your situation (the example Makefile uses only the Epetra package, but Makefile.export.package_name files are available for all packages).
+    # Add Example code into a file called main.cpp and build away!
+
+== Now for some examples: ==
+
+  # *Partitioning using Zoltan*
+    * [ZoltanSimpleRCB Example that uses Recursive Coordinate Bisection in Zoltan to partion a mesh input]
+    * [ZoltanSimpleGraph Example that uses Graph Partioning in Zoltan to partition a graph input]
+    * [ZoltanSimplePHG Example that uses Hypergraph Partioning in Zoltan to partition a hypergraph input]
+    * [ZoltanRepartitionGraph Example that uses Graph Repartioning in Zoltan to repartition a graph input]
+
+
+== Learning more: ==
+
+  * [http://www.cs.sandia.gov/Zoltan/Zoltan.html Zoltan website].
+  * [http://www.cs.sandia.gov/Zoltan/ug_html/ug.html  Zoltan User Guide].
+  * [http://www.cs.sandia.gov/Zoltan/Zoltan_pubs.html Zoltan Related Papers and Presentations]
