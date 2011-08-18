@@ -34,13 +34,13 @@ isomorphism of two vector spaces.  Two Maps that are the same are
 always compatible.  The `isCompatible()` criterion is less
 restrictive, and also less expensive to check (although checking for
 compatibility requires a reduction on a Boolean over all processes in
-the Map's communicator).  Adding together two vectors with compatible
-but not the same Maps is legal.  It might not make mathematical sense,
-because entries of the vectors are ordered differently.  Adding
-together two vectors with the same Maps is both legal, and always
-mathematically correct.
+the Map's communicator).  
 
-`Map::isSameAs()` means:
+Adding together two vectors with compatible but not the same Maps is legal.  It might not make mathematical sense, depending on your application, because entries of the vectors are ordered differently.  Adding together two vectors with the same Maps is both legal, and always mathematically correct.
+
+Both sameness and compatibility are commutative Boolean relations:  for example, `map1.isCompatible(map2)` means `map2.isCompatible(map1)`.
+
+`Map::isSameAs()` specifically means:
   * the min and max global indices are the same
   * the global number of elements is the same
   * the maps are both distributed, or both not distributed
@@ -48,7 +48,7 @@ mathematically correct.
   * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
   * MPI processes in the Map's communicator that have the same MPI rank, own the same elements.  That is, their elements have the same IDs.
   
-`Map::isCompatible()` means:
+`Map::isCompatible()` specifically means:
   * the global number of elements is the same
   * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
 
