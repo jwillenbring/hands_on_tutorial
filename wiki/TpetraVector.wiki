@@ -67,7 +67,9 @@ above).  !Epetra_Map's `SameAs()` means about the same thing as Tpetra's `isSame
 == Tpetra::Vector ==
 
 You'll find documentation for Tpetra's Vector class
-[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Vector.html here].
+[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Vector.html here].  Vector inherits from Tpetra's [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1MultiVector.html MultiVector] class, which represents a collection of one or more vectors with the same Map.  Tpetra favors block algorithms, so it favors !MultiVectors over single Vectors.  A single Vector is just a !MultiVector containing one vector, with a few convenience methods.
+
+Vector's interface contains some common linear algebra operations for vector-vector operations (including those one would find in the BLAS 1 standard).  You are encouraged to try out the new `Tpetra::RTI` (Reduce Transform Interface) for implementing more complicated operations on Vectors.  (RTI is kind of like the C++ Standard Template Library's iterators, except for distributed objects and for parallel iteration.)
 
 = Code example =
 
