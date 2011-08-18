@@ -61,9 +61,9 @@ Tpetra maps tend to be handled by RCP (reference-counted smart
 pointer) rather than copied or passed by const reference.  Another
 difference is that !Epetra_Map inherits from !Epetra_BlockMap, whereas
 in Tpetra, Map and !BlockMap do not have an inheritance relationship.
-Finally, !Epetra_Map only has a !SameAs() predicate, whereas Tpetra's
+Finally, !Epetra_Map only has a `SameAs()` predicate, whereas Tpetra's
 Map class distinguishes between "compatibility" and "sameness" (see
-above).
+above).  !Epetra_Map's `SameAs()` means about the same thing as Tpetra's `isSameAs()`.
 
 == Tpetra::Vector ==
 
