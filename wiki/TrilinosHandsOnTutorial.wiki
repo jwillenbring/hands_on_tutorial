@@ -95,6 +95,7 @@ Some examples don't work with the web tutorial, since they read from files.  You
     * example_DivLSFEM.cpp: driver for the same system with normal boundary condition and div-conforming elements
     * example_Poisson.cpp: solving the Poisson equation using a Galerkin finite element method
 
+For [http://trilinos.sandia.gov/packages/belos Belos'] Recycling GMRES (GCRODR) solver, there are examples in `packages/belos/epetra/example/GCRODR/PrecGCRODREpetraExFile.cpp` and `GCRODREpetraExFile.cpp`.  These examples use the sherman5.hb matrix, which is included in the `/packages/belos/epetra/example/GCRODR` directory with the Trilinos distribution.
 
 == Learning more: ==
 
