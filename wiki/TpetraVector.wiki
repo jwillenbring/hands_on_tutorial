@@ -23,8 +23,7 @@ vector spaces are isomorphic (in Tpetra language, that "the maps are
 compatible").
 
 You can find documentation for Tpetra's Map class
-[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html
-here].
+[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html here].
 
 == Map compatibility ==
 
@@ -48,14 +47,11 @@ mathematically correct.
   * the maps have the same index base
   * MPI processes in the Map's communicator that have 
     the same MPI rank, own the same number of elements.
-  * MPI processes in the Map's communicator that have 
-    the same MPI rank, own the same elements.  That is,
-    their elements have the same IDs.
+  * MPI processes in the Map's communicator that have the same MPI rank, own the same elements.  That is, their elements have the same IDs.
   
 `Map::isCompatible()` means:
   * the global number of elements is the same
-  * MPI processes in the Map's communicator that have 
-    the same MPI rank, own the same number of elements.
+  * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
 
 
 == Differences between Tpetra and Epetra ==
