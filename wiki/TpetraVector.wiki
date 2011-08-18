@@ -22,8 +22,7 @@ then you can't add the vectors together unless Tpetra knows that their
 vector spaces are [https://secure.wikimedia.org/wikipedia/en/wiki/Isomorphism isomorphic] (in Tpetra language, that "their Maps are
 compatible").
 
-You can find documentation for Tpetra's Map class
-[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html here].
+You can find documentation for Tpetra's Map class [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html here].
 
 == Map compatibility ==
 
@@ -68,8 +67,7 @@ above).  !Epetra_Map's `SameAs()` means about the same thing as Tpetra's `isSame
 == Tpetra::Vector ==
 
 You'll find documentation for Tpetra's Vector class
-[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Vector.html
-here].
+[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Vector.html here].
 
 = Code example =
 
