@@ -88,6 +88,13 @@
     * [http://trilinos.sandia.gov/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
     * [PyTrilinosExample Solve a simple 2D Laplace problem using PyTrilinos]
 
+== Other examples ==
+
+Some examples don't work with the web tutorial, since they read from files.  You can try them out by downloading Trilinos and looking in the examples in the source tree.  For example, the [http://trilinos.sandia.gov/packages/intrepid Intrepid] discretizations package has examples in the `packages/trilinoscouplings/examples/scaling/` directory.  The following might be of interest:
+    * !example_CurlLSFEM.cpp: driver for solving div-curl first order system in 3D with tangential boundary condition using curl-conforming elements
+    * !example_DivLSFEM.cpp: driver for the same system with normal boundary condition and div-conforming elements
+    * !example_Poisson.cpp: solving the Poisson equation using a Galerkin finite element method
+
 
 == Learning more: ==
 
