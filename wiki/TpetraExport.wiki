@@ -1,5 +1,16 @@
 #summary Tpetra parallel data distribution, using Maps and Export
 
+= Introduction =
+
+The TpetraVector example introduces and describes 
+[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html Tpetra's Map class], 
+which is Tpetra's representation of a data distribution.  This example
+builds on that by showing how to use Maps and Tpetra's 
+[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Export.html Export class]
+to redistribute data.  In this case, we build a sparse matrix on one MPI 
+process, and redistribute it to a sparse matrix stored in block row 
+fashion, with an equal number of rows per process.
+
 = Code example =
 
 {{{
