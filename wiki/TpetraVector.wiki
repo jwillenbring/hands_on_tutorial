@@ -1,4 +1,4 @@
-#summary Creating distributed Tpetra vectors
+#summary Create Tpetra Maps and (distributed) Vectors
 
 = Introduction =
 
@@ -19,7 +19,7 @@ two vectors have the same map, it's like they come from the same
 vector space.  For example, you can add them together without
 performing communication.  If they come from different vector spaces,
 then you can't add the vectors together unless Tpetra knows that their
-vector spaces are isomorphic (in Tpetra language, that "the maps are
+vector spaces are [https://secure.wikimedia.org/wikipedia/en/wiki/Isomorphism isomorphic] (in Tpetra language, that "their Maps are
 compatible").
 
 You can find documentation for Tpetra's Map class
@@ -78,34 +78,6 @@ TpetraInit example.  It then creates two distributed Tpetra maps and
 some Tpetra vectors, and does a few computations with the vectors.
 
 {{{
-//@HEADER
-// ************************************************************************
-// 
-//               Tpetra: Linear Algebra Services Package 
-//                 Copyright (2009) Sandia Corporation
-// 
-// Under terms of Contract DE-AC04-94AL85000, there is a non-exclusive
-// license for use of this work by or on behalf of the U.S. Government.
-// 
-// This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as
-// published by the Free Software Foundation; either version 2.1 of the
-// License, or (at your option) any later version.
-//  
-// This library is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//  
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-// USA
-// Questions? Contact Michael A. Heroux (maherou@sandia.gov) 
-// 
-// ************************************************************************
-//@HEADER
-
 //
 // Example: Creating distributed Tpetra vectors.
 //
@@ -121,6 +93,8 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
 		std::ostream& out)
 {
   using std::endl;
+  using Teuchos::Array;
+  using Teuchos::ArrayView;
   using Teuchos::RCP;
   using Teuchos::rcp;
 
@@ -176,7 +150,11 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   // lot of data (vectors and sparse matrices, for example) will store
   // that data on the GPU, and operate on it there whenever possible.
   //
-  // Kokkos::DefaultNode gives you a default Node type.
+  // Kokkos::DefaultNode gives you a default Node type.  It may be
+  // different, depending on Trilinos' build options.  Currently, for
+  // example, building Trilinos with Pthreads enabled gives you
+  // Kokkos::TPINode by default.  That means your default Node is a
+  // parallel node!
   typedef Kokkos::DefaultNode::DefaultNodeType node_type;
 
   // Maps know how to convert between local and global indices, so of
@@ -187,7 +165,12 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   typedef Tpetra::Map<local_ordinal_type, global_ordinal_type, node_type> map_type;
 
   // Get a pointer to the default Kokkos Node.  We'll need this when
-  // creating the Tpetra::Map objects.
+  // creating the Tpetra::Map objects.  
+  //
+  // Currently, if you want a node of a different type, you have to
+  // instantiate it explicitly.  We are moving to a model whereby you
+  // template your entire program on the Node type, and the system
+  // gives you the appropriate Node instantiation.
   RCP<node_type> node = Kokkos::DefaultNode::getDefaultNode ();
 
   //////////////////////////////////////////////////////////////////////
@@ -206,42 +189,100 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   // The total (global, i.e., over all MPI processes) number of
   // elements in the Map.  Tpetra's global_size_t type is an unsigned
   // type and is at least 64 bits long on 64-bit machines.
+  //
+  // For this example, we scale the global number of elements in the
+  // Map with the number of MPI processes.  That way, you can run this
+  // example with any number of MPI processes and every process will
+  // still have a positive number of elements.
   const Tpetra::global_size_t numGlobalElements = comm->getSize() * 5;
 
   // Tpetra can index the elements of a Map starting with 0 (C style),
-  // 1 (Fortran style), or any base you want.  We choose 0-based
-  // indices here.
+  // 1 (Fortran style), or any base you want.  1-based indexing is
+  // handy when interfacing with Fortran.  We choose 0-based indexing
+  // here.
   const global_ordinal_type indexBase = 0;
 
-  // Construct a Map that puts approximately the same number of
-  // equations on each processor.  Pass in the Kokkos Node, so that
-  // this line of code will work with any Kokkos Node type.
+  // Construct a Map that puts the same number of equations on each
+  // processor.  Pass in the Kokkos Node, so that this line of code
+  // will work with any Kokkos Node type.
   //
   // It's typical to create a const Map.  Maps should be considered
   // immutable objects.  If you want a new data distribution, create a
   // new Map.
-  RCP<const map_type > map = 
+  RCP<const map_type> contigMap = 
     rcp (new map_type (numGlobalElements, indexBase, comm, 
 		       Tpetra::GloballyDistributed, node));
 
+  // contigMap is contiguous by construction.
+  TEST_FOR_EXCEPTION(! contigMap->isContiguous(), std::logic_error,
+		     "The supposedly contiguous Map isn't contiguous.");
+
+  // Let's create a second Map.  It will have the same number of
+  // global elements per process, but will distribute them
+  // differently, in round-robin (1-D cyclic) fashion instead of
+  // contiguously.
+  RCP<const map_type> cyclicMap;
+  {
+    // We'll use the version of the Map constructor that takes, on
+    // each MPI process, a list of the global elements in the Map
+    // belonging to that process.  You can use this constructor to
+    // construct an overlapping (also called "not 1-to-1") Map, in
+    // which one or more elements are owned by multiple processes.  We
+    // don't do that here; we make a nonoverlapping (also called
+    // "1-to-1") Map.
+    Array<global_ordinal_type>::size_type numEltsPerProc = 5;
+    Array<global_ordinal_type> elementList (numEltsPerProc);
+
+    const int numProcs = comm->getSize();
+    const int myRank = comm->getRank();
+    for (Array<global_ordinal_type>::size_type k = 0; k < numEltsPerProc; ++k)
+      elementList[k] = myRank + k*numProcs;
+    
+    cyclicMap = rcp (new map_type (numGlobalElements, elementList, indexBase, 
+				   comm, node));
+  }
+
+  // If there's more than one MPI process in the communicator,
+  // then cyclicMap is definitely NOT contiguous.
+  TEST_FOR_EXCEPTION(comm->getSize() > 1 && cyclicMap->isContiguous(),
+		     std::logic_error, 
+		     "The cyclic Map claims to be contiguous.");
+
+  // contigMap and cyclicMap should always be compatible.  However, if
+  // the communicator contains more than 1 process, then contigMap and
+  // cyclicMap are NOT the same.
+  TEST_FOR_EXCEPTION(! contigMap->isCompatible (*cyclicMap),
+		     std::logic_error,
+		     "contigMap should be compatible with cyclicMap, "
+		     "but it's not.");
+  TEST_FOR_EXCEPTION(comm->getSize() > 1 && contigMap->isSameAs (*cyclicMap),
+		     std::logic_error,
+		     "contigMap should be compatible with cyclicMap, "
+		     "but it's not.");
+
   //////////////////////////////////////////////////////////////////////
-  // We have a map now, so we can create vectors.
+  // We have maps now, so we can create vectors.
   //////////////////////////////////////////////////////////////////////
 
-  // Tpetra::Vector takes four template parameters, so it's helpful to
-  // start with a typedef.
+  // Since Tpetra::Vector takes four template parameters, its type is
+  // long.  It's helpful to use a typedef.  C++0x's type inference
+  // feature is also useful.
   typedef Tpetra::Vector<scalar_type, local_ordinal_type, 
     global_ordinal_type, node_type> vector_type;
 
-  // Create a Vector using the Vector constructor.
-  // The one-argument version will fill in the vector with zeros.
-  RCP<vector_type> x = rcp (new vector_type (map));
+  // Create a Vector with the contiguous Map.  This version of the
+  // constructor will fill in the vector with zeros.
+  RCP<vector_type> x = rcp (new vector_type (contigMap));
 
-  // Copy constructor performs a deep copy.
+  // The copy constructor performs a deep copy.  
+  // x and y have the same Map.
   RCP<vector_type> y = rcp (new vector_type (*x));
 
-  // Don't fill in z with zeros; leave its data uninitialized.
-  RCP<vector_type> z = rcp (new vector_type (map, false));
+  // Create a Vector with the 1-D cyclic Map.  Calling the constructor
+  // with false for the second argument leaves the data uninitialized,
+  // so that you can fill it later without paying the cost of
+  // initially filling it with zeros.
+  RCP<vector_type> z = rcp (new vector_type (contigMap, false));
 
   // Set the entries of z to (pseudo)random numbers.  Please don't
   // consider this a good parallel pseudorandom number generator.
@@ -259,6 +300,9 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   const scalar_type gamma = -10;
 
   // x = beta*x + alpha*z
+  //
+  // This is a legal operation!  Even though the Maps of x and z are
+  // not the same, their Maps are compatible.
   x->update (alpha, *z, beta);
 
   y->putScalar (42);
