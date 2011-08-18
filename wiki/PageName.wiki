@@ -1,5 +1,9 @@
 #summary Epetra initialization
 
+= Introduction =
+
+This example shows how to initialize MPI for use in an Epetra program, and how to create a simple `Epetra_Map`.
+
 = Code example =
 
 {{{
