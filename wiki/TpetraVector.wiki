@@ -1,4 +1,4 @@
-#summary Create Tpetra Maps and (distributed) Vectors
+#summary Create Tpetra Maps and (distributed) Vectors: Includes extensive documentation
 
 = Introduction =
 
