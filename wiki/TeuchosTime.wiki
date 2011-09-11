@@ -18,12 +18,7 @@ summarizing results.  The `getNewCounter()` method returns a new
 In contrast, the `summarize()` method is a collective.  It finds a
 common subset of all timers (the intersection is the default) on all
 MPI processes that were created with `getNewCounter()`.  For all
-timers in the subset, it reports the min arithmetic mean, and max of
-all timers' elapsed time.  This sounds expensive, but we have
-implemented this in a reasonably scalable way.  The algorithm requires
-O(N (log N)(log P)) reductions, where N is the number of timers in the
-union of all timers over all MPI processes, and P is the total number
-of MPI processes.
+timers in the subset, it reports the minimum, arithmetic mean, and maximum of all timers' elapsed time.  This sounds expensive, but we have implemented this in a reasonably scalable way.  The algorithm requires O(N (log N)(log P)) reductions, where N is the number of timers in the union of all timers over all MPI processes, and P is the total number of MPI processes.
 
 You should avoid creating timers over and over again to time the same
 kind of operation (for example, repeated linear solves using the same
