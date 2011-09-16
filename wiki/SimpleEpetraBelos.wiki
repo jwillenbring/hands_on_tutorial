@@ -7,4 +7,4 @@ TBW: Construct simple linear problem with Epetra and use with Belos.  Include Op
 
 = Details =
 
-Build from EpetraPowerMethod and IfpackBelos2 examples:
+Build from EpetraPowerMethod and IfpackBelos2 examples.
