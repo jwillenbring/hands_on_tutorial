@@ -1,0 +1,10 @@
+#summary Very Simple Tpetra Belos Example.
+
+= Introduction =
+
+TBW: Construct simple linear problem with Epetra and use with Belos.  Include TBB, Pthreads, Thrust options.
+
+
+= Details =
+
+Build from TpetraPowerMethod and IfpackBelos2 examples.
