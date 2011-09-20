@@ -8,6 +8,7 @@
   * The Trilinos Project relies heavily upon its [http://trilinos.sandia.gov website] (click on logo above).
   * For future reference, a lot of information can be found on the [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
   * Trilinos has a Tutorial document that you can find [http://trilinos.sandia.gov/Trilinos10.6Tutorial.pdf here].
+  * The 2010 Trilinos User Group meeting included a video-recorded tutorial that uses the website.  Part 1 is [http://mediasiteson.sandia.gov/mediasite/Viewer/?peid=2c084ceb7cc24a0ba3b2c4b6f41069241d here].  Part 2 is [http://mediasiteson.sandia.gov/mediasite/Viewer/?peid=6a5bbebe7a9645c3a4a47f7f45d35d831d here].
 
 == Let's dive in, you have two options: ==
 
