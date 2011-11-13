@@ -55,20 +55,14 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   // Kokkos::ThrustNode: Uses Thrust, a C++ CUDA wrapper,
   //   for GPU parallelism.
   //
-  // Using a GPU-oriented Node means that Tpetra objects that store a
-  // lot of data (vectors and sparse matrices, for example) will store
-  // that data on the GPU, and operate on it there whenever possible.
-  //
-  // Kokkos::DefaultNode gives you a default Node type.  It may be
-  // different, depending on Trilinos' build options.  Currently, for
-  // example, building Trilinos with Pthreads enabled gives you
-  // Kokkos::TPINode by default.  That means your default Node is a
-  // parallel node!
   Teuchos::ParameterList params;
   params.set<int>("Num Threads",4);
   params.set<int>("Verbose",true);
+ 
+// Replace TBBNode in the following line with SerialNode, TPINode or ThrustNode as desired
   typedef Kokkos::TBBNode node_type;
-  RCP<node_type> node = rcp(new node_type(params));
+ 
+ RCP<node_type> node = rcp(new node_type(params));
 
   //  Set map type
   typedef Tpetra::Map<local_ordinal_type, global_ordinal_type, node_type> map_type;
