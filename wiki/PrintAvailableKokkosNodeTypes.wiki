@@ -1,3 +1,5 @@
+Tests for available nodes in the given Trilinos installation, then prints information about them.
+
 {{{
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_GlobalMPISession.hpp>
