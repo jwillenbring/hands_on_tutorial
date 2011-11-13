@@ -1,22 +1,33 @@
 #summary Trilinos Manycore Tutorial Page
 #sidebar TrilinosTutorialContents
 
-The Trilinos project is committed to efficient execution on all common computing platforms from laptops to leadership class systems.  Therefore, support for multicore and GPU compute nodes (which we collectively call manycore nodes) is essential.  Development of manycore capabilities requires a significant effort over a long span of time, especially since manycore architectures and programming models are still evolving rapidly.
+The Trilinos project is committed to efficient execution on all important computing platforms from laptops to leadership class systems.  Therefore, support for multicore and GPU compute nodes (which we collectively call manycore nodes) is essential.  Development of manycore capabilities requires a significant effort over a long span of time, especially since manycore architectures and programming models are still evolving rapidly.
 
 On this page we discuss current capabilities and and future plans, and provide some examples to illustrate how current Trilinos manycore capabilities can be used.
 
-== Current Capabilities ==
+== Current Capabilities (Trilinos 10.8, September 2011) ==
 
-Multicore and GPU compute nodes (which we collectively call manycore nodes) have been available for several years.  Even so, algorithms and software for these nodes are still evolving.  Presently Trilinos provides a foundation for writing and executing code on manycore-based computers.  Specifically we provide:
+Manycore compute nodes have been available for several years.  Even so, algorithms and software for these nodes are still evolving.  Presently Trilinos provides a core foundation for writing and executing code on manycore-based computers.  Specifically we provide:
 
-  * OpenMP support for Epetra.  Epetra is the original and still dominant collection of data classes for Trilinos.  Epetra can be compiled with OpenMP support enabled.  Turning this option on will enable threaded computation of sparse matrix multiplication, and all vector multivector computations.  It includes support for NUMA data placement.  Sparse triangular solves are presently NOT threaded.
+  * OpenMP support for Epetra.  Epetra is the original and still dominant collection of data classes for Trilinos.  Epetra can be compiled with OpenMP support enabled.  Turning this option on will enable threaded computation of sparse matrix multiplication, and all vector and multivector computations.  It includes support for NUMA data placement.  Sparse triangular solves are presently NOT threaded.
   * Pthreads, Intel Threading Building Blocks (TBB) and CUDA (via Thrust) support for Tpetra. Tpetra is a new data class collection that supports an extensible manycore node interface, as well as templated scalar and ordinal types.
+  * Manycore-enable iterative solvers for linear and eigen systems.  The Trilinos packages Belos and Anasazi work with both Epetra and Tpetra provided data classes and can therefore work on manycore nodes.  The preconditioner package Ifpack2, direct sparse solver package Amesos2 work with Tpetra, but do not have sophisticated manycore algorithms at this point.
 
 == Near-term future capabilities ==
 
+  * OpenMP support in Tpetra.
+  * ShyLU manycore preconditioner package.  A collection of sparse direct and incomplete factorization algorithms for tens to hundreds of cores.
+  * Muelu multilevel preconditioner package. Built on both Epetra and Tpetra, Muelu is the next generation of Trilinos/ML multilevel preconditioner capabilities.
+  * OpenCL node type.
+
 == Longer-term future capabilities ==
 
-== Composable with MPI ==
+  * Most of the existing capabilities in Trilinos have a focused research effort on algorithms and software design for manycore nodes.  Over the next five years we expect to complete the transition to a fully manycore enabled software stack.
+
+== Composable each other and with MPI ==
+
+  * All Trilinos capabilities are composable with each other and with MPI.  For example, it is straight forward to use MPI across nodes of a distributed memory system and use OpenMP, TBB, Pthreads and CUDA on the node.
+  * Furthermore, with Tpetra it is possible to create hybrid combinations of nodes.  In particular, we can compose MPI with threading on the node (Pthreads or TBB) and CUDA on the accelerator.
 
 == Let's dive in, you have two options: ==
 
