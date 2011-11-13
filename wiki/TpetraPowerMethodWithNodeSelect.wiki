@@ -1,18 +1,3 @@
-#summary Using Tpetra sparse matrix and dense vector objects to implement a simple iteration (the power method).
-
-= Introduction =
-
-This example is just like the Epetra power method example, but uses Tpetra objects in place of Epetra objects.  
-
-= Details =
-
-The most significant difference between Epetra and Tpetra sparse matrices, is that in order to modify the entries of a Tpetra::CrsMatrix once you have called fillComplete(), you must first call resumeFill().  Epetra_CrsMatrix has no corresponding ResumeFill() method, and you may modify the values of entries after FillComplete() has been called.  
-
-The reason for this difference is that Tpetra's fillComplete() may actually copy data into a different memory space (for example, from host CPU memory onto the discrete GPU's memory).  The values in the sparse matrix as well as its structure are stored in that memory space.  Calling resumeFill() signals Tpetra that you want to change either the values or the structure.
-
-= Example code =
-
-{{{
 //@HEADER
 // ************************************************************************
 // 
@@ -47,8 +32,10 @@ The reason for this difference is that Tpetra's fillComplete() may actually copy
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_GlobalMPISession.hpp>
 #include <Teuchos_oblackholestream.hpp>
+#include <Teuchos_DefaultSerialComm.hpp>
 
-#include "Tpetra_DefaultPlatform.hpp"
+#include <Kokkos_TPINode.hpp>
+
 #include "Tpetra_Version.hpp"
 #include "Tpetra_Map.hpp"
 #include "Tpetra_MultiVector.hpp"
@@ -79,8 +66,13 @@ main(int argc, char *argv[])
   typedef Teuchos::ScalarTraits<Scalar>::magnitudeType Magnitude;
 
   Teuchos::oblackholestream blackhole;
-  Teuchos::GlobalMPISession mpiSession (&argc,&argv,&blackhole);
-  RCP<const Teuchos::Comm<int> > comm = Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
+//  Teuchos::GlobalMPISession mpiSession (&argc,&argv,&blackhole);
+//  RCP<const Teuchos::Comm<int> > comm = Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
+  Teuchos::ParameterList params;
+   params.set<int>("Num Threads",4);
+   params.set<int>("Verbose",true);
+  RCP< Kokkos::TPINode> node = rcp(new Kokkos::TPINode(params));
+  RCP<Teuchos::Comm<int> > comm = rcp(new Teuchos::SerialComm<int>());
 
   size_t myRank = comm->getRank();
   size_t numProc = comm->getSize();
@@ -279,4 +271,3 @@ powerMethod (const Teuchos::RCP<const Tpetra::Operator<Scalar,Ordinal> > &A,
   }
   return lambda;
 }
-}}}
