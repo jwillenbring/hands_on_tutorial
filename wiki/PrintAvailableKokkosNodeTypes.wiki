@@ -2,7 +2,7 @@
 
 = Introduction =
 
-#summary This code prints the available Kokkos Node types on your configuration of Trilinos.  It also prints some additional configuration information.
+This code prints the available Kokkos Node types on your configuration of Trilinos.  It also prints some additional configuration information.
 
 {{{
 #include <Teuchos_RCP.hpp>
