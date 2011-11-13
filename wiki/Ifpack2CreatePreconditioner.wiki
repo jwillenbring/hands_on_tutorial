@@ -6,7 +6,7 @@ Ifpack2 is a new package that computes incomplete factorization and overlapping 
 
 = Requirements =
 
-Building this example requires using the development (10.7) branch of
+Building this example requires using the 10.8 release or later of
 Trilinos, because it uses a new feature of [http://trilinos.sandia.gov/packages/docs/dev/packages/teuchos/doc/html/classTeuchos_1_1TimeMonitor.html Teuchos::TimeMonitor].  If
 you would like to run this example with Trilinos 10.6, there are two places in the file (with comments) that require a tiny bit of editing.
 
