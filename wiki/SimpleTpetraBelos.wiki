@@ -2,9 +2,98 @@
 
 = Introduction =
 
-TBW: Construct simple linear problem with Epetra and use with Belos.  Include TBB, Pthreads, Thrust options.
+Construct simple linear problem with Tpetra and use with Belos.  Include TBB, Pthreads, Thrust options.
 
 
 = Details =
 
-Build from TpetraPowerMethod and IfpackBelos2 examples.
+{{{
+  ParameterList belosList;
+  belosList.set( "Block Size", blocksize );              // Blocksize to be used by iterative solver
+  belosList.set( "Maximum Iterations", maxiters );       // Maximum number of iterations allowed
+  belosList.set( "Convergence Tolerance", tol );         // Relative convergence tolerance requested
+  int verbLevel = Belos::Errors + Belos::Warnings;
+  if (debug) {
+    verbLevel += Belos::Debug;
+  }
+  if (verbose) {
+    verbLevel += Belos::TimingDetails + Belos::FinalSummary + Belos::StatusTestDetails;
+  }
+  belosList.set( "Verbosity", verbLevel );
+  if (verbose) {
+    if (frequency > 0) {
+      belosList.set( "Output Frequency", frequency );
+    }
+  }
+  //
+  // Construct an unpreconditioned linear problem instance.
+  //
+  Belos::LinearProblem<ST,MV,OP> problem( A, X, B );
+  bool set = problem.setProblem();
+  if (set == false) {
+    if (proc_verbose)
+      std::cout << std::endl << "ERROR:  Belos::LinearProblem failed to set up correctly!" << std::endl;
+    return -1;
+  }
+  //
+  // *******************************************************************
+  // *************Start the block CG iteration***********************
+  // *******************************************************************
+  //
+  Belos::BlockCGSolMgr<ST,MV,OP> solver( rcp(&problem,false), rcp(&belosList,false) );
+
+  //
+  // **********Print out information about problem*******************
+  //
+  if (proc_verbose) {
+    std::cout << std::endl << std::endl;
+    std::cout << "Dimension of matrix: " << NumGlobalElements << std::endl;
+    std::cout << "Number of right-hand sides: " << numrhs << std::endl;
+    std::cout << "Block size used by solver: " << blocksize << std::endl;
+    std::cout << "Max number of CG iterations: " << maxiters << std::endl; 
+    std::cout << "Relative residual tolerance: " << tol << std::endl;
+    std::cout << std::endl;
+  }
+  //
+  // Perform solve
+  //
+  Belos::ReturnType ret = solver.solve();
+  //
+  // Compute actual residuals.
+  //
+  bool badRes = false;
+  std::vector<MT> actual_resids( numrhs );
+  std::vector<MT> rhs_norm( numrhs );
+  MultiVector<ST,int> resid(map, numrhs);
+  OPT::Apply( *A, *X, resid );
+  MVT::MvAddMv( -one, resid, one, *B, resid );
+  MVT::MvNorm( resid, actual_resids );
+  MVT::MvNorm( *B, rhs_norm );
+  if (proc_verbose) {
+    std::cout<< "---------- Actual Residuals (normalized) ----------"<<std::endl<<std::endl;
+  }
+  for ( int i=0; i<numrhs; i++) {
+    MT actRes = actual_resids[i]/rhs_norm[i];
+    if (proc_verbose) {
+      std::cout<<"Problem "<<i<<" : \t"<< actRes <<std::endl;
+    }
+    if (actRes > tol) badRes = true;
+  }
+
+  if (ret!=Belos::Converged || badRes) {
+    if (proc_verbose) {
+      std::cout << "\nEnd Result: TEST FAILED" << std::endl;    
+    }
+    return -1;
+  }
+  //
+  // Default return value
+  //
+  if (proc_verbose) {
+    std::cout << "\nEnd Result: TEST PASSED" << std::endl;
+  }
+  return 0;
+  //
+} // end test_bl_cg_hb.cpp
+
+}}}
