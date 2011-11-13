@@ -29,13 +29,12 @@ Manycore compute nodes have been available for several years.  Even so, algorith
   * All Trilinos capabilities are composable with each other and with MPI.  For example, it is straight forward to use MPI across nodes of a distributed memory system and use OpenMP, TBB, Pthreads and CUDA on the node.
   * Furthermore, with Tpetra it is possible to create hybrid combinations of nodes.  In particular, we can compose MPI with threading on the node (Pthreads or TBB) and CUDA on the accelerator.
 
-== Two WebTrilinos Portals: ==
+== WebTrilinos Portal ==
 
-  * *!WebTrilinos*
     * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
     * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
     * Installed at St. John's University, MN.  For manycore experiments we will use the following portal which is compiled with Pthreads (TPI), TBB and Serial node types:
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-TBB-10.8.3/c++/index.html Trilinos 10.8, Pthreads, TBB enabled]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-TBB-10.8.3/c++/index.html Trilinos 10.8, Pthreads and TBB enabled]
 
     * Access to this site is password protected.  Login information will be given during live tutorials as needed.
  
@@ -43,6 +42,7 @@ Manycore compute nodes have been available for several years.  Even so, algorith
 
   # *Start with some tools using the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*
     * *Basic Support Tools*
+       * [PrintAvailableKokkosNodeTypes Detect which node types were enabled and which is the default.]
        * [TeuchosPL Build a parameter list (used to pass parameters to all Trilinos packages).]
        * [TeuchosRCP Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).]
        * [TeuchosCLP Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted [unhighlighted]]
