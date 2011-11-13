@@ -51,50 +51,22 @@ Manycore compute nodes have been available for several years.  Even so, algorith
        * [TeuchosBLAS Create a templated BLAS wrapper.]
        * [TeuchosLAPACK Create a templated LAPACK wrapper.]
        * [TeuchosSDM Create a templated serial, dense matrix.]**
-  # *Write a program using the [http://trilinos.sandia.gov/packages/epetra Epetra] package.*
-    * [EpetraSimpleVector Beginner: Construct some vectors and perform basic operations.]
-    * [EpetraPowerMethod Intermediate: Find the dominant eigenpair of a matrix using the power method.]**
-  # *Generate a linear system using the [http://trilinos.sandia.gov/packages/galeri Galeri] package.*
-    * [GaleriLinearSystem Generate a matrix, discretized 2D Laplacian on a Cartesian grid.]
-    * Try generating matrices for some different operators, the list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
-  # *Create an algebraic preconditioner using the [http://trilinos.sandia.gov/packages/ifpack  Ifpack] package.*
-    * [IfpackFactory Create a preconditioner using the Ifpack preconditioner factory.]
-    * Try generating different preconditioners:
-      * The preconditioners supported in the factory interface are: "IC", "ICT", "ILU", "ILUT", and "Amesos".
-      * The list of supported parameters for the factory is [http://trilinos.sandia.gov/packages/docs/dev/packages/ifpack/doc/html/index.html#ifp_params here].**
-  # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/aztecoo AztecOO] packages.*
-    * [IfpackAztecOO Solve a linear system _Ax=b_ using Ifpack and AztecOO]**
-  # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ml ML] and [http://trilinos.sandia.gov/packages/aztecoo AztecOO] packages.*
-    * [MLAztecOO Solve a linear system _Ax=b_ using ML(black-box) and AztecOO]**
-    * [MLAztecOO2 Solve a linear system _Ax=b_ using ML and AztecOO, but setting some multigrid options]
+  # *Write a program using the [http://trilinos.sandia.gov/packages/tpetra Tpetra] package.*
+    * [TpetraInit Basic application initialization for the Tpetra stack]
+    * [TpetraVector Basic creation and manipulation of Tpetra vectors]
+
   # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/belos Belos] packages.*
     * [IfpackBelos2 Solve a linear system _Ax=b_ using Ifpack and Belos]**
   # *Compute some eigenpairs using the [http://trilinos.sandia.gov/packages/anasazi Anasazi] package.*
     * [AnasaziBlockDavidson Compute the smallest eigenpairs of a discretized 2D Laplacian using the block Davidson solver.]
     * [AnasaziLOBPCG Compute the smallest eigenpairs of a discretized 2D Laplacian using the LOBPCG solver.]
     * [AnasaziBlockKrylovSchurSVD Compute the dominant singular values of a 2D discretization of a simple kernel using the block Krylov-Schur solver.]**
-  # *Solve a nonlinear system using the [http://trilinos.sandia.gov/packages/nox NOX] package.*
-    * [NOXNewton Solve a simple nonlinear system using NOX]
-    * [NOXNewton2 Solve a simple nonlinear system using NOX]
-  # *Tpetra is the new manycore-aware linear algebra stack.*
-    * [TpetraInit Basic application initialization for the Tpetra stack]
-    * [TpetraVector Basic creation and manipulation of Tpetra vectors]
-  # *[http://trilinos.sandia.gov/packages/pytrilinos PyTrilinos] tutorial materials.*
-    * [http://trilinos.sandia.gov/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
-    * [PyTrilinosExample Solve a simple 2D Laplace problem using PyTrilinos]
 
-== Other examples ==
-
-Some examples don't work with the web tutorial, since they read from files.  You can try them out by downloading Trilinos and looking in the examples in the source tree.  For example, the [http://trilinos.sandia.gov/packages/intrepid Intrepid] discretizations package has examples in the `packages/trilinoscouplings/examples/scaling/` directory.  The following might be of interest:
-    * example_CurlLSFEM.cpp: driver for solving div-curl first order system in 3D with tangential boundary condition using curl-conforming elements
-    * example_DivLSFEM.cpp: driver for the same system with normal boundary condition and div-conforming elements
-    * example_Poisson.cpp: solving the Poisson equation using a Galerkin finite element method
-
-For [http://trilinos.sandia.gov/packages/belos Belos'] Recycling GMRES (GCRODR) solver, there are examples in `packages/belos/epetra/example/GCRODR/PrecGCRODREpetraExFile.cpp` and `GCRODREpetraExFile.cpp`.  These examples use the sherman5.hb matrix, which is included in the `/packages/belos/epetra/example/GCRODR` directory with the Trilinos distribution.
 
 == Learning more: ==
 
   * [http://trilinos.sandia.gov Online reference documentation].
+  * [http://trilinos.sandia.gov/events/trilinos_user_group_2011/index.html Trilinos User Group Meeting (2011).]
   * [http://trilinos.sandia.gov/events/trilinos_user_group_2010/index.html Trilinos User Group Meeting (2010).]
   * [http://trilinos.sandia.gov/events/trilinos_user_group_2009/index.html Trilinos User Group Meeting (2009).]
   * [http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html Trilinos User Group Meeting (2008).]
