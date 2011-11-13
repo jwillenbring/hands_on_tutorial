@@ -1,5 +1,4 @@
 #summary Trilinos Manycore Tutorial Page
-#sidebar TrilinosTutorialContents
 
 The Trilinos project is committed to efficient execution on all important computing platforms from laptops to leadership class systems.  Therefore, support for multicore and GPU compute nodes (which we collectively call manycore nodes) is essential.  Development of manycore capabilities requires a significant effort over a long span of time, especially since manycore architectures and programming models are still evolving rapidly.
 
@@ -42,18 +41,17 @@ Manycore compute nodes have been available for several years.  Even so, algorith
 
   # *Start with some tools using the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*
     * *Basic Support Tools*
-       * [PrintAvailableKokkosNodeTypes Detect which node types were enabled and which is the default.]
        * [TeuchosPL Build a parameter list (used to pass parameters to all Trilinos packages).]
        * [TeuchosRCP Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).]
+       * [PrintAvailableKokkosNodeTypes Detect which node types were enabled and which is the default.]
+       * [TpetraVectorWithNodeSelect Simple Tpetra Vector example where Kokkos node type is explicitly selected.]
+       * [TpetraPowerMethodWithNodeSelect The Power Method using Tpetra and explicitly selected Kokkos node type.]
        * [TeuchosCLP Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted [unhighlighted]]
        * [TeuchosTime Build a time monitor (tool for timing individual methods or operations in a program).]
    * *Template Support Tools*
        * [TeuchosBLAS Create a templated BLAS wrapper.]
        * [TeuchosLAPACK Create a templated LAPACK wrapper.]
        * [TeuchosSDM Create a templated serial, dense matrix.]**
-  # *Write a program using the [http://trilinos.sandia.gov/packages/tpetra Tpetra] package.*
-    * [TpetraInit Basic application initialization for the Tpetra stack]
-    * [TpetraVector Basic creation and manipulation of Tpetra vectors]
 
   # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/belos Belos] packages.*
     * [IfpackBelos2 Solve a linear system _Ax=b_ using Ifpack and Belos]**
