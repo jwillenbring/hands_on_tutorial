@@ -20,10 +20,11 @@ TpetraVector example, except we explicitly select a compute node type.
 #include <Tpetra_Version.hpp>
 #include <Teuchos_GlobalMPISession.hpp>
 #include <Teuchos_oblackholestream.hpp>
+#include <Kokkos_TBBNode.hpp>
 
 void
 exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
-		std::ostream& out)
+                std::ostream& out)
 {
   using std::endl;
   using Teuchos::Array;
@@ -67,15 +68,7 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   params.set<int>("Num Threads",4);
   params.set<int>("Verbose",true);
   typedef Kokkos::TBBNode node_type;
-
-  // Get a pointer to the default Kokkos Node.  We'll need this when
-  // creating the Tpetra::Map objects.  
-  //
-  // Currently, if you want a node of a different type, you have to
-  // instantiate it explicitly.  We are moving to a model whereby you
-  // template your entire program on the Node type, and the system
-  // gives you the appropriate Node instantiation.
-  RCP<node_type> node = rcp(new node_type);
+  RCP<node_type> node = rcp(new node_type(params));
 
   //  Set map type
   typedef Tpetra::Map<local_ordinal_type, global_ordinal_type, node_type> map_type;
@@ -92,7 +85,7 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
 
   // contigMap is contiguous by construction.
   TEST_FOR_EXCEPTION(! contigMap->isContiguous(), std::logic_error,
-		     "The supposedly contiguous Map isn't contiguous.");
+                     "The supposedly contiguous Map isn't contiguous.");
 
    RCP<const map_type> cyclicMap;
   {
@@ -105,26 +98,26 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
       elementList[k] = myRank + k*numProcs;
     
     cyclicMap = rcp (new map_type (numGlobalElements, elementList, indexBase, 
-				   comm, node));
+                                   comm, node));
   }
 
   // If there's more than one MPI process in the communicator,
   // then cyclicMap is definitely NOT contiguous.
   TEST_FOR_EXCEPTION(comm->getSize() > 1 && cyclicMap->isContiguous(),
-		     std::logic_error, 
-		     "The cyclic Map claims to be contiguous.");
+                     std::logic_error, 
+                     "The cyclic Map claims to be contiguous.");
 
   // contigMap and cyclicMap should always be compatible.  However, if
   // the communicator contains more than 1 process, then contigMap and
   // cyclicMap are NOT the same.
   TEST_FOR_EXCEPTION(! contigMap->isCompatible (*cyclicMap),
-		     std::logic_error,
-		     "contigMap should be compatible with cyclicMap, "
-		     "but it's not.");
+                     std::logic_error,
+                     "contigMap should be compatible with cyclicMap, "
+                     "but it's not.");
   TEST_FOR_EXCEPTION(comm->getSize() > 1 && contigMap->isSameAs (*cyclicMap),
-		     std::logic_error,
-		     "contigMap should be compatible with cyclicMap, "
-		     "but it's not.");
+                     std::logic_error,
+                     "contigMap should be compatible with cyclicMap, "
+                     "but it's not.");
 
   //////////////////////////////////////////////////////////////////////
   // We have maps now, so we can create vectors.
