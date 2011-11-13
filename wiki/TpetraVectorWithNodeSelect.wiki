@@ -155,6 +155,9 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   // example, building Trilinos with Pthreads enabled gives you
   // Kokkos::TPINode by default.  That means your default Node is a
   // parallel node!
+  Teuchos::ParameterList params;
+  params.set<int>("Num Threads",4);
+  params.set<int>("Verbose",true);
   typedef Kokkos::TBBNode node_type;
 
   // Maps know how to convert between local and global indices, so of
