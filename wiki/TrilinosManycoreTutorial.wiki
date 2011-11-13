@@ -33,7 +33,7 @@ Manycore compute nodes have been available for several years.  Even so, algorith
 
 ----
 
-== WebTrilinos Portal ==
+== [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] Portal ==
 
     * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
     * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
