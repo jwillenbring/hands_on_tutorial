@@ -2,80 +2,13 @@
 
 = Introduction =
 
-Tpetra::Vector represents a distributed 1-D dense vector.  This class is templated on the following:
-  * Scalar: The type of data stored in the vector
-  * !LocalOrdinal: The integer type of local indices
-  * !GlobalOrdinal: The integer type of global indices
-  * Node: The implementation of intranode (within a node) parallelism
+See the [TpetraVector Tpetra Vector] example for a detailed description of this example.
 
-== Maps and distributed objects ==
-
-[http://trilinos.sandia.gov/packages/tpetra/ Tpetra], like
-[http://trilinos.sandia.gov/packages/epetra/ Epetra], uses objects
-called "maps" to encapsulate the details of distributing data over MPI
-processes.  Maps make data distribution into a first-class citizen.
-You can think of them abstractly as representing a vector space.  If
-two vectors have the same map, it's like they come from the same
-vector space.  For example, you can add them together without
-performing communication.  If they come from different vector spaces,
-then you can't add the vectors together unless Tpetra knows that their
-vector spaces are [https://secure.wikimedia.org/wikipedia/en/wiki/Isomorphism isomorphic] (in Tpetra language, that "their Maps are
-compatible").
-
-You can find documentation for Tpetra's Map class [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html here].
-
-== Map compatibility ==
-
-Tpetra gives two ways to compare two Maps.  Two Maps may either be
-"compatible" (`map1.isCompatible(map2)`) or "the same"
-(`map1.isSameAs(map2)`).  Compatibility of two Maps corresponds to
-isomorphism of two vector spaces.  Two Maps that are the same are
-always compatible.  The `isCompatible()` criterion is less
-restrictive, and also less expensive to check (although checking for
-compatibility requires a reduction on a Boolean over all processes in
-the Map's communicator).  
-
-Adding together two vectors with compatible but not the same Maps is legal.  It might not make mathematical sense, depending on your application, because entries of the vectors are ordered differently.  Adding together two vectors with the same Maps is both legal, and always mathematically correct.
-
-Both sameness and compatibility are commutative Boolean relations:  for example, `map1.isCompatible(map2)` means `map2.isCompatible(map1)`.
-
-`Map::isSameAs()` specifically means:
-  * the min and max global indices are the same
-  * the global number of elements is the same
-  * the maps are both distributed, or both not distributed
-  * the maps have the same index base
-  * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
-  * MPI processes in the Map's communicator that have the same MPI rank, own the same elements.  That is, their elements have the same IDs.
-  
-`Map::isCompatible()` specifically means:
-  * the global number of elements is the same
-  * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
-
-
-== Differences between Tpetra and Epetra ==
-
-Tpetra's maps look different than Epetra's maps because of all the
-template parameters, but they work similiarly.  One difference is that
-Tpetra maps tend to be handled by RCP (reference-counted smart
-pointer) rather than copied or passed by const reference.  Another
-difference is that !Epetra_Map inherits from !Epetra_BlockMap, whereas
-in Tpetra, Map and !BlockMap do not have an inheritance relationship.
-Finally, !Epetra_Map only has a `SameAs()` predicate, whereas Tpetra's
-Map class distinguishes between "compatibility" and "sameness" (see
-above).  !Epetra_Map's `SameAs()` means about the same thing as Tpetra's `isSameAs()`.
-
-== Tpetra::Vector ==
-
-You'll find documentation for Tpetra's Vector class
-[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Vector.html here].  Vector inherits from Tpetra's [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1MultiVector.html MultiVector] class, which represents a collection of one or more vectors with the same Map.  Tpetra favors block algorithms, so it favors !MultiVectors over single Vectors.  A single Vector is just a !MultiVector containing one vector, with a few convenience methods.
-
-Vector's interface contains some common linear algebra operations for vector-vector operations (including those one would find in the BLAS 1 standard).  You are encouraged to try out the new `Tpetra::RTI` (Reduce Transform Interface) for implementing more complicated operations on Vectors.  (RTI is kind of like the C++ Standard Template Library's iterators, except for distributed objects and for parallel iteration.)
 
 = Code example =
 
 The following example follows the same initialization steps as the
-TpetraInit example.  It then creates two distributed Tpetra maps and
-some Tpetra vectors, and does a few computations with the vectors.
+TpetraVector example, except we explicitly select a compute node type.
 
 {{{
 //
@@ -100,35 +33,10 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
 
   // Print out the Tpetra software version information.
   out << Tpetra::version() << endl << endl;
-
-  //
-  // The first thing you might notice that makes Tpetra objects
-  // different than their Epetra counterparts, is that Tpetra objects
-  // take several template parameters.  These template parameters give
-  // Tpetra its features of being able to solve very large problems
-  // (of more than 2 billion unknowns) and to exploit intranode
-  // parallelism.
-  //
-  // It's common to begin a Tpetra application with some typedefs to
-  // make the code more concise and readable.  They also make the code
-  // more maintainable, since you can change the typedefs without
-  // changing the rest of the program.
-  //
-
-  // The "Scalar" type is the type of the values stored in the Tpetra
-  // objects.  Valid Scalar types include real or complex
-  // (std::complex<T>) floating-point types, or more exotic objects
-  // with similar behavior.
+ 
+  // Set scalar, local ordinal and global ordinal types
   typedef double scalar_type;
-
-  // The "LocalOrdinal" (LO) type is the type of "local" indices.
-  // Both Epetra and Tpetra index local elements differently than
-  // global elements.  Tpetra exploits this so that you can use a
-  // shorter integer type for local indices.  This saves bandwidth
-  // when computing sparse matrix-vector products.
   typedef int local_ordinal_type;
-
-  // The "GlobalOrdinal" (GO) type is the type of "global" indices.
   typedef long global_ordinal_type;
 
   // The Kokkos "Node" type describes the type of shared-memory
@@ -160,13 +68,6 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   params.set<int>("Verbose",true);
   typedef Kokkos::TBBNode node_type;
 
-  // Maps know how to convert between local and global indices, so of
-  // course they are templated on the local and global Ordinal types.
-  // They are also templated on the Kokkos Node type, because Tpetra
-  // objects that use Tpetra::Map are.  It's important not to mix up
-  // Maps for different Kokkos Node types.
-  typedef Tpetra::Map<local_ordinal_type, global_ordinal_type, node_type> map_type;
-
   // Get a pointer to the default Kokkos Node.  We'll need this when
   // creating the Tpetra::Map objects.  
   //
@@ -176,63 +77,25 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   // gives you the appropriate Node instantiation.
   RCP<node_type> node = rcp(new node_type);
 
+  //  Set map type
+  typedef Tpetra::Map<local_ordinal_type, global_ordinal_type, node_type> map_type;
+
+
   //////////////////////////////////////////////////////////////////////
   // Create some Tpetra Map objects
   //////////////////////////////////////////////////////////////////////
 
-  //
-  // Like Epetra, Tpetra has local and global Maps.  Local maps
-  // describe objects that are replicated over all participating MPI
-  // processes.  Global maps describe distributed objects.  You can do
-  // imports and exports between local and global maps; this is how
-  // you would turn locally replicated objects into distributed
-  // objects and vice versa.
-  //
+   const Tpetra::global_size_t numGlobalElements = comm->getSize() * 5;
+   const global_ordinal_type indexBase = 0;
 
-  // The total (global, i.e., over all MPI processes) number of
-  // elements in the Map.  Tpetra's global_size_t type is an unsigned
-  // type and is at least 64 bits long on 64-bit machines.
-  //
-  // For this example, we scale the global number of elements in the
-  // Map with the number of MPI processes.  That way, you can run this
-  // example with any number of MPI processes and every process will
-  // still have a positive number of elements.
-  const Tpetra::global_size_t numGlobalElements = comm->getSize() * 5;
-
-  // Tpetra can index the elements of a Map starting with 0 (C style),
-  // 1 (Fortran style), or any base you want.  1-based indexing is
-  // handy when interfacing with Fortran.  We choose 0-based indexing
-  // here.
-  const global_ordinal_type indexBase = 0;
-
-  // Construct a Map that puts the same number of equations on each
-  // processor.  Pass in the Kokkos Node, so that this line of code
-  // will work with any Kokkos Node type.
-  //
-  // It's typical to create a const Map.  Maps should be considered
-  // immutable objects.  If you want a new data distribution, create a
-  // new Map.
-  RCP<const map_type> contigMap = 
-    rcp (new map_type (numGlobalElements, indexBase, comm, 
-		       Tpetra::GloballyDistributed, node));
+  RCP<const map_type> contigMap = rcp (new map_type (numGlobalElements, indexBase, comm, Tpetra::GloballyDistributed, node));
 
   // contigMap is contiguous by construction.
   TEST_FOR_EXCEPTION(! contigMap->isContiguous(), std::logic_error,
 		     "The supposedly contiguous Map isn't contiguous.");
 
-  // Let's create a second Map.  It will have the same number of
-  // global elements per process, but will distribute them
-  // differently, in round-robin (1-D cyclic) fashion instead of
-  // contiguously.
-  RCP<const map_type> cyclicMap;
+   RCP<const map_type> cyclicMap;
   {
-    // We'll use the version of the Map constructor that takes, on
-    // each MPI process, a list of the global elements in the Map
-    // belonging to that process.  You can use this constructor to
-    // construct an overlapping (also called "not 1-to-1") Map, in
-    // which one or more elements are owned by multiple processes.  We
-    // don't do that here; we make a nonoverlapping (also called
-    // "1-to-1") Map.
     Array<global_ordinal_type>::size_type numEltsPerProc = 5;
     Array<global_ordinal_type> elementList (numEltsPerProc);
 
@@ -266,11 +129,7 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   //////////////////////////////////////////////////////////////////////
   // We have maps now, so we can create vectors.
   //////////////////////////////////////////////////////////////////////
-
-  // Since Tpetra::Vector takes four template parameters, its type is
-  // long.  It's helpful to use a typedef.  C++0x's type inference
-  // feature is also useful.
-  typedef Tpetra::Vector<scalar_type, local_ordinal_type, 
+    typedef Tpetra::Vector<scalar_type, local_ordinal_type, 
     global_ordinal_type, node_type> vector_type;
 
   // Create a Vector with the contiguous Map.  This version of the
