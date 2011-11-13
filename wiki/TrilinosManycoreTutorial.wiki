@@ -17,6 +17,7 @@ Manycore compute nodes have been available for several years.  Even so, algorith
 
 == Near-term future capabilities ==
 
+  * CA-GMRES in Belos.
   * OpenMP support in Tpetra.
   * ShyLU manycore preconditioner package.  A collection of sparse direct and incomplete factorization algorithms for tens to hundreds of cores.
   * Muelu multilevel preconditioner package. Built on both Epetra and Tpetra, Muelu is the next generation of Trilinos/ML multilevel preconditioner capabilities.
