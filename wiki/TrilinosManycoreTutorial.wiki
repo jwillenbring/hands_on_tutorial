@@ -1,13 +1,114 @@
-#summary One-sentence summary of this page.
+#summary Trilinos Manycore Tutorial Page
+#sidebar TrilinosTutorialContents
 
-= Introduction =
+== Current Capabilities ==
 
-Add your content here.
+Multicore and GPU compute nodes (which we collectively call manycore nodes) have been available for several years.  Even so, algorithms and software for these nodes are still evolving.  Presently Trilinos provides a foundation for writing and executing code on manycore-based computers.  Specifically we provide:
 
+  * OpenMP support for Epetra.  Epetra is the original and still dominant collection of data classes for Trilinos.  Epetra can be compiled with OpenMP support enabled.  Turning this option on will enable threaded computation of sparse matrix multiplication, and all vector multivector computations.  It includes support for NUMA data placement.  Sparse triangular solves are presently NOT threaded.
+  * Pthreads, Intel Threading Building Blocks (TBB) and CUDA (via Thrust) support for Tpetra. Tpetra is a new data class collection that supports an extensible manycore node interface, as well as templated scalar and ordinal types.
 
-= Details =
+== Near-term future capabilities ==
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+== Longer-term future capabilities ==
+
+== Composable with MPI ==
+
+== Let's dive in, you have two options: ==
+
+  * *!WebTrilinos*
+    * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
+    * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
+    * Installed at St. John's University, MN.  The following versions of the C++ interface are available (the examples below use the C++ interface):
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.8/c++/index.html Trilinos 10.8, MPI-enabled]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.8.3/c++/index.html Trilinos 10.8, CUDA/TBB-enabled]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Trilinos development branch (10.7), MPI-enabled]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.6/c++/index.html Trilinos 10.6, MPI-enabled]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-10.4/c++/index.html Trilinos 10.4, serial]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/c++/index.html Trilinos 10.4, MPI-enabled]
+<wiki:comment>
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.6.1/c++/index.html Trilinos 10.7 (dev), CUDA-enabled]
+</wiki:comment>
+    * In addition to the C++ interfaces, a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/MatrixPortal/index.html Matrix Portal interface] and a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/python/index.html Python interface] are also available.
+    * Access to this site is password protected.  Login information will be given during live tutorials as needed.
+    * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
+  * *Download and build the examples on your machine*
+    # Download [http://trilinos.sandia.gov/download Trilinos]
+    # Download and install CMake (if not already done).  
+          * The latest CMake release can be downloaded from [http://www.cmake.org/cmake/resources/software.html here].
+    # Download and install Clapack (if you don't have LAPACK and BLAS already).  
+          * Get Clapack from [http://www.netlib.org/clapack/clapack-3.2.1-CMAKE.tgz here].  
+          * Use CMake to build Clapack.
+    # Build and install Trilinos. 
+          * An example script is [BuildScript here].  
+          * You can find other scripts in the Trilinos distribution Trilinos/sample_scripts directory.  
+          * You can also use the CMake gui, or the text-gui ccmake.
+    # Get Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
+          * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
+          * You can find the Makefile.export.package_name files once you have built and installed Trilinos.  
+          * They will be in the include directory of your installation directory.  
+          * Example: {{{TrilinosInstall/include/Makefile.export.Epetra.}}}
+    # Customize the Makefile to your situation (the example Makefile uses only the Epetra package, but Makefile.export.package_name files are available for all packages).
+    # Add Example code into a file called main.cpp and build away!
+
+== Now for some examples: ==
+
+  # *Start with some tools using the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*
+    * *Basic Support Tools*
+       * [TeuchosPL Build a parameter list (used to pass parameters to all Trilinos packages).]
+       * [TeuchosRCP Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).]
+       * [TeuchosCLP Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted [unhighlighted]]
+       * [TeuchosTime Build a time monitor (tool for timing individual methods or operations in a program).]
+   * *Template Support Tools*
+       * [TeuchosBLAS Create a templated BLAS wrapper.]
+       * [TeuchosLAPACK Create a templated LAPACK wrapper.]
+       * [TeuchosSDM Create a templated serial, dense matrix.]**
+  # *Write a program using the [http://trilinos.sandia.gov/packages/epetra Epetra] package.*
+    * [EpetraSimpleVector Beginner: Construct some vectors and perform basic operations.]
+    * [EpetraPowerMethod Intermediate: Find the dominant eigenpair of a matrix using the power method.]**
+  # *Generate a linear system using the [http://trilinos.sandia.gov/packages/galeri Galeri] package.*
+    * [GaleriLinearSystem Generate a matrix, discretized 2D Laplacian on a Cartesian grid.]
+    * Try generating matrices for some different operators, the list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
+  # *Create an algebraic preconditioner using the [http://trilinos.sandia.gov/packages/ifpack  Ifpack] package.*
+    * [IfpackFactory Create a preconditioner using the Ifpack preconditioner factory.]
+    * Try generating different preconditioners:
+      * The preconditioners supported in the factory interface are: "IC", "ICT", "ILU", "ILUT", and "Amesos".
+      * The list of supported parameters for the factory is [http://trilinos.sandia.gov/packages/docs/dev/packages/ifpack/doc/html/index.html#ifp_params here].**
+  # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/aztecoo AztecOO] packages.*
+    * [IfpackAztecOO Solve a linear system _Ax=b_ using Ifpack and AztecOO]**
+  # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ml ML] and [http://trilinos.sandia.gov/packages/aztecoo AztecOO] packages.*
+    * [MLAztecOO Solve a linear system _Ax=b_ using ML(black-box) and AztecOO]**
+    * [MLAztecOO2 Solve a linear system _Ax=b_ using ML and AztecOO, but setting some multigrid options]
+  # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/belos Belos] packages.*
+    * [IfpackBelos2 Solve a linear system _Ax=b_ using Ifpack and Belos]**
+  # *Compute some eigenpairs using the [http://trilinos.sandia.gov/packages/anasazi Anasazi] package.*
+    * [AnasaziBlockDavidson Compute the smallest eigenpairs of a discretized 2D Laplacian using the block Davidson solver.]
+    * [AnasaziLOBPCG Compute the smallest eigenpairs of a discretized 2D Laplacian using the LOBPCG solver.]
+    * [AnasaziBlockKrylovSchurSVD Compute the dominant singular values of a 2D discretization of a simple kernel using the block Krylov-Schur solver.]**
+  # *Solve a nonlinear system using the [http://trilinos.sandia.gov/packages/nox NOX] package.*
+    * [NOXNewton Solve a simple nonlinear system using NOX]
+    * [NOXNewton2 Solve a simple nonlinear system using NOX]
+  # *Tpetra is the new manycore-aware linear algebra stack.*
+    * [TpetraInit Basic application initialization for the Tpetra stack]
+    * [TpetraVector Basic creation and manipulation of Tpetra vectors]
+  # *[http://trilinos.sandia.gov/packages/pytrilinos PyTrilinos] tutorial materials.*
+    * [http://trilinos.sandia.gov/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
+    * [PyTrilinosExample Solve a simple 2D Laplace problem using PyTrilinos]
+
+== Other examples ==
+
+Some examples don't work with the web tutorial, since they read from files.  You can try them out by downloading Trilinos and looking in the examples in the source tree.  For example, the [http://trilinos.sandia.gov/packages/intrepid Intrepid] discretizations package has examples in the `packages/trilinoscouplings/examples/scaling/` directory.  The following might be of interest:
+    * example_CurlLSFEM.cpp: driver for solving div-curl first order system in 3D with tangential boundary condition using curl-conforming elements
+    * example_DivLSFEM.cpp: driver for the same system with normal boundary condition and div-conforming elements
+    * example_Poisson.cpp: solving the Poisson equation using a Galerkin finite element method
+
+For [http://trilinos.sandia.gov/packages/belos Belos'] Recycling GMRES (GCRODR) solver, there are examples in `packages/belos/epetra/example/GCRODR/PrecGCRODREpetraExFile.cpp` and `GCRODREpetraExFile.cpp`.  These examples use the sherman5.hb matrix, which is included in the `/packages/belos/epetra/example/GCRODR` directory with the Trilinos distribution.
+
+== Learning more: ==
+
+  * [http://trilinos.sandia.gov Online reference documentation].
+  * [http://trilinos.sandia.gov/events/trilinos_user_group_2010/index.html Trilinos User Group Meeting (2010).]
+  * [http://trilinos.sandia.gov/events/trilinos_user_group_2009/index.html Trilinos User Group Meeting (2009).]
+  * [http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html Trilinos User Group Meeting (2008).]
+  * [http://trilinos.sandia.gov/events/trilinos_user_group_2007/index.html Trilinos User Group Meeting (2007).]
+  * [http://trilinos.sandia.gov/mail_lists.html Mail lists.]
