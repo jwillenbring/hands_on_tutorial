@@ -1,5 +1,13 @@
 #summary Create an IFPACK ILU preconditioner, and use it with Belos' GMRES iterative solver.
 
+=Introduction=
+
+The Belos package interoperates with other Trilinos packages that provide sparse matrices, vectors, and preconditioners.  This example shows Belos using a preconditioner provided by the IFPACK package, along with Epetra sparse matrices and vectors.  The preconditioner combines additive Schwarz domain decomposition with overlap, with ILU as the domain solver.
+
+Both Belos and IFPACK are controlled by "parameter lists" (`ParameterList`).  These are simple key-value maps, where the keys are strings and the values can be any type, including other parameter lists.  Please refer to the documentation of each package for the list of valid parameters.
+
+=Code example=
+
 {{{
 #include "Epetra_CrsMatrix.h"
 #include "Epetra_MultiVector.h"
