@@ -34,6 +34,7 @@ main (int argc, char *argv[])
 #else
   Epetra_SerialComm Comm;
 #endif
+  const int myRank = Comm.MyPID();
 
   ParameterList GaleriList;
 
@@ -110,13 +111,14 @@ main (int argc, char *argv[])
   // to define and solve the linear system.
 
   // Define the left-hand side (the solution / initial guess vector)
-  // and right-hand side.
+  // and right-hand side.  The solution is in the domain of the
+  // operator A, and the right-hand side is in the range of A. 
   RCP<Epetra_MultiVector> LHS = rcp (new Epetra_MultiVector (A->OperatorDomainMap (), 1));
   RCP<Epetra_MultiVector> RHS = rcp (new Epetra_MultiVector (A->OperatorDomainMap (), 1));
 
-  // Make the exact solution a constant vector.
+  // Make the exact solution a vector of all ones.
   LHS->PutScalar(1.0);
-  // RHS := A * LHS.
+  // Compute RHS := A * LHS.
   A->Apply(*LHS,*RHS);
 
   // Now randomize the right-hand side.
@@ -155,7 +157,17 @@ main (int argc, char *argv[])
   // Perform solve.
   Belos::ReturnType ret = belosSolver.solve();
 
-  // Print out the preconditioner.
+  // Did we converge?
+  if (myRank == 0) {
+    if (ret == Belos::Converged) {
+      std::cout << "Belos converged." << std::endl;
+    } else {
+      std::cout << "Belos did not converge." << std::endl;
+    }
+  }
+
+  // Print out the preconditioner.  IFPACK preconditioner objects know
+  // how to print themselves in parallel directly to std::cout.
   std::cout << *Prec;
 
 #ifdef HAVE_MPI
