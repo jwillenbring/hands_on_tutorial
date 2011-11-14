@@ -1,0 +1,22 @@
+#summary Use Anasazi's Block Krylov-Schur to solve a generalized eigenvalue problem, with Epetra and AztecOO.
+
+= Introduction =
+
+This example computes the eigenvalues of smallest magnitude of the
+discretized 2D Laplacian operator using the block Krylov-Schur method.
+This problem shows the construction of an inner-outer iteration using
+AztecOO as the linear solver within Anasazi.  An IFPACK preconditioner
+is constructed to precondition the linear solver.  This operator is
+discretized using linear finite elements and constructed as an Epetra
+matrix, then passed into the AztecOO solver to perform the
+shift-invert operation to be used within the Krylov decomposition.
+The specifics of the block Krylov-Schur method can be set by the user.
+
+Users typically access Anasazi's solvers through subclasses of
+[http://trilinos.sandia.gov/packages/docs/dev/packages/anasazi/doc/html/classAnasazi_1_1SolverManager.html SolverManager].  In this case, [http://trilinos.sandia.gov/packages/docs/dev/packages/anasazi/doc/html/classAnasazi_1_1BlockKrylovSchurSolMgr.html BlockKrylovSchurSolMgr] presents an
+interface to the block Krylov-Schur algorithm.
+
+= Code example =
+
+To access the code example from Anasazi's documentation, 
+[http://trilinos.sandia.gov/packages/docs/dev/packages/anasazi/doc/html/BlockKrylovSchur_2BlockKrylovSchurEpetraExGenAztecOO_8cpp-example.html#_a20 click here.]
