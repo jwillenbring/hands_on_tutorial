@@ -27,7 +27,7 @@ Manycore compute nodes have been available for several years.  Even so, algorith
 
   * Most of the existing capabilities in Trilinos have a focused research effort on algorithms and software design for manycore nodes.  Over the next five years we expect to complete the transition to a fully manycore enabled software stack.
 
-== Composable each other and with MPI ==
+== Composable with each other and with MPI ==
 
   * All Trilinos capabilities are composable with each other and with MPI.  For example, it is straight forward to use MPI across nodes of a distributed memory system and use OpenMP, TBB, Pthreads and CUDA on the node.
   * Furthermore, with Tpetra it is possible to create hybrid combinations of nodes.  In particular, we can compose MPI with threading on the node (Pthreads or TBB) and CUDA on the accelerator.
