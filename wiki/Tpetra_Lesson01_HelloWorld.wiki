@@ -231,4 +231,20 @@ main (int argc, char *argv[])
 
 == What are RCP and rcp? ==
 
-RCP stands for "reference-counted pointer."  It is Trilinos' version of std::shared_ptr or boost::shared_ptr.  (There are both historical and technical reasons why we use our own class instead of one of those.)  RCP is templated on the type of object to which it points.  For example, `RCP<T> x` works very much like `T* x` (a pointer to a `T`), and `RCP<const T> y` works like `const T* y` (that is, a "pointer to a `const T`").  The "reference-counted" part of RCP means that it automatically handles deallocation, if appropriate.  By default, it calls `delete`, but you can control this behavior.  The `rcp` function is a "nonmember constructor" template function that returns a newly created RCP of something.
+RCP stands for "reference-counted pointer."  It lives in the Teuchos package of Trilinos, and is Trilinos' version of std::shared_ptr or boost::shared_ptr.  (There are both historical and technical reasons why we use our own class instead of one of those.)  For more details, please refer to the [http://www.cs.sandia.gov/~rabartl/TeuchosMemoryManagementSAND.pdf complete reference] for the Teuchos memory management classes.
+
+In brief: RCP lets you have the benefits of pointers (the lightweight sharing of data) without the headaches and risks (managing ownership and deallocation).  It behaves like a pointer in terms of syntax, but handles deallocation for you.  RCP is templated on the type of object to which it points.  For example, `RCP<T> x` works very much like `T* x` (a pointer to a `T`), and `RCP<const T> y` works like `const T* y` (that is, a "pointer to a `const T`").  The dereference (`*`) operator works like it does with regular pointers.  For example, 
+{{{
+RCP<T> x_ptr = ...;
+T& x_ref = *x_ptr;
+
+RCP<const T> y_ptr = ...;
+const T& y_ref = *y_ptr;
+}}}
+The "reference-counted" part of RCP means that it automatically handles deallocation, if appropriate.  Copying the RCP increments the reference count; allowing it to fall out of scope or assigning `Teuchos::null` to it decrements the reference count.  When the reference count reaches zero, the deallocation function is called.  By default, it calls `delete`, but you can control this behavior.  Reference counting allows you to share pointers between different parts of your code, without needing to worry about what part of the code deallocates the object, or when it gets deallocated.
+
+The `rcp` function is a "nonmember constructor" template function that returns a newly created RCP of something.  Using `rcp` to create an RCP saves some typing, and also may improve exception safety.
+
+== Comm, MpiComm, and SerialComm ==
+
+Comm is Trilinos' interface to distributed-memory parallel communication.  It lives in the Teuchos package of Trilinos.  The MpiComm and SerialComm classes implement this interface.  All of these classes are templated on the integer type used for MPI function calls.  Currently, this is always `int`, so you should always use `int` as the template parameter.
