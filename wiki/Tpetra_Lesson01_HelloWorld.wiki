@@ -1,4 +1,4 @@
-#summary Tpetra Lesson 01: Initialization
+#summary Tpetra Lesson 01: Initialization of MPI (if enabled)
 
 = Lesson topics =
 
