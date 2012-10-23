@@ -247,4 +247,15 @@ The `rcp` function is a "nonmember constructor" template function that returns a
 
 == Comm, !MpiComm, and !SerialComm ==
 
-Comm is Trilinos' interface to distributed-memory parallel communication.  It lives in the Teuchos package of Trilinos.  The !MpiComm and !SerialComm classes implement this interface.  All of these classes are templated on the integer type used for MPI function calls.  Currently, this is always `int`, so you should always use `int` as the template parameter.
+Comm is Trilinos' interface to distributed-memory parallel communication.  It lives in the Teuchos package of Trilinos.  Comm is an abstract base class.  The !MpiComm and !SerialComm classes implement this interface.  As the name indicates, !MpiComm implements Comm by using MPI calls.  !SerialComm implements Comm without MPI, as a "communicator" with only one process.  (This is more or less equivalent to MPI_COMM_SELF, except without actually using MPI.)  All of these classes are templated on the integer type used for MPI function calls.  Currently, this is always `int`, so you should always use `int` as the template parameter.  
+
+Since Comm is an abstract base class, you must handle it by pointer or reference.  The idiomatic way to create and handle a Comm is by RCP, as an `RCP<const Comm<int> >`.  This expression should be considered Trilinos' version of the `MPI_Comm` opaque handle.  Thus,
+{{{
+RCP<const Comm<int> > comm = rcp (new MpiComm<int> (MPI_COMM_WORLD));
+}}}
+is "Trilinos-speak" for this:
+{{{
+MPI_Comm comm = MPI_COMM_WORLD;
+}}}
+
+The normal way to use Comm is to call the nonmember functions in `Teuchos_CommHelpers.hpp`.  We won't cover this in the lesson today.
