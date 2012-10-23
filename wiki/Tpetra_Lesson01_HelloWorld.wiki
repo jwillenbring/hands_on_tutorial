@@ -160,6 +160,7 @@ Tpetra also works fine in an existing MPI code.  For this example, we assume tha
 // Your code is an existing MPI code, so it presumably includes mpi.h directly.
 #include <mpi.h>  
 // ... Your other include files go here ... 
+#include <Tpetra_DefaultMpiComm.hpp>
 #include <Tpetra_DefaultPlatform.hpp>
 #include <Tpetra_Version.hpp>
 #include <Teuchos_oblackholestream.hpp>
@@ -227,19 +228,77 @@ main (int argc, char *argv[])
 }
 }}}
 
+= Initialization for an existing non-MPI code =
+
+Tpetra works perfectly fine without MPI, whether or not you built Trilinos with MPI support.  The following example shows how to create a !SerialComm communicator, which provides a non-MPI version of "distributed-memory communication" (with only one process) to Tpetra.
+
+{{{
+//
+// Example of non-MPI initialization for using Tpetra in an existing application
+//
+
+// ... Your other include files go here ... 
+#include <Tpetra_DefaultPlatform.hpp>
+#include <Tpetra_DefaultSerialComm.hpp>
+#include <Tpetra_Version.hpp>
+#include <Teuchos_oblackholestream.hpp>
+
+void
+exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
+		std::ostream& out)
+{
+  // Print out the Tpetra software version information.
+  out << Tpetra::version() << std::endl << std::endl;
+}
+
+int 
+main (int argc, char *argv[]) 
+{
+  // These "using" declarations make the code more concise, in that
+  // you don't have to write the namespace along with the class or
+  // object name.  This is especially helpful with commonly used
+  // things like std::endl or Teuchos::RCP.
+  using std::endl;
+  using Teuchos::Comm;
+  using Teuchos;:SerialComm;
+  using Teuchos::RCP;
+  using Teuchos::rcp;
+
+  // Make a "serial" (non-MPI) "communicator."
+  RCP<const Comm<int> > comm = rcp (new SerialComm<int>);
+  
+  // With a "serial" communicator, the rank is always 0, 
+  // and the number of processes is always 1.
+  const int myRank = comm->getRank();
+  const int numProcs = comm->getSize();
+
+  Teuchos::oblackholestream blackHole;
+  std::ostream& out = (myRank == 0) ? std::cout : blackHole;
+
+  // We have a communicator and an output stream.
+  // Let's do something with them!
+  exampleRoutine (comm, out);
+
+  return 0;
+}
+}}}
+
 = Things we didn't explain above =
 
 == What are RCP and rcp? ==
 
 RCP stands for "reference-counted pointer."  It lives in the Teuchos package of Trilinos, and is Trilinos' version of std::shared_ptr or boost::shared_ptr.  (There are both historical and technical reasons why we use our own class instead of one of those.)  For more details, please refer to the [http://www.cs.sandia.gov/~rabartl/TeuchosMemoryManagementSAND.pdf complete reference] for the Teuchos memory management classes.
 
-In brief: RCP lets you have the benefits of pointers (the lightweight sharing of data) without the headaches and risks (managing ownership and deallocation).  It behaves like a pointer in terms of syntax, but handles deallocation for you.  RCP is templated on the type of object to which it points.  For example, `RCP<T> x` works very much like `T* x` (a pointer to a `T`), and `RCP<const T> y` works like `const T* y` (that is, a "pointer to a `const T`").  The dereference (`*`) operator works like it does with regular pointers.  For example, 
+In brief: RCP lets you have the benefits of pointers (the lightweight sharing of data) without the headaches and risks (managing ownership and deallocation).  It behaves like a pointer in terms of syntax, but handles deallocation for you.  RCP is templated on the type of object to which it points.  For example, `RCP<T> x` works very much like `T* x` (a pointer to a `T`), and `RCP<const T> y` works like `const T* y` (that is, a "pointer to a `const T`").  The dereference (`*`) and method call (`->`) operators work just like they do with regular pointers.  For example, 
 {{{
 RCP<T> x_ptr = ...;
+// Unary operator* returns a reference, not a copy.
 T& x_ref = *x_ptr;
+x_ptr->nonconstInstanceMethod ();
 
 RCP<const T> y_ptr = ...;
 const T& y_ref = *y_ptr;
+y_ptr->constInstanceMethod ();
 }}}
 The "reference-counted" part of RCP means that it automatically handles deallocation, if appropriate.  Copying the RCP increments the reference count; allowing it to fall out of scope or assigning `Teuchos::null` to it decrements the reference count.  When the reference count reaches zero, the deallocation function is called.  By default, it calls `delete`, but you can control this behavior.  Reference counting allows you to share pointers between different parts of your code, without needing to worry about what part of the code deallocates the object, or when it gets deallocated.
 
