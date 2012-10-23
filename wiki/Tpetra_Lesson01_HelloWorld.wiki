@@ -61,7 +61,7 @@ Furthermore, Trilinos provides an MPI initialization interface, `Teuchos::Global
 
 {{{
 //
-// Example of basic initialization boilerplate for using Tpetra.
+// Example of basic initialization for using Tpetra.
 //
 // Includes MPI initialization, getting a Teuchos::Comm communicator,
 // and printing out Tpetra version information.
@@ -88,7 +88,9 @@ main (int argc, char *argv[])
   // object name.  This is especially helpful with commonly used
   // things like std::endl or Teuchos::RCP.
   using std::endl;
+  using Teuchos::Comm;
   using Teuchos::RCP;
+  using Teuchos::rcp;
 
   // A "black hole stream" prints nothing.  It's like /dev/null in
   // Unix-speak.  The typical MPI convention is that only MPI Rank 0
@@ -121,7 +123,7 @@ main (int argc, char *argv[])
   // "Tpetra::DefaultPlatform" knows whether or not we built with MPI
   // support.  If we didn't build with MPI, we'll get a "communicator"
   // with size 1, whose only process has rank 0.
-  RCP<const Teuchos::Comm<int> > comm = 
+  RCP<const Comm<int> > comm = 
     Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
 
   const int myRank = comm->getRank();
@@ -143,19 +145,23 @@ main (int argc, char *argv[])
 }
 }}}
 
-= Initialization for an existing code =
+= Initialization for an existing MPI code =
+
+Tpetra also works fine in an existing MPI code.  For this example, we assume that your code initializes MPI on its own by calling MPI_Init, and calls MPI_Finalize at the end.  It also must get an MPI_Comm (an MPI communicator) somewhere, either by using a predefined communicator such as MPI_COMM_WORLD, or by creating a new one.
 
 {{{
 //
-// Example of basic initialization boilerplate for using Tpetra.
+// Example of basic initialization for using Tpetra in an existing application
 //
-// Includes MPI initialization, getting a Teuchos::Comm communicator,
+// Includes getting a Teuchos::Comm communicator to wrap your MPI_Comm,
 // and printing out Tpetra version information.
 //
 
+// Your code is an existing MPI code, so it presumably includes mpi.h directly.
+#include <mpi.h>  
+// ... Your other include files go here ... 
 #include <Tpetra_DefaultPlatform.hpp>
 #include <Tpetra_Version.hpp>
-#include <Teuchos_GlobalMPISession.hpp>
 #include <Teuchos_oblackholestream.hpp>
 
 void
@@ -178,9 +184,15 @@ main (int argc, char *argv[])
   using Teuchos;:MpiComm;
   using Teuchos::opaqueWrapper;
   using Teuchos::RCP;
+  using Teuchos::rcp;
 
-  // ... Your code here, that calls MPI_Init and gets an MPI_Comm ...
-  MPI_Comm yourComm = ...;
+  // We assume that your code calls MPI_Init.  It's bad form 
+  // to ignore the error codes returned by MPI functions, but
+  // we do so here for brevity.
+  (void) MPI_Init (&argc, &argv);
+
+  // This code takes the place of whatever you do to get an MPI_Comm.
+  MPI_Comm yourComm = MPI_COMM_WORLD;
 
   // Get a pointer to the communicator object that encapsulates 
   // your communicator.  In a very, very recent version of Trilinos,
@@ -205,8 +217,18 @@ main (int argc, char *argv[])
   // Let's do something with them!
   exampleRoutine (comm, out);
 
+  // If you need to call MPI_Comm_free on your MPI_Comm, now would
+  // be the time to do so, before calling MPI_Finalize.  You may also 
+  // automate this process; ask the tutorial presenter for more information.
+
   // Since you called MPI_Init, you are responsible for calling MPI_Finalize.
   (void) MPI_Finalize ();
   return 0;
 }
 }}}
+
+= Things we didn't explain above =
+
+== What are RCP and rcp? ==
+
+RCP stands for "reference-counted pointer."  It is Trilinos' version of std::shared_ptr or boost::shared_ptr.  (There are both historical and technical reasons why we use our own class instead of one of those.)  RCP is templated on the type of object to which it points.  For example, `RCP<T> x` works very much like `T* x` (a pointer to a `T`), and `RCP<const T> y` works like `const T* y` (that is, a "pointer to a `const T`").  The "reference-counted" part of RCP means that it automatically handles deallocation, if appropriate.  By default, it calls `delete`, but you can control this behavior.  The `rcp` function is a "nonmember constructor" template function that returns a newly created RCP of something.
