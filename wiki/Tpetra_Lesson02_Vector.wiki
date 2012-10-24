@@ -46,11 +46,17 @@ Both sameness and compatibility are commutative Boolean relations:  for example,
   * the global number of elements is the same
   * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
 
-== Local vs. global indices ==
+== A Map assigns elements of a data structure to processes ==
 
-The distinction between local and global indices and types might confuse new Tpetra users. Global indices represent the elements of a distributed object (such as rows or columns of a CrsMatrix, or rows of a MultiVector) uniquely over the entire object, which may be distributed over multiple processes. Local indices are local to the process that owns them. If global index G is owned by process P, then there is a unique local index L on process P corresponding to G. If the local index L is valid on process P, then there is a unique global index G owned by P corresponding to the pair (L, P). However, multiple processes might own the same global index (an "overlapping Map"), so a global index G might correspond to multiple (L, P) pairs. In summary, local indices on a process correspond to object elements (e.g., sparse matrix rows or columns) owned by that process.
+For you as the user, the fact that you might be parallelizing your application using MPI is really an implementation detail.  You care about what we call _global indices._  These represent the elements of a distributed object (such as rows or columns of a sparse matrix, or elements of a vector) uniquely over the entire object.  The object in turn may be distributed over multiple processes.  Just about any data structure containing elements that can be assigned an integer index can be distributed using a Map.  
 
-Tpetra differs from Epetra in that local and global indices may have different types. In Epetra, local and global indices both have type int. In Tpetra, you get to pick the type of each. For example, you can use a 64-bit integer GlobalOrdinal type to solve problems with more than  unknowns, but a 32-bit integer LocalOrdinal type to save bandwidth in sparse matrix-vector multiply.
+A Map assigns global indices to parallel processes.  For efficiency, within a process, we refer to a global index using its "local index."  _Local indices_ are local to the process that owns them. If global index G is owned by process P, then there is a unique local index L on process P corresponding to G. If the local index L is valid on process P, then there is a unique global index G owned by P corresponding to the pair (L, P). However, multiple processes might own the same global index (an "overlapping Map"), so a global index G might correspond to multiple (L, P) pairs. In summary, local indices on a process correspond to object elements (e.g., sparse matrix rows or columns) owned by that process.
+
+== You get to specify the types of local and global indices ==
+
+In Tpetra, the types of local and global indices are template parameters of Map, Vector, CrsMatrix, and other distributed objects.  Local indices have type !LocalOrdinal, and global indices have type !GlobalOrdinal.  Both should be signed built-in C++ integer types.  However, you get to pick their size, based on how big your problem is.  If your problem has more than 2 billion elements, you will need a 64-bit integer type (such as `long long` or `int64_t`) for !GlobalOrdinal, but if you have enough processes so that no one process stores more than 2 billion elements locally, then you may use a 32-bit integer type (such as `int` typically, or `int32_t`) for !LocalOrdinal.  It is usually more efficient to use the shortest integer type possible.  The default type of both !LocalOrdinal and !GlobalOrdinal is `int`.
+
+Tpetra differs from Epetra in that you, the user, get to decide the types of local and global indices. In Epetra, local and global indices both used to have type int. With the latest Trilinos release, Epetra uses 64-bit integers for global indices, and 32-bit integers (`int`) for local indices.  Tpetra lets you decide the types of each.
 
 == Other differences between Tpetra and Epetra ==
 
