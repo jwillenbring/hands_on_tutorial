@@ -2,13 +2,13 @@
 
 = Lesson topics =
 
-In this lesson, we will explain how to create the simplest kind of Tpetra linear algebra object: a Vector, whose entries are distributed over the process(es) in a communicator.  The Map object describes this distribution of entries over processes.  You create the Map to describe the distribution scheme you want, and then use the Map to create objects (such as Vectors) that have this distribution.  We give examples of different distributions you can create, use their Maps to create Vectors, and then do some arithmetic with the Vectors.  All of this gives us an opportunity to explain the various template parameters that are part of the type of nearly every Tpetra object.
+In this lesson, we will explain how to create the simplest kind of Tpetra linear algebra object: a Vector, whose entries are distributed over the process(es) in a communicator.  The [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html Map] object describes this distribution of entries over processes.  You create a Map to describe the distribution scheme you want, and then use the Map to create objects (such as Vectors) that have this distribution.  We spend a little bit more time than you might initially wish explaining Map, but understanding it is important for getting the best performance out of Teptra.  We give examples of different distributions you can create, use their Maps to create Vectors, and then do some arithmetic with the Vectors.  All of this gives us an opportunity to explain the various template parameters that are part of the type of nearly every Tpetra object.
 
 = A Map describes a data distribution =
 
 [http://trilinos.sandia.gov/packages/tpetra/ Tpetra], like
 [http://trilinos.sandia.gov/packages/epetra/ Epetra], uses objects
-called "maps" to encapsulate the details of distributing data over MPI
+called "Maps" to encapsulate the details of distributing data over MPI
 processes.  Maps make data distribution into a first-class citizen.
 You can think of them abstractly as representing a vector space.  If
 two vectors have the same map, it's like they come from the same
@@ -19,38 +19,47 @@ vector spaces are [https://secure.wikimedia.org/wikipedia/en/wiki/Isomorphism is
 
 You can find documentation for Tpetra's Map class [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html here].
 
-== Map compatibility ==
-
-Tpetra gives two ways to compare two Maps.  Two Maps may either be
-"compatible" (`map1.isCompatible(map2)`) or "the same"
-(`map1.isSameAs(map2)`).  Compatibility of two Maps corresponds to
-isomorphism of two vector spaces.  Two Maps that are the same are
-always compatible.  The `isCompatible()` criterion is less
-restrictive, and also less expensive to check (although checking for
-compatibility requires a reduction on a Boolean over all processes in
-the Map's communicator).  
-
-Adding together two vectors with compatible but not the same Maps is legal.  It might not make mathematical sense, depending on your application, because entries of the vectors are ordered differently.  Adding together two vectors with the same Maps is both legal, and always mathematically correct.
-
-Both sameness and compatibility are commutative Boolean relations:  for example, `map1.isCompatible(map2)` means `map2.isCompatible(map1)`.
-
-`Map::isSameAs()` specifically means:
-  * the min and max global indices are the same
-  * the global number of elements is the same
-  * the maps are both distributed, or both not distributed
-  * the maps have the same index base
-  * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
-  * MPI processes in the Map's communicator that have the same MPI rank, own the same elements.  That is, their elements have the same IDs.
-  
-`Map::isCompatible()` specifically means:
-  * the global number of elements is the same
-  * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
-
 == A Map assigns elements of a data structure to processes ==
+
+=== Global indices matter to you ===
 
 For you as the user, the fact that you might be parallelizing your application using MPI is really an implementation detail.  You care about what we call _global indices._  These represent the elements of a distributed object (such as rows or columns of a sparse matrix, or elements of a vector) uniquely over the entire object.  The object in turn may be distributed over multiple processes.  Just about any data structure containing elements that can be assigned an integer index can be distributed using a Map.  
 
-A Map assigns global indices to parallel processes.  For efficiency, within a process, we refer to a global index using its "local index."  _Local indices_ are local to the process that owns them. If global index G is owned by process P, then there is a unique local index L on process P corresponding to G. If the local index L is valid on process P, then there is a unique global index G owned by P corresponding to the pair (L, P). However, multiple processes might own the same global index (an "overlapping Map"), so a global index G might correspond to multiple (L, P) pairs. In summary, local indices on a process correspond to object elements (e.g., sparse matrix rows or columns) owned by that process.
+A Map assigns global indices to parallel processes.  If it assigns a global index G to a process P, we say that process P _owns_ global index G.  It is legal for multiple processes to own the same global index G.  In fact, this is how we implement many useful communication patterns, including those in sparse matrix-vector multiply.  We won't go into much detail in this lesson about that.
+
+=== Local indices are an implementation detail ===
+
+For efficiency, within a process, we refer to a global index using its "local index" on that process.  _Local indices_ are local to the process that owns them. If process P owns global index G, then there is a unique local index L on process P corresponding to G. If the local index L is valid on process P, then there is a unique global index G owned by P corresponding to the pair (L, P). However, multiple processes might own the same global index, so a global index G might correspond to multiple (L, P) pairs. In summary, local indices on a process correspond to object elements (e.g., sparse matrix rows or columns) owned by that process.
+
+=== We expose local indices for performance reasons ===
+
+Local indices matter to you because it may be more efficient to use them to access or modify local data than it is to use global indices.  This is because distributed data structures must convert from global to local indices every time a user asks for an element by its global index.  This requires a table lookup in general, since a process may own an arbitrary subset of all the global indices, in an arbitrary order.  Even though local indices are an implementation detail, we expose them because avoiding that table lookup on each access can improve performance a lot.
+
+=== Maps are themselves distributed data ===
+
+If a Map has N global elements over P processes, and if no one process owns all the global elements, we _never_ store all N global indices on a single process.  Some kinds of Maps require storing all the global indices, but in this case, the indices are themselves distributed over processes.  This ensures _memory scalability_ (no one process has to store all the data).
+
+== Map compatibility ==
+
+We mentioned above that a Map behaves much like a vector space.  For instance, if two Vectors have the same Map, it is both legal and meaningful to add them together.  This makes it useful to be able to compare Maps.  Tpetra gives two ways to compare two Maps.  Two Maps may either be "compatible" (`map1.isCompatible(map2)`) or "the same" (`map1.isSameAs(map2)`).  
+
+Compatibility of two Maps corresponds to isomorphism of two vector spaces.  Two Maps that are the same are always compatible.  The `isCompatible()` criterion is less restrictive, and also less expensive to check (although checking for compatibility requires a reduction on a Boolean over all processes in the Map's communicator).  
+
+Adding together two vectors with compatible but not the same Maps is legal.  It might not make mathematical sense, depending on your application, because entries of the vectors are ordered differently.  Adding together two vectors with the same Maps is both legal, and always mathematically sensible.
+
+Both sameness and compatibility are commutative Boolean relations:  for example, `map1.isCompatible(map2)` means `map2.isCompatible(map1)`.
+
+Two Maps are _compatible_ when:
+  * they have the same global number of elements
+  * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
+
+Two Maps are the same when:
+  * their minimum and maximum global indices are the same
+  * they have the same global number of elements
+  * the Maps are both distributed over multiple processes, or both not distributed over multiple processes
+  * the Maps have the same _index base_ (this means the smallest legal global index value, more or less)
+  * Processes that have the same rank, own the same number of elements.
+  * Processes that have the same rank, own the same elements.  That is, their elements have the same indices, in the same order.
 
 == You get to specify the types of local and global indices ==
 
