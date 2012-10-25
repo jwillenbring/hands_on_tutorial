@@ -53,7 +53,7 @@ Two Maps are _compatible_ when:
   * they have the same global number of elements
   * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
 
-Two Maps are the same when:
+Two Maps are _the same_ when:
   * their minimum and maximum global indices are the same
   * they have the same global number of elements
   * the Maps are both distributed over multiple processes, or both not distributed over multiple processes
@@ -63,9 +63,11 @@ Two Maps are the same when:
 
 == You get to specify the types of local and global indices ==
 
-In Tpetra, the types of local and global indices are template parameters of Map, Vector, CrsMatrix, and other distributed objects.  Local indices have type !LocalOrdinal, and global indices have type !GlobalOrdinal.  Both should be signed built-in C++ integer types.  However, you get to pick their size, based on how big your problem is.  If your problem has more than 2 billion elements, you will need a 64-bit integer type (such as `long long` or `int64_t`) for !GlobalOrdinal, but if you have enough processes so that no one process stores more than 2 billion elements locally, then you may use a 32-bit integer type (such as `int` typically, or `int32_t`) for !LocalOrdinal.  It is usually more efficient to use the shortest integer type possible.  The default type of both !LocalOrdinal and !GlobalOrdinal is `int`.
+In Tpetra, the types of local and global indices are template parameters of Map, Vector, !CrsMatrix, and other distributed objects.  Local indices have type !LocalOrdinal, and global indices have type !GlobalOrdinal.  Both should be signed built-in C++ integer types.  However, you get to pick their size, based on how big your problem is.  If your problem has more than 2 billion elements, you will need a 64-bit integer type (such as `long long` or `int64_t`) for !GlobalOrdinal, but if you have enough processes so that no one process stores more than 2 billion elements locally, then you may use a 32-bit integer type (such as `int` typically, or `int32_t`) for !LocalOrdinal.  The default type of both !LocalOrdinal and !GlobalOrdinal is `int`.
 
-Tpetra differs from Epetra in that you, the user, get to decide the types of local and global indices. In Epetra, local and global indices both used to have type int. With the latest Trilinos release, Epetra uses 64-bit integers for global indices, and 32-bit integers (`int`) for local indices.  Tpetra lets you decide the types of each.
+It is usually more efficient to use the shortest integer type possible for both local and global indices.  "Shortest" means fewest number of bits.  Fewer bits mean you use less memory and thus can solve bigger problems or use higher-quality preconditioners that solve problems in fewer iterations.  Shorter local indices can also mean better performance for local sparse matrix kernels, such as sparse matrix-vector multiply, sparse triangular solve, and smoothing (for algebraic multigrid).
+
+Tpetra differs from Epetra in that you, the user, get to decide the types of local and global indices. In Epetra, local and global indices both used to have type int. With the latest Trilinos release, Epetra uses 64-bit integers for global indices, and 32-bit integers (`int`) for local indices.  Tpetra lets you decide the types of each.  
 
 == Other differences between Tpetra and Epetra ==
 
@@ -98,9 +100,7 @@ Map has the same template parameters, except for Scalar (since the same Map can 
 
 = Code example =
 
-The following example follows the same initialization steps as the
-TpetraInit example.  It then creates two distributed Tpetra maps and
-some Tpetra vectors, and does a few computations with the vectors.
+The following example follows the same initialization steps as in the previous lesson.  It then creates two distributed Tpetra Maps and some Tpetra Vectors, and does a few computations with the vectors.
 
 {{{
 //
