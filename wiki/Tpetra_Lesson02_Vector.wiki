@@ -1,4 +1,4 @@
-#summary Tpetra's distributed vectors and data distribution objects
+#summary Tpetra Lesson 02: Map and Vector (distributions and distributed objects)
 
 = Lesson topics =
 
