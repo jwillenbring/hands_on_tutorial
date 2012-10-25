@@ -1,4 +1,5 @@
 #summary Tpetra application initialization
+#labels Deprecated
 
 = Introduction =
 
