@@ -23,7 +23,7 @@ You can find documentation for Tpetra's Map class [http://trilinos.sandia.gov/pa
 
 === Global indices matter to you ===
 
-For you as the user, the fact that you might be parallelizing your application using MPI is really an implementation detail.  You care about what we call _global indices._  These represent the elements of a distributed object (such as rows or columns of a sparse matrix, or elements of a vector) uniquely over the entire object.  The object in turn may be distributed over multiple processes.  Just about any data structure containing elements that can be assigned an integer index can be distributed using a Map.  
+For you as the user, the fact that you might be parallelizing your application using MPI is really an implementation detail.  You care about what we call _global indices._  These represent the elements of a distributed object (such as rows or columns of a sparse matrix, or elements of a vector) uniquely over the entire object.  The object in turn may be distributed over multiple processes.  Just about any data structure containing elements that can be assigned an integer index can be distributed using a Map.  For most Tpetra users, this means elements of a vector, rows of a !MultiVector, or rows or columns of a sparse matrix.  However, it is not limited to these kinds of objects.  You may even use Map for your own distributed objects.
 
 A Map assigns global indices to parallel processes.  If it assigns a global index G to a process P, we say that process P _owns_ global index G.  It is legal for multiple processes to own the same global index G.  In fact, this is how we implement many useful communication patterns, including those in sparse matrix-vector multiply.  We won't go into much detail in this lesson about that.
 
