@@ -239,8 +239,8 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
 		       Tpetra::GloballyDistributed, node));
 
   // contigMap is contiguous by construction.
-  TEST_FOR_EXCEPTION(! contigMap->isContiguous(), std::logic_error,
-		     "The supposedly contiguous Map isn't contiguous.");
+  TEUCHOS_TEST_FOR_EXCEPTION(! contigMap->isContiguous(), std::logic_error,
+    "The supposedly contiguous Map isn't contiguous.");
 
   // Let's create a second Map.  It will have the same number of
   // global elements per process, but will distribute them
@@ -269,29 +269,29 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
 
   // If there's more than one MPI process in the communicator,
   // then cyclicMap is definitely NOT contiguous.
-  TEST_FOR_EXCEPTION(comm->getSize() > 1 && cyclicMap->isContiguous(),
-		     std::logic_error, 
-		     "The cyclic Map claims to be contiguous.");
+  TEUCHOS_TEST_FOR_EXCEPTION(
+    comm->getSize() > 1 && cyclicMap->isContiguous(),
+    std::logic_error, 
+    "The cyclic Map claims to be contiguous.");
 
   // contigMap and cyclicMap should always be compatible.  However, if
   // the communicator contains more than 1 process, then contigMap and
   // cyclicMap are NOT the same.
-  TEST_FOR_EXCEPTION(! contigMap->isCompatible (*cyclicMap),
-		     std::logic_error,
-		     "contigMap should be compatible with cyclicMap, "
-		     "but it's not.");
-  TEST_FOR_EXCEPTION(comm->getSize() > 1 && contigMap->isSameAs (*cyclicMap),
-		     std::logic_error,
-		     "contigMap should be compatible with cyclicMap, "
-		     "but it's not.");
+  TEUCHOS_TEST_FOR_EXCEPTION(! contigMap->isCompatible (*cyclicMap),
+    std::logic_error,
+    "contigMap should be compatible with cyclicMap, but it's not.");
+  TEUCHOS_TEST_FOR_EXCEPTION(comm->getSize() > 1 && contigMap->isSameAs (*cyclicMap),
+    std::logic_error,
+    "contigMap should be compatible with cyclicMap, but it's not.");
 
   //////////////////////////////////////////////////////////////////////
   // We have maps now, so we can create vectors.
   //////////////////////////////////////////////////////////////////////
 
-  // Since Tpetra::Vector takes four template parameters, its type is
-  // long.  It's helpful to use a typedef.  C++0x's type inference
-  // feature is also useful.
+  // Since Tpetra::Vector takes four template parameters, its type
+  // is long.  It's helpful to use a typedef.  You may also want to 
+  // abbreviate the template parameters.  Standard abbreviations 
+  // are "LO" for local_ordinal_type and "GO" for global_ordinal_type.
   typedef Tpetra::Vector<scalar_type, local_ordinal_type, 
     global_ordinal_type, node_type> vector_type;
 
@@ -314,12 +314,16 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   z->randomize ();
 
   // Set the entries of x to all ones.
+  //
+  // The code below works because scalar_type=double, and C++
+  // defines the implicit conversion from the integer 1 to double.
+  // In general, you may use the commented-out line of code, if
+  // the conversion from int to scalar_type is not defined for your
+  // scalar type.
+  x->putScalar (1);
+  //x->putScalar (Teuchos::ScalarTraits<scalar_type>::one());
 
-  // Using the ScalarTraits class ensures that the line of code below
-  // will work for any valid Scalar type, even for complex numbers or
-  // more exotic fields.
-  x->putScalar (Teuchos::ScalarTraits<scalar_type>::one());
-
+  // See comment above about type conversions to scalar_type.
   const scalar_type alpha = 3.14159;
   const scalar_type beta = 2.71828;
   const scalar_type gamma = -10;
@@ -327,18 +331,20 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   // x = beta*x + alpha*z
   //
   // This is a legal operation!  Even though the Maps of x and z are
-  // not the same, their Maps are compatible.
+  // not the same, their Maps are compatible.  Whether it makes sense
+  // or not depends on your application.
   x->update (alpha, *z, beta);
 
+  // See comment above about type conversions to scalar_type.
   y->putScalar (42);
   // y = gamma*y + alpha*x + beta*z
   y->update (alpha, *x, beta, *z, gamma);
   
   // Compute the 2-norm of y.  
   //
-  // The norm may have a different type than Scalar.  For example, if
-  // Scalar is complex, then the norm is real.  We can use the traits
-  // class to get the type of the norm.
+  // The norm may have a different type than scalar_type.  
+  // For example, if scalar_type is complex, then the norm is real.  
+  // The ScalarTraits "traits class" gives us the type of the norm.
   typedef Teuchos::ScalarTraits<scalar_type>::magnitudeType magnitude_type;
   const magnitude_type theNorm = y->norm2 ();
   
@@ -347,7 +353,7 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
 }
 
 //
-// The same main() driver routine as in the TpetraInit example.
+// The same main() driver routine as in the first Tpetra lesson.
 //
 int 
 main (int argc, char *argv[]) 
@@ -370,3 +376,15 @@ main (int argc, char *argv[])
   return 0;
 }
 }}}
+
+= Things not previously explained =
+
+This lesson introduces two new topics: the "Node" template parameter of Tpetra objects, and the `Teuchos::ScalarTraits` scalar traits class.  We will explain them both here.
+
+== Tpetra's Node template parameter ==
+
+The Node template parameter governs the way the Tpetra objects do parallelism within a node ("intranode," as opposed to MPI's internode parallelism).  We have implemented several different Node types.  All you need to know for now is that it is part of the type of the object.  You can't assign a matrix with one Node type to a matrix with a different Node type; they are incompatible.  Usually, you will use one Node type and Node instance for all the Tpetra objects that you create.
+
+== The `Teuchos::ScalarTraits` scalar traits class ==
+
+A _traits class_ maps from a C++ type to its attribute.  It is a standard C++ idiom for generic programming.  The C++ Standard Library comes with a few different traits classes, such as `std::numeric_traits`.  Teuchos::ScalarTraits is a bit like `std::numeric_traits`, except that it is extensible.   That is, we can define new _specializations_ (definitions for new "input types").
