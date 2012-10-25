@@ -4,18 +4,22 @@
 
 In this lesson, we will explain how to create the simplest kind of Tpetra linear algebra object: a Vector, whose entries are distributed over the process(es) in a communicator.  The [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html Map] object describes this distribution of entries over processes.  You create a Map to describe the distribution scheme you want, and then use the Map to create objects (such as Vectors) that have this distribution.  We spend a little bit more time than you might initially wish explaining Map, but understanding it is important for getting the best performance out of Teptra.  We give examples of different distributions you can create, use their Maps to create Vectors, and then do some arithmetic with the Vectors.  All of this gives us an opportunity to explain the various template parameters that are part of the type of nearly every Tpetra object.
 
-= A Map describes a data distribution =
+= `Tpetra::Map` =
+
+== A Map instance describes a data distribution ==
 
 [http://trilinos.sandia.gov/packages/tpetra/ Tpetra], like
 [http://trilinos.sandia.gov/packages/epetra/ Epetra], uses objects
 called "Maps" to encapsulate the details of distributing data over MPI
 processes.  Maps make data distribution into a first-class citizen.
-You can think of them abstractly as representing a vector space.  If
-two vectors have the same map, it's like they come from the same
+Each Map instance represents a particular data distribution.
+
+You can think of a Map instance abstractly as representing a vector space.  
+If two vectors have the same map, it's like they come from the same
 vector space.  For example, you can add them together without
 performing communication.  If they come from different vector spaces,
-then you can't add the vectors together unless Tpetra knows that their
-vector spaces are [https://secure.wikimedia.org/wikipedia/en/wiki/Isomorphism isomorphic] (in Tpetra language, that "their Maps are compatible").
+then you need more information to know whether it is legal to add the 
+vectors together.
 
 You can find documentation for Tpetra's Map class [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html here].
 
@@ -43,9 +47,9 @@ If a Map has N global elements over P processes, and if no one process owns all 
 
 We mentioned above that a Map behaves much like a vector space.  For instance, if two Vectors have the same Map, it is both legal and meaningful to add them together.  This makes it useful to be able to compare Maps.  Tpetra gives two ways to compare two Maps.  Two Maps may either be "compatible" (`map1.isCompatible(map2)`) or "the same" (`map1.isSameAs(map2)`).  
 
-Compatibility of two Maps corresponds to isomorphism of two vector spaces.  Two Maps that are the same are always compatible.  The `isCompatible()` criterion is less restrictive, and also less expensive to check (although checking for compatibility requires a reduction on a Boolean over all processes in the Map's communicator).  
+Compatibility of two Maps corresponds to [https://secure.wikimedia.org/wikipedia/en/wiki/Isomorphism isomorphism] of two vector spaces.  Two Maps that are the same are always compatible.  The `isCompatible()` criterion is less restrictive, and also less expensive to check (although checking for compatibility requires a reduction on a Boolean over all processes in the Map's communicator).  
 
-Adding together two vectors with compatible but not the same Maps is legal.  It might not make mathematical sense, depending on your application, because entries of the vectors are ordered differently.  Adding together two vectors with the same Maps is both legal, and always mathematically sensible.
+Adding together two vectors with compatible but not the same Maps is legal.  It might not make mathematical sense, depending on your application.  This is because entries of the vectors are ordered differently.  (Also, just because two vector spaces are isomorphic, doesn't necessarily mean that adding elements of one to elements of another makes sense.)  Adding together two vectors with the same Maps is both legal and mathematically sensible.
 
 Both sameness and compatibility are commutative Boolean relations:  for example, `map1.isCompatible(map2)` means `map2.isCompatible(map1)`.
 
@@ -69,6 +73,24 @@ It is usually more efficient to use the shortest integer type possible for both 
 
 Tpetra differs from Epetra in that you, the user, get to decide the types of local and global indices. In Epetra, local and global indices both used to have type int. With the latest Trilinos release, Epetra uses 64-bit integers for global indices, and 32-bit integers (`int`) for local indices.  Tpetra lets you decide the types of each.  
 
+== Different categories of Maps ==
+
+=== One to one ===
+
+A Map is _one to one_ if each global index in the Map is owned by only one process.  This means that the function from global index G to its local index and process rank (L,P) is one to one in a mathematical sense ("injective").  In this case, the function is only onto ("surjective") if there is only one process.  Knowing whether a Map is one-to-one is important for data redistribution, which Tpetra exposes as the [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Import.html Import] and [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Export.html Export] operations.  We will cover Import and Export in subsequent lessons.
+
+=== Contiguous or noncontiguous ===
+
+A Map is _contiguous_ when each process' list of global indices forms an interval and is strictly increasing, and the globally minimum global index equals the index base. Map optimizes for the contiguous case. In particular, noncontiguous Maps require communication in order to figure out which process owns a particular global index.
+
+=== Globally distributed or locally replicated ===
+
+_Globally distributed_ means that all of the following are true:
+  # The Map's communicator has more than one process. 
+  # There is at least one process in the Map's communicator, whose local number of elements does not equal the number of global elements. (That is, not all the elements are replicated over all the processes.)
+
+If at least one of the above are not true, then we call the Map _locally replicated_.  The two terms are mutually exclusive.
+
 == Other differences between Tpetra and Epetra ==
 
 Tpetra's maps look different than Epetra's maps because of all the
@@ -81,12 +103,12 @@ in Tpetra, Map and !BlockMap do not have an inheritance relationship.
 Map class distinguishes between "compatibility" and "sameness" (see
 above).  Finally, !Epetra_Map's `SameAs()` means about the same thing as Tpetra's `isSameAs()`.
 
-= Tpetra::Vector =
+= `Tpetra::Vector` =
 
-You'll find documentation for Tpetra's Vector class
-[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Vector.html here].  Vector inherits from Tpetra's [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1MultiVector.html MultiVector] class, which represents a collection of one or more vectors with the same Map.  Tpetra favors block algorithms, so it favors !MultiVectors over single Vectors.  A single Vector is just a !MultiVector containing one vector, with a few convenience methods.
+`Tpetra::Vector` implements a finite-dimensional vector distributed over processes.  Vector inherits from Tpetra's [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1MultiVector.html MultiVector] class, which represents a collection of one or more vectors with the same Map.  Tpetra favors block algorithms, so it favors !MultiVectors over single Vectors.  A single Vector is just a !MultiVector containing one vector, with a few convenience methods.  You'll find documentation for Tpetra's Vector class
+[http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Vector.html here].  
 
-Vector's interface contains some common linear algebra operations for vector-vector operations (including those one would find in the BLAS 1 standard).  You are encouraged to try out the new `Tpetra::RTI` (Reduce Transform Interface) for implementing more complicated operations on Vectors.  (RTI is kind of like the C++ Standard Template Library's iterators, except for distributed objects and for parallel iteration.)
+Vector's interface contains some common linear algebra operations for vector-vector operations, including operations analogous to those in the BLAS 1 standard.  You are encouraged to try out the new `Tpetra::RTI` (Reduce Transform Interface) for implementing more complicated operations on Vectors.  (RTI is kind of like the C++ Standard Template Library's iterators, except for distributed objects and for parallel iteration.)
 
 = Tpetra objects' template parameters =
 
