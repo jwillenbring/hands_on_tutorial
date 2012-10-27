@@ -31,17 +31,28 @@ Calling `fillComplete` does a lot of work.  In general, it requires distributed-
 
 = Trade-offs between flexibility and performance =
 
+In all the examples below, we assume the following "preamble" of code:
+{{{
+using Teuchos::RCP;
+using Teuchos::rcp;
+// Your scalar type; the type of sparse matrix entries. e.g., double.
+typedef ST ...; 
+// Your local ordinal type; the signed integer type 
+// used to store local sparse matrix indices.  e.g., int.
+typedef LO ...; 
+// Your global ordinal type; the signed integer type 
+// used to index the matrix globally, over all processes.
+// e.g., int, long, ptrdif_t, int64_t, ...
+typedef GO ...; 
+// The Node type.  e.g., Kokkos::DefaultNode::DefaultNodeType, 
+// defined in Kokkos_DefaultNode.hpp.
+typedef NT ...; 
+}}}
+
 == The most general case: dynamic allocation, no size hint ==
 
 !CrsMatrix lets you make trade-offs between flexibility and performance.  All of these trade-offs revolve around how much you know about the structure of the sparse matrix -- that is, its graph -- in advance.  In the most general case, all you know is which process owns which row -- the row Map.
 {{{
-using Teuchos::RCP;
-using Teuchos::rcp;
-typedef ST ...; // your scalar type; the type of sparse matrix entries
-typedef LO ...; // your local ordinal type
-typedef GO ...; // your global ordinal type
-typedef NT ...; // the Node type
-
 RCP<const Map<LO, GO, NT> > rowMap = ...; // whatever row Map you want
 RCP<CrsMatrix<ST, LO, GO, NT> > A = rcp (new CrsMatrix<ST, LO, GO, NT> (rowMap));
 }}}
@@ -57,7 +68,7 @@ Both of these ways to create a sparse matrix allocate memory for the entries in 
 
 == Dynamic allocation with a size hint ==
 
-In the above examples, the matrix has no information about how many entries you want to add to each row.  Thus, it has to make some default assumption, possibly zero to avoid excessive initial memory use.  This may require frequent reallocation if you add entries to a row many times.  Reallocation takes time.  It also tends to fragment memory and thus disturb locality, further reducing performance.  
+In the above examples, the matrix has no information about how many entries you want to add to each row.  Thus, it has to make some default assumption.  The "size hint" defaults to zero, to ensure that empty or nearly empty sparse matrices take as little memory as possible.  An initial reservation of zero entries per row may cause frequent reallocation if you add entries to a row many times.  Reallocation takes time, because it requires talking to the C++ run-time library or the system library.  It also tends to fragment memory and thus disturb locality, further reducing performance.  
 
 If you have a pretty good idea how many entries will be in each row, you may give a "size hint" to the constructor.  You may do so either with a single number, which is an expected upper bound on the number of entries in any one row, or with an upper bound for each row of the matrix.  The typical use case is a single upper bound, which we illustrate below.  
 {{{
@@ -78,7 +89,7 @@ Static allocation, what we call _static profile_, means that the "size hint" bec
 // With static profile, this is a hard constraint.
 const size_t maxEntriesPerRow = 3;
 RCP<CrsMatrix<ST, LO, GO, NT> > A = 
-  rcp (new CrsMatrix<ST, LO, GO, NT> (rowMap, 3, Tpetra::StaticProfile);
+  rcp (new CrsMatrix<ST, LO, GO, NT> (rowMap, 3, Tpetra::StaticProfile));
 }}}
 What happens when you specify static profile is that the matrix allocates "1-D" storage.  That is, rather than the aforementioned "2-D" array of arrays, the matrix allocates the usual three compressed sparse row arrays (ptr, ind, val), with fixed space in each row (given either by the upper bound, or by the aforementioned array).  When you're done filling and call `fillComplete()`, this means the matrix need only "pack" the 1-D storage into its final representation by copying the entries that you filled in (and not any of the "slack space" you might have left).  Static profile also may use less memory than dynamic profile, because you don't have to store a complicated dynamic data structure for each row of the matrix.
 
@@ -96,7 +107,7 @@ using Tpetra::CrsGraph;
 RCP<const CrsGraph<LO, GO, NT> > graph = ...; 
 
 // The graph comes with the row and column Maps already built in.
-RCP<CrsMatrix<ST, LO, GO, NT> > A = rcp (new CrsMatrix<ST, LO, GO, NT> (graph);
+RCP<CrsMatrix<ST, LO, GO, NT> > A = rcp (new CrsMatrix<ST, LO, GO, NT> (graph));
 }}}
 Filling the !CrsGraph works much like filling a !CrsMatrix, except that you only specify structure, not values.  Furthermore, the same size hint and dynamic profile vs. static profile options apply to !CrsGraph.
 
