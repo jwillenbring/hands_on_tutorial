@@ -79,9 +79,33 @@ Tpetra differs from Epetra in that you, the user, get to decide the types of loc
 
 A Map is _one to one_ if each global index in the Map is owned by only one process.  This means that the function from global index G to its local index and process rank (L,P) is one to one in a mathematical sense ("injective").  In this case, the function is only onto ("surjective") if there is only one process.  Knowing whether a Map is one-to-one is important for data redistribution, which Tpetra exposes as the [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Import.html Import] and [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Export.html Export] operations.  We will cover Import and Export in subsequent lessons.
 
-=== Contiguous or noncontiguous ===
+An example of a one-to-one Map is a Map containing 101 global indices 0 .. 100 and distributed over four processes, where 
+  - Process 0 owns 0 .. 24
+  - Process 1 owns 25 .. 49
+  - Process 2 owns 50 .. 74
+  - Process 3 owns 75 .. 100
+
+An example of a _not_ one-to-one Map is a Map containing 101 global indices 0 .. 100 and distributed over four processes, where 
+  - Process 0 owns 0 .. 25
+  - Process 1 owns 25 .. 50
+  - Process 2 owns 50 .. 75
+  - Process 3 owns 75 .. 100
+
+Note the overlap of one global index between each "adjacent" process.  An example of a mathematical problem with an overlapping distribution like this would be a 1-D linear finite element or finite difference discretization, where elements are distributed with unique ownership among the processes, but the boundary node between two adjacent elements on different processes is shared among those two processes.
+
+=== Contiguous or noncontiguous, uniform or not ===
 
 A Map is _contiguous_ when each process' list of global indices forms an interval and is strictly increasing, and the globally minimum global index equals the index base. Map optimizes for the contiguous case. In particular, noncontiguous Maps require communication in order to figure out which process owns a particular global index.
+
+Note that in Tpetra, "contiguous" is an optimization, not a predicate.  Tpetra may not necessarily work hard to check contiguity.  The best way to ensure that your Map is contiguous is to use one of the two constructors that always make a contiguous Map.
+
+An example of a contiguous Map is one containing 101 global indices 0 .. 100 and distributed over four processes, where 
+  - Process 0 owns 0 .. 24
+  - Process 1 owns 25 .. 49
+  - Process 2 owns 50 .. 74
+  - Process 3 owns 75 .. 100
+
+Note that Process 3 in this example owns 26 global indices, whereas the other processes each own 25.  We say that a Map is _uniform_ if each process owns the same number of global indices.  The above Map is _not_ uniform.  Map includes both a constructor for uniform contiguous Maps, where you specify the total number of global indices, and a constructor for possibly nonuniform contiguous Maps, where you specify the number of global indices owned by each process.
 
 === Globally distributed or locally replicated ===
 
@@ -89,7 +113,7 @@ _Globally distributed_ means that all of the following are true:
   # The Map's communicator has more than one process. 
   # There is at least one process in the Map's communicator, whose local number of elements does not equal the number of global elements. (That is, not all the elements are replicated over all the processes.)
 
-If at least one of the above are not true, then we call the Map _locally replicated_.  The two terms are mutually exclusive.
+If at least one of the above are not true, then we call the Map _locally replicated_.  The two terms are mutually exclusive. 
 
 == Other differences between Tpetra and Epetra ==
 
