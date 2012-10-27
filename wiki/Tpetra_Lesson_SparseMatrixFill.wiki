@@ -116,3 +116,7 @@ Filling the !CrsGraph works much like filling a !CrsMatrix, except that you only
 In the sparse matrix's final state, it represents column indices as local indices (in terms of global vs. local).  This is faster for operations like sparse matrix-vector multiply.  It saves storage as well, especially if `sizeof(LocalOrdinal) < sizeof(GlobalOrdinal)`.  However, accessing or inserting entries by local index is only allowed under certain conditions.  In particular, the matrix must have a column Map, which tells it how to convert between global and local indices for the column indices of the matrix.  If you didn't create the matrix with a precomputed column Map (either in its constructor, or in the constant graph), it has to compute the column Map on its own.  It does so in `fillComplete`.
 
 If the matrix doesn't have a column Map yet, you must use global indices, since local indices don't exist yet.  However, if you can use local indices, you should.  For global indices, the matrix must go to the Map to look up the corresponding local index for every global index.  Local indices only require an array access.
+
+= Exercise =
+
+Start with the TpetraPowerMethod example, which uses a dynamic profile and global indices.  Try all of the different fill techniques described in this lesson.  If you like, you may also try cyclic boundary conditions instead of Dirichlet boundary conditions in the 1-D Poisson discretization.  (This makes the number of entries per row the same for all rows.) 
