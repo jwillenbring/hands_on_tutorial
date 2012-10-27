@@ -1,4 +1,5 @@
 #summary An advanced Tpetra exercise, requiring understanding of !CrsMatrix, Import, and Export.
+#labels Exercise
 
 = Purpose of exercise =
 
@@ -38,4 +39,5 @@ Note that the column Map owns all of AT's local data.  This means that Step 3 ca
 Here are some exercises, in increasing order of difficulty.
   # Implement the above procedure for computing the explicit transpose.  You should test it on a nonsquare matrix for full generality.
   # What if you had to compute the transpose of several matrices with the same structure but different values?  What would be the most efficient way (in terms of both memory and run time) to do this?
-  # What if you could access all of the local data directly, instead of row by row, as the !CrsMatrix interface requires?  How much faster would that be?
+  # What if you could access all of the local data directly, instead of row by row, as the !CrsMatrix interface requires?  How much faster would that make Steps 1 and 3 above?  Does the !CrsMatrix interface need to change to support this?
+  # Investigate alternate local sparse matrix representations that make applying the transpose faster, without needing data transformations.  How much does this help performance?  Does it make changing the structure or modifying values in the matrix slower?  If so, would changing !CrsMatrix's row-oriented access and modification interface help?
