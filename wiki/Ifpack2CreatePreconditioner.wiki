@@ -18,7 +18,7 @@ We include a very simple test linear system: a 1-D finite difference discretizat
 
 The example below computes an [http://www-users.cs.umn.edu/~saad/PDF/umsi-92-38.pdf ILUT preconditioner].  ILUT is an incomplete LU factorization with an upper bound on the fill level, and two drop thresholds (relative and absolute).  It might be interesting to adjust parameters like the fill level.  Zero fill means that the structure of the L and U factors is exactly the same as the structure of their corresponding parts of the input matrix A.
 
-You might also like to try a different preconditioner.  For example, the following code fragment (from the full code example below) creates a Jacobi relaxation preconditioner.
+You might also like to try a different preconditioner.  For example, the following code fragment (from the full code example below) creates a Jacobi relaxation preconditioner.  This fragment belongs in the create() method in the !PreconditionerFactory class in the example below; it replaces the fragment with the comment "CREATE THE PRECONDITIONER AND SET PARAMETERS".
 {{{
     RCP<prec_type> prec;
     {
@@ -38,13 +38,16 @@ You might also like to try a different preconditioner.  For example, the followi
       const numSweeps = 1;
 
       // Damping factor for Jacobi.  Default is 1.0.
-      typedef typename prec_type::scalar_type scalar_type;
-      const scalar_type dampingFactor = Teuchos::ScalarTraits<scalar_type>::one();
+      // STS is a typedef in the code example for Teuchos::ScalarTraits<scalar_type>.
+      // This is a scalar_type and not a magnitude_type; 
+      // complex-valued damping factors are legal if scalar_type is complex.
+      const scalar_type dampingFactor = STS::one();
 
-      typedef typename Teuchos::ScalarTraits<scalar_type>::magnitudeType magnitude_type;
       // Diagonal elements with absolute value smaller than this are set to this.
       // Default is 0.0, meaning that zero diagonal elements are left alone.
       // Remember that relaxation methods divide by the diagonal in each row.
+      // magnitude_type is a typedef derived from scalar_type.  If scalar_type 
+      // is complex, then magnitude_type is real.   
       const magnitude_type minDiagVal = 1.0e-8;
 
       ParameterList ifpack2Params;
@@ -89,6 +92,10 @@ If you are running this example on the demo web server, please be aware that per
 // has some nice typedefs that let us retrieve those template
 // arguments.  It's easier to template on one thing than on five
 // things!
+//
+// You don't have to use this class to make an Ifpack2 preconditioner.
+// We just find it easier to read the code example if we wrap up the 
+// preconditioner creation in its own little class.
 template<class TpetraMatrixType>
 class PreconditionerFactory {
 public:
