@@ -1,24 +1,65 @@
-#summary Create an Ifpack2 ILUT preconditioner from a Tpetra::CrsMatrix.
+#summary Create an Ifpack2 preconditioner from a Tpetra::CrsMatrix.
 
 = Introduction = 
 
-Ifpack2 is a new package that computes incomplete factorization and overlapping domain decomposition preconditioners, for [http://trilinos.sandia.gov/packages/tpetra/ Tpetra] sparse matrix objects.  The resulting incomplete factors fully exploit manycore optimizations, and can be used as preconditioners in the iterative linear solvers package [http://trilinos.sandia.gov/packages/belos Belos].
+Ifpack2 is a package that computes various kinds of preconditioners, for [http://trilinos.sandia.gov/packages/tpetra/ Tpetra] sparse matrix objects.  The preconditioners that it computes are Tpetra objects that fully exploit "MPI+X" parallelism (X = OpenMP, Pthreads, Intel's Threading Building Blocks, ...).  They may be used either as preconditioners in the iterative linear solvers package [http://trilinos.sandia.gov/packages/belos Belos], or in your own iterative solvers.
 
 = Requirements =
 
-Building this example requires using the 10.8 release or later of
-Trilinos, because it uses a new feature of [http://trilinos.sandia.gov/packages/docs/dev/packages/teuchos/doc/html/classTeuchos_1_1TimeMonitor.html Teuchos::TimeMonitor].  If
-you would like to run this example with Trilinos 10.6, there are two places in the file (with comments) that require a tiny bit of editing.
+Building this example requires using the 10.8 release or later of Trilinos, because it uses a new feature of [http://trilinos.sandia.gov/packages/docs/dev/packages/teuchos/doc/html/classTeuchos_1_1TimeMonitor.html Teuchos::TimeMonitor].  If you would like to run this example with Trilinos 10.6, there are two places in the file (with comments) that require a tiny bit of editing.
 
 = What you might like to tweak =
 
 == The matrix to factor ==
 
-We include a very simple test matrix: A tridiagonal 1-D Laplacian.  You might like to experiment building a different matrix here.  If you are running Trilinos directly rather than through the web interface, you might like to try reading in a file.  Otherwise, you might like to make the sparsity pattern of the matrix more complicated, so that the incomplete factorization is not an exact LU factorization.
+We include a very simple test linear system: a 1-D finite difference discretization of the Poisson equation with Dirichlet boundary conditions.  This means that the convergence rate should be relatively insensitive to preconditioner parameters.  You might like to change the test problem to make it harder to solve.  If you are running Trilinos directly rather than through the web interface, you might like to try reading in a file.  Otherwise, you might like to make the sparsity pattern of the matrix more complicated, so that an incomplete factorization with zero fill is not an exact LU factorization, or make the problem nonsymmetric, or make it more ill conditioned.  What happens if you make the matrix numerically or even structurally singular?
 
-== Incomplete factorization parameters ==
+== The type of preconditioner ==
 
-It might be interesting to adjust parameters like the fill level, and see how the time to compute the factorization changes.
+The example below computes an [http://www-users.cs.umn.edu/~saad/PDF/umsi-92-38.pdf ILUT preconditioner].  ILUT is an incomplete LU factorization with an upper bound on the fill level, and two drop thresholds (relative and absolute).  It might be interesting to adjust parameters like the fill level.  Zero fill means that the structure of the L and U factors is exactly the same as the structure of their corresponding parts of the input matrix A.
+
+You might also like to try a different preconditioner.  For example, the following code fragment (from the full code example below) creates a Jacobi relaxation preconditioner.
+{{{
+    RCP<prec_type> prec;
+    {
+      Ifpack2::Factory factory;
+
+      // Get the preconditioner type.
+      const std::string precName ("RELAXATION");
+
+      // Set up the preconditioner of that type.
+      prec = factory.create (precName, A);
+
+      // The type of relaxation.  Options include "Jacobi",
+      // "Gauss-Seidel", and "Symmetric Gauss-Seidel".
+      const std::string relaxationType ("Jacobi");
+
+      // The number of relaxation sweeps to do.
+      const numSweeps = 1;
+
+      // Damping factor for Jacobi.  Default is 1.0.
+      typedef typename prec_type::scalar_type scalar_type;
+      const scalar_type dampingFactor = Teuchos::ScalarTraits<scalar_type>::one();
+
+      typedef typename Teuchos::ScalarTraits<scalar_type>::magnitudeType magnitude_type;
+      // Diagonal elements with absolute value smaller than this are set to this.
+      // Default is 0.0, meaning that zero diagonal elements are left alone.
+      // Remember that relaxation methods divide by the diagonal in each row.
+      const magnitude_type minDiagVal = 1.0e-8;
+
+      ParameterList ifpack2Params;
+
+      ifpack2Params.set ("relaxation: type", relaxationType);
+      ifpack2Params.set ("relaxation: damping factor", dampingFactor);
+      ifpack2Params.set ("relaxation: min diagonal value", minDiagVal);
+
+      prec->setParameters (ifpack2Params);
+    }
+}}}
+
+== Note on performance ==
+
+If you are running this example on the demo web server, please be aware that performance results are not necessarily indicative of performance "in the field."  This is because all of you are sharing the server, so the available memory bandwidth and CPU cycles per person is less than it would normally be if you were running on a dedicated compute node or on your own lightly loaded workstation.
 
 = Code example =
 
@@ -139,6 +180,14 @@ public:
 
     err << "Creating ILUT preconditioner" << endl 
 	<< "-- Configuring" << endl;
+
+    //
+    // CREATE THE PRECONDITIONER AND SET PARAMETERS
+    //
+    // This doesn't actually _compute_ the preconditioner.
+    // It just sets up the specific type of preconditioner and
+    // its associated parameters (which depend on the type).
+    //
     RCP<prec_type> prec;
     {
       Ifpack2::Factory factory;
