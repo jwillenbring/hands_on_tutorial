@@ -31,6 +31,7 @@ This example demonstrates a few different interfaces for Tpetra RTI. It utilizes
 
 #include <functional>
 
+// Function object that takes two arguments and returns the second
 template <class S>
 class AssignSecond {
   public:
@@ -38,6 +39,7 @@ class AssignSecond {
   S operator()(const S &s1, const S &s2) {return s2;}
 };
 
+// A few examples of RTI capability
 template <class Node>
 void simple_rti_examples(const Teuchos::RCP<const Teuchos::Comm<int> > &comm, const Teuchos::RCP<Node> &node)
 {
@@ -85,16 +87,19 @@ void simple_rti_examples(const Teuchos::RCP<const Teuchos::Comm<int> > &comm, co
   }
 }
 
+// User-specified run object; think of this as main(), but templated on the node type
 template <class Node>
 class runTest {
   public:
-  static void run(Teuchos::ParameterList &myMachPL, const Teuchos::RCP<const Teuchos::Comm<int> > &comm, const Teuchos::RCP<Node> &node) 
-  {
-    std::cout << "Running test with Node==" << Teuchos::typeName(*node) << " on rank " << comm->getRank() << "/" << comm->getSize() << std::endl;
-    simple_rti_examples<Node>(comm,node);
-  }
+    // HybridNode requires a method with this signature
+    static void run(Teuchos::ParameterList &myMachPL, const Teuchos::RCP<const Teuchos::Comm<int> > &comm, const Teuchos::RCP<Node> &node) 
+    {
+      std::cout << "Running test with Node==" << Teuchos::typeName(*node) << " on rank " << comm->getRank() << "/" << comm->getSize() << std::endl;
+      simple_rti_examples<Node>(comm,node);
+    }
 };
 
+// Actual main(): configure the HybridPlatform
 int main(int argc, char **argv) {
   Teuchos::GlobalMPISession mpisess(&argc,&argv,&std::cout);
   Teuchos::RCP<const Teuchos::Comm<int> > comm = Teuchos::createMpiComm<int>(Teuchos::opaqueWrapper<MPI_Comm>(MPI_COMM_WORLD));
@@ -130,6 +135,8 @@ int main(int argc, char **argv) {
     "</ParameterList>                                                              "
   );
 
+  // Load the machine ParameterList from the string above; this will typically 
+  // be loaded from an XML file
   Teuchos::ParameterList machPL;
   Teuchos::updateParametersFromXmlString(machine_list, inOutArg(machPL));
   Tpetra::HybridPlatform platform(comm,machPL);
