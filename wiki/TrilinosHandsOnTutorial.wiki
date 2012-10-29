@@ -18,8 +18,9 @@
     * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
     * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
     * Installed at St. John's University, MN.  The following versions of the C++ interface are available (the examples below use the C++ interface):
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Trilinos 11.0, MPI-enabled]
-          * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.8/c++/index.html Trilinos 10.8, MPI-enabled]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP-enabled]
+           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-OpenMP-RTI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP/RTI-enabled]
+        * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.8/c++/index.html Trilinos 10.8, MPI-enabled]
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-TBB-10.8.3/c++/index.html Trilinos 10.8, TBB-enabled]
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.8.3/c++/index.html Trilinos 10.8, CUDA-enabled]
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Trilinos development branch (10.7), MPI-enabled]
