@@ -1,16 +1,24 @@
-#summary Set and get parameters and create validators in a Teuchos::ParameterList, and use validators to validate a list.
+#summary Learn how to use Teuchos::ParameterList to set and get parameters for Trilinos solvers.
 
-= Introduction =
+= Lesson topics =
 
-Teuchos' ParameterList class is a key/value database that can be nested (a ParameterList can be a value).  Since both numerical algorithms and software have a natural hierarchical organization, this makes it easy to configure a whole solver software stack using a single ParameterList.
+This lesson explains how to use the `Teuchos::ParameterList` class to set and get parameters for Trilinos solvers.
+
+= What is a !ParameterList? =
+
+The !ParameterList class is a key/value database.  The keys are strings (stored as `std::string`), and the values may have any desired type.  Different values in a !ParameterList may have different types.  !ParameterList instances may even be nested: a !ParameterList can be a value in a !ParameterList).  Since both numerical algorithms and software have a natural hierarchical organization, this nesting feature makes it easy to configure a whole solver software stack using a single !ParameterList.
+
+If you're more familiar with PETSc than Trilinos, it might help to compare how Trilinos uses !ParameterList to how PETSc passing parameters to solvers as command-line arguments.  While !ParameterList by itself is an arbitrary key/value store that you may use for your own purposes, Trilinos tends to use it as a way to pass configuration parameters in and out of nested numerical algorithms.
 
 = Details =
 
 == Serialization ==
 
-ParameterLists can be written ("serialized") to a human-readable XML file, and read in again from an XML file.  This serialization capability is useful for getting reproducible results from Trilinos solvers, when a ParameterList is being used as an input deck.  However, ParameterList may be used as a general data container as well as an input deck.  In particular, it can hold some types of data that ParameterList does not know how to serialize.  ParameterList _does_ know how to serialize basic data types like integers, floating-point numbers, and strings, as well as a few other types.  You can also teach ParameterList how to serialize other data types by writing your own serialization module for them.
+!ParameterList instances can be written ("serialized") to a human-readable XML file, and read in again from an XML file.  This serialization capability is useful for getting reproducible results from Trilinos solvers, when a !ParameterList is being used as an input deck.  However, !ParameterList may be used as a general data container as well as an input deck.  In particular, it can hold some types of data that !ParameterList does not know how to serialize.  It may even hold types that do not make sense to serialize, like raw memory addresses.  !ParameterList will do its best, but you should be aware that using a raw memory address read in from an XML file probably does not make sense.
 
-This is a WebTrilinos demo and you don't have access to files on the web server, so we can't easily demonstrate the serialization capability here.  However, we encourage you to explore the ParameterList examples and tests in the Teuchos package.
+!ParameterList _does_ know how to serialize basic data types like integers, floating-point numbers, and strings, as well as a few other types.  You can also teach !ParameterList how to serialize other data types by writing your own serialization module for them.
+
+This is a WebTrilinos demo and you don't have access to files on the web server, so we can't easily demonstrate the serialization capability here.  However, we encourage you to explore the !ParameterList examples and tests in the Teuchos package.
 
 = Example code =
 
@@ -20,7 +28,8 @@ This is a WebTrilinos demo and you don't have access to files on the web server,
 #include "Teuchos_Array.hpp"
 #include "Teuchos_Version.hpp"
 
-int main(int argc, char* argv[])
+int 
+main (int argc, char* argv[])
 {
 
   std::cout << Teuchos::Teuchos_Version() << std::endl << std::endl;
