@@ -10,7 +10,7 @@ The purpose of the !HybridPlatform is to ease the use of multiple nodes by appli
 
 = Example =
 
-!WebTrilinos users: Modify the string `machine_list` to select a different node type.
+*!WebTrilinos users*: Modify the string `machine_list` to select a different node type.
 {{{
 #include <Teuchos_GlobalMPISession.hpp>
 #include <Teuchos_XMLParameterListReader.hpp>
