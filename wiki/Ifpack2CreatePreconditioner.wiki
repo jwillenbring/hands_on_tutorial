@@ -3,11 +3,11 @@
 = Lesson topics =
 
 This lesson shows how to create an Ifpack2 preconditioner from a Tpetra sparse matrix.  Ifpack2 is a package that can compute various kinds of preconditioners or smoothers, including the following:
-  - Relaxations (Jacobi, Gauss-Seidel, and Symmetric Gauss-Seidel)
-  - Chebyshev (a polynomial preconditioner)
-  - ILUT (incomplete LU with threshold and fill level parameters)
-  - RILUK (incomplete LU with threshold, fill level, and overlap parameters)
-  - Diagonal (useful mainly only for comparison)
+  * Relaxations (Jacobi, Gauss-Seidel, and Symmetric Gauss-Seidel)
+  * Chebyshev (a polynomial preconditioner)
+  * ILUT (incomplete LU with threshold and fill level parameters)
+  * RILUK (incomplete LU with threshold, fill level, and overlap parameters)
+  * Diagonal (useful mainly only for comparison)
 
 Ifpack2's preconditioners are defined on the calling process.  RILUK also allows overlap between process' domains.
 
@@ -195,7 +195,7 @@ createPreconditioner (const Teuchos::RCP<const TpetraMatrixType>& A,
   err << "Creating ILUT preconditioner" << endl 
       << "-- Configuring" << endl;
   //
-  // CREATE THE PRECONDITIONER AND SET PARAMETERS
+  // Create the preconditioner and set parameters.
   //
   // This doesn't actually _compute_ the preconditioner.
   // It just sets up the specific type of preconditioner and
@@ -212,6 +212,9 @@ createPreconditioner (const Teuchos::RCP<const TpetraMatrixType>& A,
     TimeMonitor mon (*initTimer);
     prec->initialize();
   }
+
+  // THIS ACTUALLY COMPUTES THE PRECONDITIONER
+  // (e.g., does the incomplete factorization).
   err << "-- Computing" << endl;
   {
     TimeMonitor mon (*computeTimer);
