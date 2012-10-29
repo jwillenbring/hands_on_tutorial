@@ -18,7 +18,7 @@ It is possible to associate a "validator" function to any key/value pair in a !P
 
 == Serialization ==
 
-!ParameterList instances can be written ("serialized") to a human-readable XML file, and read in again from an XML file.  This serialization capability is useful for getting reproducible results from Trilinos solvers, when a !ParameterList is being used as an input deck.  However, !ParameterList may be used as a general data container as well as an input deck.  In particular, it can hold some types of data that !ParameterList does not know how to serialize.  It may even hold types that do not make sense to serialize, like raw memory addresses.  !ParameterList will do its best, but you should be aware that using a raw memory address read in from an XML file probably does not make sense.
+!ParameterList instances can be written ("serialized") to a human-readable XML file, and read in again from an XML file.  This serialization capability is useful for getting reproducible results from Trilinos solvers, when a !ParameterList is being used as an input deck.  However, !ParameterList may be used as a general data container as well as an input deck.  In particular, it can hold some types of data that !ParameterList does not know how to serialize.  It may even hold types that do not make sense to serialize, like raw memory addresses.  !ParameterList will do its best, but you should be aware that using a raw memory address read in from an XML file probably does not make sense.  You can see what happens to a pointer (in this case, an RCP to an Array) in the example below.
 
 !ParameterList _does_ know how to serialize basic data types like integers, floating-point numbers, and strings, as well as a few other types.  You can also teach !ParameterList how to serialize other data types by writing your own serialization module for them.
 
@@ -57,8 +57,9 @@ main (int argc, char* argv[])
   // your own.  This particular validator restricts the input string to
   // a finite set of values, and converts the string to an integer if it
   // is one of those values.
-  RCP<Teuchos::StringToIntegralParameterEntryValidator<int> > solverValidator =
-    rcp (new Teuchos::StringToIntegralParameterEntryValidator<int> (tuple<std::string> ("GMRES", "CG", "TFQMR"), "Solver"));
+  typedef Teuchos::StringToIntegralParameterEntryValidator<int> validator_type;
+  RCP<validator_type> solverValidator =
+    rcp (new validator_type (tuple<std::string> ("GMRES", "CG", "TFQMR"), "Solver"));
  
   // Set the "Solver" parameter.  Specify the above validator; 
   // it will validate the "GMRES" input right here.
@@ -67,59 +68,55 @@ main (int argc, char* argv[])
   // The templated ``set'' method should cast the input value to the
   // correct data type.  However, in the case where the compiler is not casting the input
   // value to the expected data type, you may use an explicit cast.
-  My_List.set ("Tolerance", (float)(1e-10), "The tolerance used for the convergence check");
+  My_List.set ("Tolerance", static_cast<float> (1e-10), "Tolerance used for convergence check");
 
-  /* Reference-counted pointers can also be passed through a Teuchos::ParameterList.
-     To illustrate this we will use the Teuchos::Array class to create an array of 10 doubles
-     representing an initial guess for a linear solver, whose memory is being managed by a
-     Teuchos::RCP.
-   */
+  // Reference-counted pointers can also be passed through a Teuchos::ParameterList.
+  // To illustrate this we will use the Teuchos::Array class to create an array of 10 doubles
+  // representing an initial guess for a linear solver, whose memory is being managed by a
+  // Teuchos::RCP.  Be aware that serializing or printing pointer values doesn't make sense.
   RCP<Array<double> > rcp_Array = rcp (new Array<double> (10, 0.0));
-  My_List.set ("Initial Guess", rcp_Array, "The initial guess as a RCP to an array object.");
+  My_List.set ("Initial Guess", rcp_Array, "The initial guess as a RCP to an Array.");
 
   // Parameter lists may be nested.  This means that a ParameterList 
   // is a valid value in another ParameterList.  We say then that the first
-  // ParameterList is a "sublist" of the second one.  We also give you a
-  // special syntax for creating a sublist in an existing ParameterList 
-  // and obtaining a reference to it.
-  ParameterList& Prec_List = My_List.sublist ("Preconditioner", false, "Sublist that defines the preconditioner.");
+  // ParameterList is a "sublist" of the second one.  We also supply a 
+  // method that creates a sublist in an existing ParameterList and 
+  // returns a reference to it.
+  ParameterList& Prec_List = 
+    My_List.sublist ("Preconditioner", false, "Sublist that defines the preconditioner.");
 
-  // Fill the sublist with parameters.
+  // Fill the sublist with parameters.  Prec_List is a reference,
+  // so the parameters will go directly into the sublist of My_List.
   Prec_List.set ("Type", "ILU", "The type of preconditioner to use");
-  Prec_List.set ("Drop Tolerance", 1e-3,"Drop tolerance for incomplete factorization");
+  Prec_List.set ("Drop Tolerance", 1e-3, "Drop tolerance for incomplete factorization");
 
-  // The parameter list can be queried about the existance of a parameter, sublist, or type:
-  // Has a solver been chosen?
-  bool solver_defined = false, prec_defined = false, dtol_double = false;
-  solver_defined = My_List.isParameter("Solver");
+  // The parameter list can be queried about the existence
+  // of a parameter, sublist, or type.  Has a solver been chosen?
+  bool solver_defined = My_List.isParameter("Solver");
 
   // Has a preconditioner been chosen?
-  prec_defined = My_List.isSublist("Preconditioner");
+  bool prec_defined = My_List.isSublist("Preconditioner");
 
   // Has a tolerance been chosen and is it a double-precision number?
   // Note the syntax for calling a method which is templated.
-  bool tol_double = false;
-  tol_double = My_List.isType<double> ("Tolerance");
+  bool tol_double = My_List.isType<double> ("Tolerance");
 
   // Has a drop tolerance been chosen and is it a double-precision number?
   // This is a nonmember template function. 
-  dtol_double = Teuchos::isParameterType<double>(Prec_List, "Drop Tolerance");
+  bool dtol_double = Teuchos::isParameterType<double>(Prec_List, "Drop Tolerance");
 
-  /* The last two methods above for checking the parameter type are equivalent.
-     Some very old compilers might not like the syntax of the first type-checking
-     method.  Thus, we offer the second type-checking method as an alternative.
-  */
-  // Parameters can be retrieved from the parameter list in quite a few ways:
-  // Get method that creates and sets the parameter if it doesn't exist.
-  int its = 0;
-  its = My_List.get("Max Iters", 1200);
+  // The last two methods above for checking the parameter type are equivalent.
+  // Some very old compilers might not like the syntax of the first type-checking
+  // method.  Thus, we offer the second type-checking method as an alternative.
+ 
+ // Parameters can be retrieved from the parameter list in quite a few ways.
+  // Here, we call the 'get' method that creates and sets the parameter if it doesn't exist.
+  its = My_List.get ("Max Iters", 1200);
 
-  float tol;
   // Get method that retrieves a parameter of a particular type.
-  tol = My_List.get<float>("Tolerance");
-
-  // Get the "Solver" value and validate!
-  std::string solver = solverValidator->validateString (Teuchos::getParameter<std::string> (My_List,"Solver"));
+  // This will throw an exception if the parameter doesn't exist.
+  // It will not modify the list in that case.
+  float tol = My_List.get<float> ("Tolerance");
 
   /* In the above example, the first ``get'' method is a safe way of
      obtaining a parameter if you don't know that it exists yet in the list.
@@ -145,6 +142,10 @@ main (int argc, char* argv[])
   catch ( std::exception& e) {
     tol = 1e-6;
   }
+
+  // Get the "Solver" value and validate!
+  std::string solver = 
+    solverValidator->validateString (Teuchos::getParameter<std::string> (My_List, "Solver"));
 
   std::cout << "\n# Printing this parameter list using operator<<(...) ...\n\n";
   std::cout << My_List << std::endl;
