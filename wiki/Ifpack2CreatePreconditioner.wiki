@@ -13,9 +13,13 @@ Ifpack2's preconditioners are defined on the calling process.  RILUK also allows
 
 Ifpack2 accepts a [http://trilinos.sandia.gov/packages/tpetra/ Tpetra] sparse matrix object (!CrsMatrix) as input.  The preconditioners that it computes are Tpetra objects that fully exploit "MPI+X" parallelism (X = OpenMP, Pthreads, Intel's Threading Building Blocks, ...).  They may be used either as preconditioners in the iterative linear solvers package [http://trilinos.sandia.gov/packages/belos Belos], as smoothers, or in your own iterative solvers or algebraic multigrid implementations.
 
-= Prerequisites and requirements =
+= Related lessons =
 
-This example will make more sense if you have done the Tpetra lessons, in particular for initialization and sparse matrix fill.
+This example will make more sense if you have done the Tpetra lessons.  In particular, you should understand the [TpetraPowerMethod Tpetra power method] example, that creates a Tpetra sparse matrix and vectors and uses them for a simple numerical algorithm.
+
+The [Tpetra_Belos_CreateSolver Belos iterative solver example] shows how to use an Ifpack2 conditioner in an iterative solve.  It uses this lesson's example code to create an Ifpack2 preconditioner, so you can apply what you've learned about Ifpack2 to that lesson.
+
+= Requirements =
 
 Building this example requires using the 10.8 release or later of Trilinos, because it uses a new feature of [http://trilinos.sandia.gov/packages/docs/dev/packages/teuchos/doc/html/classTeuchos_1_1TimeMonitor.html Teuchos::TimeMonitor].  If you would like to run this example with Trilinos 10.6, you will need to change the `getNewCounter` calls to `getNewTimer`.
 
