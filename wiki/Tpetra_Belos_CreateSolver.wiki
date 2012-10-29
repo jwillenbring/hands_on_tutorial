@@ -408,8 +408,8 @@ main (int argc, char *argv[])
   RCP<op_type> M = createPreconditioner<matrix_type> (A, precondType, plist, out, err);
 
   // Create vectors ("multivectors" may store one or more vectors).
-  RCP<vec_type> X = rcp (A->getDomainMap (), 1); // Set to zeros by default.
-  RCP<vec_type> B = rcp (A->getRangeMap (), 1);
+  RCP<vec_type> X = rcp (new vec_type (A->getDomainMap (), 1)); // Set to zeros by default.
+  RCP<vec_type> B = rcp (new vec_type (A->getRangeMap (), 1));
   B->randomize ();
 
   // Solve the linear system using Belos.
