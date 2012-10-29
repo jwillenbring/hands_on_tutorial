@@ -33,26 +33,32 @@ Trilinos' Tpetra package has supported manycore compute nodes for several years.
 
 == !WebTrilinos Portal ==
 
-[http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] provides a web-based "scientific portal" environment.  It lets you build and run code that uses any of several Trilinos packages.  WebTrilinos supports most, but not all Trilinos packages.  It is installed at St. John's University in Minnesota.
+[http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] provides a web-based "scientific portal" environment.  It lets you build and run code that uses any of several Trilinos packages.  !WebTrilinos supports most, but not all Trilinos packages.  It is installed at St. John's University in Minnesota.
 
 For today's tutorial and demonstrations, we will use [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html this portal].  It includes a version of Trilinos 11 that was built with MPI support, as well as Pthreads (TPI), OpenMP, and "serial" node types. Access to this site is password protected.  Login information will be given during live tutorials as needed.
 
 [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html CLICK HERE TO GET TO THE TRILINOS WEB PORTAL.]
  
-== Now for some examples: ==
+== Lessons, exercises, and examples ==
 
-  # *Start with some tools using the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*
-    * *Basic Support Tools*
-       * [TeuchosPL Build a parameter list (used to pass parameters to all Trilinos packages).]
-       * [TeuchosRCP Build a reference-counted pointer (used to eliminate memory leak issues in most Trilinos packages).]
-       * [TeuchosCLP Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted [unhighlighted]]
-       * [TeuchosTime Build a time monitor (tool for timing individual methods or operations in a program).]
-  # *Examples using [http://trilinos.sandia.gov/packages/kokkos Kokkos] and  [http://trilinos.sandia.gov/packages/tpetra Tpetra] packages.*
-    * *Basic node manipulation and use*
-       * [PrintAvailableKokkosNodeTypes Detect which node types were enabled and which is the default.]
-       * [TpetraVectorWithNodeSelect Simple Tpetra Vector example where Kokkos node type is explicitly selected.]
-       * [TpetraPowerMethodWithNodeSelect The Power Method using Tpetra and explicitly selected Kokkos node type.]
-       * [Ifpack2CreatePreconditioner Create a preconditioner using Ifpack2 and Tpetra.]
+=== Tpetra examples ===
+
+  * [Tpetra_Lesson01_HelloWorld Basic initialization (MPI if applicable) for using Tpetra]
+  * [Tpetra_Lesson02_Vector Learn how to specify a data distribution for Tpetra objects, create distributed vectors using those distributions, and compute with the vectors.]
+  * [TpetraPowerMethod Create a Tpetra sparse matrix and vectors, and use them to implement the power method] (for estimating the largest eigenvalue of the matrix).
+  * [Tpetra_Lesson_SparseMatrixFill Explore trade-offs between flexibility and efficiency when adding entries to a Tpetra sparse matrix.]
+  * [Tpetra_Exercises_Advanced_CrsMatrix_ExplicitTranspose Exercise your understanding of sparse matrix and vector distributions in Tpetra.]
+
+=== Ifpack2 preconditioner / smoother examples ===
+
+  * [Ifpack2CreatePreconditioner Create a preconditioner for a Tpetra sparse matrix using Ifpack2.]
+
+=== Teuchos utilities examples ===
+
+  * [TeuchosPL Build a !ParameterList (used to pass parameters to all Trilinos packages).]
+  * [TeuchosRCP Use Teuchos' "smart pointer" class to manage memory safely.]
+  * [TeuchosCLP Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted [unhighlighted]]
+  * [TeuchosTime Create timers and compute statistics]
 
 ---- 
 
