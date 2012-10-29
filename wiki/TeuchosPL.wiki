@@ -109,9 +109,9 @@ main (int argc, char* argv[])
   // Some very old compilers might not like the syntax of the first type-checking
   // method.  Thus, we offer the second type-checking method as an alternative.
  
- // Parameters can be retrieved from the parameter list in quite a few ways.
+  // Parameters can be retrieved from the parameter list in quite a few ways.
   // Here, we call the 'get' method that creates and sets the parameter if it doesn't exist.
-  its = My_List.get ("Max Iters", 1200);
+  int its = My_List.get ("Max Iters", 1200);
 
   // Get method that retrieves a parameter of a particular type.
   // This will throw an exception if the parameter doesn't exist.
@@ -151,7 +151,7 @@ main (int argc, char* argv[])
   std::cout << My_List << std::endl;
 
   std::cout << "\n# Printing the parameter list only showing documentation fields ...\n\n";
-    My_List.print(std::cout,Teuchos::ParameterList::PrintOptions().showDoc(true).indent(2).showTypes(true));
+  My_List.print(std::cout,Teuchos::ParameterList::PrintOptions().showDoc(true).indent(2).showTypes(true));
 
   return 0;
 }
