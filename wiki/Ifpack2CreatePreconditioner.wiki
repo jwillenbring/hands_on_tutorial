@@ -18,46 +18,46 @@ We include a very simple test linear system: a 1-D finite difference discretizat
 
 The example below computes an [http://www-users.cs.umn.edu/~saad/PDF/umsi-92-38.pdf ILUT preconditioner].  ILUT is an incomplete LU factorization with an upper bound on the fill level, and two drop thresholds (relative and absolute).  It might be interesting to adjust parameters like the fill level.  Zero fill means that the structure of the L and U factors is exactly the same as the structure of their corresponding parts of the input matrix A.
 
-You might also like to try a different preconditioner.  For example, the following code fragment (from the full code example below) creates a Jacobi relaxation preconditioner.  This fragment belongs in the create() method in the !PreconditionerFactory class in the example below; it replaces the fragment with the comment "CREATE THE PRECONDITIONER AND SET PARAMETERS".
+You might also like to try a different preconditioner.  For example, the following implementation of `getPrecondTypeAndParameters()` (function in the full code example below) creates a Jacobi relaxation preconditioner.  
 {{{
-    RCP<prec_type> prec;
-    {
-      Ifpack2::Factory factory;
+void 
+getPrecondTypeAndParameters (std::string& precondType, Teuchos::ParameterList& pl)
+{
+  using Teuchos::ParameterList;
 
-      // Get the preconditioner type.
-      const std::string precName ("RELAXATION");
+  // The name of the type of preconditioner to use.  "RELAXATION"
+  // includes Jacobi and variants of Gauss-Seidel.  You can pick which
+  // one of these to use in the ParameterList.
+  precondType = "RELAXATION";
 
-      // Set up the preconditioner of that type.
-      prec = factory.create (precName, A);
+  // The type of relaxation.  Options include "Jacobi",
+  // "Gauss-Seidel", and "Symmetric Gauss-Seidel".
+  const std::string relaxationType ("Jacobi");
 
-      // The type of relaxation.  Options include "Jacobi",
-      // "Gauss-Seidel", and "Symmetric Gauss-Seidel".
-      const std::string relaxationType ("Jacobi");
+  // The number of relaxation sweeps to do.
+  const int numSweeps = 1;
 
-      // The number of relaxation sweeps to do.
-      const numSweeps = 1;
+  // Damping factor for Jacobi.  Default is 1.0.  
+  //
+  // NOTE: In general, 'double' should be replaced with a ScalarType
+  // template parameter (the type of entries in the sparse matrix).
+  // Complex-valued damping factors are legal if ScalarType is complex.
+  const double dampingFactor = 1.0;
 
-      // Damping factor for Jacobi.  Default is 1.0.
-      // STS is a typedef in the code example for Teuchos::ScalarTraits<scalar_type>.
-      // This is a scalar_type and not a magnitude_type; 
-      // complex-valued damping factors are legal if scalar_type is complex.
-      const scalar_type dampingFactor = STS::one();
+  // Diagonal elements with absolute value smaller than this are set to this.
+  // Default is 0.0, meaning that zero diagonal elements are left alone.
+  // Remember that relaxation methods divide by the diagonal in each row.
+  //
+  // NOTE: In general, 'double' should be replaced with
+  // Teuchos::ScalarTraits<ScalarType>::magnitudeType.  Absolute values
+  // (a.k.a. magnitudes) have "magnitude type," which is real if
+  // ScalarType is complex.
+  const double minDiagVal = 1.0e-8;
 
-      // Diagonal elements with absolute value smaller than this are set to this.
-      // Default is 0.0, meaning that zero diagonal elements are left alone.
-      // Remember that relaxation methods divide by the diagonal in each row.
-      // magnitude_type is a typedef derived from scalar_type.  If scalar_type 
-      // is complex, then magnitude_type is real.   
-      const magnitude_type minDiagVal = 1.0e-8;
-
-      ParameterList ifpack2Params;
-
-      ifpack2Params.set ("relaxation: type", relaxationType);
-      ifpack2Params.set ("relaxation: damping factor", dampingFactor);
-      ifpack2Params.set ("relaxation: min diagonal value", minDiagVal);
-
-      prec->setParameters (ifpack2Params);
-    }
+  pl.set ("relaxation: type", relaxationType);
+  pl.set ("relaxation: damping factor", dampingFactor);
+  pl.set ("relaxation: min diagonal value", minDiagVal);
+}
 }}}
 
 == Note on performance ==
