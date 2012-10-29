@@ -2,6 +2,8 @@
 
 = Introduction =
 
-
+Tpetra's support for multicore computing proceeds from the Kokkos shared-memory node API. This is a compile-time polymorphic interface, based on template metaprogamming. As such, each Tpetra computational object is templated on a Kokkos node.
 
 = Details =
+
+= Example =
