@@ -31,11 +31,13 @@ Trilinos' Tpetra package has supported manycore compute nodes for several years.
 
 ----
 
-== [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] Portal ==
+== !WebTrilinos Portal ==
 
-[http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.  WebTrilinos supports most, but not all Trilinos packages.  It is installed at St. John's University, MN.  
+[http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] provides a web-based "scientific portal" environment.  It lets you build and run code that uses any of several Trilinos packages.  WebTrilinos supports most, but not all Trilinos packages.  It is installed at St. John's University in Minnesota.
 
-For today's tutorial and demonstrations, we will use [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html this portal].  It includes a version of Trilinos 11 that was built with Pthreads (TPI), OpenMP, and "serial" node types. Access to this site is password protected.  Login information will be given during live tutorials as needed.
+For today's tutorial and demonstrations, we will use [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html this portal].  It includes a version of Trilinos 11 that was built with MPI support, as well as Pthreads (TPI), OpenMP, and "serial" node types. Access to this site is password protected.  Login information will be given during live tutorials as needed.
+
+[https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html CLICK HERE TO GET TO THE TRILINOS WEB PORTAL.]
  
 == Now for some examples: ==
 
