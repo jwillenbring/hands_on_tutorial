@@ -1,0 +1,7 @@
+#summary Tpetra::HybridPlatform for supporting diverse compute nodes
+
+= Introduction =
+
+
+
+= Details =
