@@ -60,225 +60,273 @@ The reason for this difference is that Tpetra's `fillComplete()` may actually co
 #include "Tpetra_Vector.hpp"
 #include "Tpetra_CrsMatrix.hpp"
 
+// Implementation of the power method for estimating the eigenvalue of
+// maximum magnitude of a matrix.  This function returns the
+// eigenvalue estimate.
 //
-// Function prototype for the power method implementation.
+// TpetraOperatorType: the type of the Tpetra::Operator specialization
+//   used to represent the sparse matrix or operator A.
 //
-template <class Scalar, class Ordinal>
-Scalar 
-powerMethod (const Teuchos::RCP<const Tpetra::Operator<Scalar,Ordinal> > &A, 
-	     size_t niters, 
-	     typename Teuchos::ScalarTraits<Scalar>::magnitudeType tolerance, 
-	     bool verbose);
+// A: The sparse matrix or operator, as a Tpetra::Operator.
+// niters: Maximum number of iterations of the power method.
+// tolerance: If the 2-norm of the residual A*x-lambda*x (for the
+//   current eigenvalue estimate lambda) is less than this, stop
+//   iterating.  The complicated expression for the type ensures that
+//   if the type of entries in the matrix A (scalar_type) is complex,
+//   then we'll be using a real-valued type ("magnitude") for the
+//   tolerance.  (You can't compare complex numbers using less than,
+//   so you can't test for convergence using a complex number.)
+// out: output stream to which to print the current status of the
+//   power method.
+template <class TpetraOperatorType>
+typename TpetraOperatorType::scalar_type
+powerMethod (const TpetraOperatorType& A,
+             const size_t niters, 
+             const typename Teuchos::ScalarTraits<typename TpetraOperatorType::scalar_type>::magnitudeType tolerance,
+	     std::ostream& out);
 
 int 
-main(int argc, char *argv[]) 
+main (int argc, char *argv[]) 
 {
-  using std::cout;
-  using std::endl;
+  // global_size_t: Tpetra defines this unsigned integer type big
+  // enough to hold any global dimension or amount of data.
   using Tpetra::global_size_t;
+  using Teuchos::Array;
+  using Teuchos::ArrayView;
+  using Teuchos::ArrayRCP;
+  using Teuchos::arcp;
   using Teuchos::RCP;
   using Teuchos::rcp;
+  using Teuchos::tuple;
+  using std::cerr;
+  using std::cout;
+  using std::endl;
 
-  typedef double Scalar;  
-  typedef int Ordinal;
-  typedef Teuchos::ScalarTraits<Scalar>::magnitudeType Magnitude;
+  // Template parameters for Tpetra objects.  Tpetra::CrsMatrix has
+  // five template parameters, but all but the first of them have
+  // defaults.
+  typedef double scalar_type;
+  typedef int local_ordinal_type;
+  typedef long global_ordinal_type;
+
+  // Convenience typedef.
+  typedef Teuchos::ScalarTraits<scalar_type>::magnitudeType magnitude_type;
 
   Teuchos::oblackholestream blackhole;
-  Teuchos::GlobalMPISession mpiSession (&argc,&argv,&blackhole);
+  Teuchos::GlobalMPISession mpiSession (&argc, &argv, &blackhole);
   RCP<const Teuchos::Comm<int> > comm = Tpetra::DefaultPlatform::getDefaultPlatform().getComm();
 
-  size_t myRank = comm->getRank();
-  size_t numProc = comm->getSize();
-  bool verbose = (myRank==0);
+  const size_t myRank = comm->getRank();
+  //const size_t numProcs = comm->getSize();
 
-  if (verbose) {
-    cout << Tpetra::version() << endl << endl;
-  }
-  cout << *comm;
+  // Make an output stream (for verbose output) that only prints on
+  // Proc 0 of the communicator.
+  Teuchos::oblackholestream blackHole;
+  std::ostream& out = (myRank == 0) ? std::cout : blackHole;
 
-  // Get the number of local equations from the command line
-  // Fix number of equations at 50 for now
+  // Print the current version of Tpetra.
+  out << Tpetra::version() << endl << endl;
+
+  // The number of rows and columns in the matrix.
   const global_size_t numGlobalElements = 50;
-/*  if (argc != 2) {
-    if (verbose) {
-      cout << "Usage: " << argv[0] << " number_of_equations" << endl;
-    }
-    std::exit(1);
-  }
-  const global_size_t numGlobalElements = std::atoi(argv[1]);
 
-  if (numGlobalElements < numProc) {
-    if (verbose) {
-      cout << "numGlobalBlocks = " << numGlobalElements 
-                << " cannot be less than the number of processors = " << numProc << endl;
-    }
-    std::exit(1);
-  }
-*/
-  
-  // Construct a Map that puts approximately the same number of 
+  // Construct a Map that puts approximately the same number of
   // equations on each processor.
-  const Ordinal indexBase = 0;
-  RCP<const Tpetra::Map<Ordinal> > map = rcp (new Tpetra::Map<Ordinal> (numGlobalElements, indexBase, comm));
+  const global_ordinal_type indexBase = 0;
+  typedef Tpetra::Map<local_ordinal_type, global_ordinal_type> map_type;
+  RCP<const map_type> map = rcp (new map_type (numGlobalElements, indexBase, comm));
 
-  // Get update list and number of local equations from newly created map.
-
+  // Get the list of global indices that this process owns.  In this
+  // example, this is unnecessary, because we know that we created a
+  // contiguous Map (see above).  (Thus, we really only need the min
+  // and max global index on this process.)  However, in general, we
+  // don't know what global indices the Map owns, so if we plan to add
+  // entries into the sparse matrix using global indices, we have to
+  // get the list of global indices this process owns.
   const size_t numMyElements = map->getNodeNumElements();
-  Teuchos::ArrayView<const Ordinal> myGlobalElements = map->getNodeElementList();
+  ArrayView<const global_ordinal_type> myGlobalElements = map->getNodeElementList ();
 
-  // Create an OTeger vector NumNz that is used to build the Petra Matrix.
-  // NumNz[i] is the Number of OFF-DIAGONAL term for the ith global equation 
-  // on this processor
+  out << endl << "Creating the sparse matrix" << endl;
 
-  Teuchos::ArrayRCP<size_t> NumNz = Teuchos::arcp<size_t>(numMyElements);
+  // Create a Tpetra sparse matrix whose rows have distribution given by the Map.
+  typedef Tpetra::CrsMatrix<scalar_type, local_ordinal_type, global_ordinal_type> mat_type;
+  RCP<mat_type> A = rcp (new mat_type (map, 0));
 
-  // We are building a tridiagonal matrix where each row has (-1 2 -1)
-  // So we need 2 off-diagonal terms (except for the first and last equation)
-
+  // Fill the sparse matrix, one row at a time.
+  const scalar_type two    = static_cast<scalar_type>( 2.0);
+  const scalar_type negOne = static_cast<scalar_type>(-1.0);
   for (size_t i = 0; i < numMyElements; ++i) {
-    if (myGlobalElements[i] == 0 || static_cast<global_size_t>(myGlobalElements[i]) == numGlobalElements-1) {
-      NumNz[i] = 2; // Boundary (first or last equation)
-    } else {
-      NumNz[i] = 3;
-    }
-  }
-
-  // Create a Tpetra::Matrix using the Map, with a static allocation dictated by NumNz
-  RCP< Tpetra::CrsMatrix<Scalar,Ordinal> > A = 
-    rcp (new Tpetra::CrsMatrix<Scalar,Ordinal> (map, NumNz, Tpetra::StaticProfile));
-  
-  // We are done with NumNZ
-  NumNz = Teuchos::null;
-
-  // Add rows one at a time.  Off diagonal values will always be -1.
-  const Scalar two    = static_cast<Scalar>( 2.0);
-  const Scalar negOne = static_cast<Scalar>(-1.0);
-  for (size_t i=0; i<numMyElements; i++) {
+    // A(0, 0:1) = [2, -1]
     if (myGlobalElements[i] == 0) {
-      A->insertGlobalValues( myGlobalElements[i],
-                             Teuchos::tuple<Ordinal>( myGlobalElements[i], myGlobalElements[i]+1 ),
-                             Teuchos::tuple<Scalar> ( two, negOne ) );
+      A->insertGlobalValues (myGlobalElements[i],
+                             tuple<global_ordinal_type> (myGlobalElements[i], myGlobalElements[i]+1),
+                             tuple<scalar_type> (two, negOne));
     }
-    else if (static_cast<global_size_t>(myGlobalElements[i]) == numGlobalElements-1) {
-      A->insertGlobalValues( myGlobalElements[i],
-                             Teuchos::tuple<Ordinal>( myGlobalElements[i]-1, myGlobalElements[i] ),
-                             Teuchos::tuple<Scalar> ( negOne, two ) );
+    // A(N-1, N-2:N-1) = [-1, 2]
+    else if (static_cast<global_size_t> (myGlobalElements[i]) == numGlobalElements - 1) {
+      A->insertGlobalValues (myGlobalElements[i],
+                             tuple<global_ordinal_type> (myGlobalElements[i]-1, myGlobalElements[i]),
+                             tuple<scalar_type> (negOne, two));
     }
+    // A(i, i-1:i+1) = [-1, 2, -1]
     else {
-      A->insertGlobalValues( myGlobalElements[i],
-                             Teuchos::tuple<Ordinal>( myGlobalElements[i]-1, myGlobalElements[i], myGlobalElements[i]+1 ),
-                             Teuchos::tuple<Scalar> ( negOne, two, negOne ) );
+      A->insertGlobalValues (myGlobalElements[i],
+                             tuple<global_ordinal_type> (myGlobalElements[i]-1, myGlobalElements[i], myGlobalElements[i]+1),
+                             tuple<scalar_type> (negOne, two, negOne));
     }
   }
 
-  // Finish up
+  // Tell the sparse matrix that we are done adding entries to it.
   A->fillComplete ();
-  if (verbose) 
-    cout << endl << A->description() << endl << endl;
 
+  // Number of iterations
+  const size_t niters = static_cast<size_t> (500);
+  // Desired (absolute) residual tolerance
+  const magnitude_type tolerance = 1.0e-2;
+
+  // Run the power method.
+  scalar_type lambda = powerMethod<mat_type> (*A, niters, tolerance, out);
+
+  // 
+  // Now we're going to change values in the sparse matrix and run the
+  // power method again.  In Tpetra, if fillComplete() has been
+  // called, you have to call resumeFill() before you may change the
+  // matrix (either its values or its structure).
   //
-  // Create vectors for Power method
-  //
-
-  // variables needed for iteration
-  Scalar lambda;
-  const size_t niters = static_cast<size_t>(numGlobalElements*10);
-  const Scalar tolerance = 1.0e-2;
-
-  // Iterate
-  lambda = powerMethod<Scalar,Ordinal>(A, niters, tolerance, verbose);
 
   //
   // Increase diagonal dominance
   //
-  if (verbose) {
-    cout << "\nIncreasing magnitude of first diagonal term, solving again\n"
-              << endl;
-  }
+  out << endl << "Increasing magnitude of A(0,0), solving again" << endl << endl;
 
   // Must call resumeFill() before changing the matrix, even its values.
   A->resumeFill();
 
-  if (A->getRowMap()->isNodeGlobalElement(0)) {
+  if (A->getRowMap()->isNodeGlobalElement (0)) {
     // Get a copy of the row with with global index 0.  Modify the
     // diagonal entry of that row.  Submit the modified values to the
     // matrix.
-    const Ordinal ID = 0;
-    size_t numVals = A->getNumEntriesInGlobalRow(ID);
-    Teuchos::Array<Scalar>  rowvals(numVals);
-    Teuchos::Array<Ordinal> rowinds(numVals);
-    A->getGlobalRowCopy(ID, rowinds, rowvals, numVals);       // Get A(0,:)
-    for (size_t i=0; i<numVals; i++) {
-      if (rowinds[i] == ID) {
-        // We have found the diagonal entry.  
-	// Modify it and break the loop.
+    const global_ordinal_type idOfFirstRow = 0;
+    size_t numEntriesInRow = A->getNumEntriesInGlobalRow (idOfFirstRow);
+    Array<scalar_type>         rowvals (numEntriesInRow);
+    Array<global_ordinal_type> rowinds (numEntriesInRow);
+
+    // Fill rowvals and rowinds with the values resp. (global) column
+    // indices of the sparse matrix entries owned by the calling
+    // process.  
+    //
+    // Note that it's legal (though we don't exercise it in this
+    // example) for the row Map of the sparse matrix not to be one to
+    // one.  This means that more than one process might own entries
+    // in the first row.  In general, multiple processes might own the
+    // (0,0) entry, so that the global A(0,0) value is really the sum
+    // of all processes' values for that entry.  However, scaling the
+    // entry by a constant factor distributes across that sum, so it's
+    // OK to do so.
+    //
+    // The parentheses after rowinds and rowvalues indicate "a view of
+    // the Array's data."  Array::operator() returns an ArrayView.
+    A->getGlobalRowCopy (idOfFirstRow, rowinds (), rowvals (), numEntriesInRow);
+    for (size_t i = 0; i < numEntriesInRow; i++) {
+      if (rowinds[i] == idOfFirstRow) {
+        // We have found the diagonal entry; modify it.
         rowvals[i] *= 10.0;
-        break;
       }
     }
-    A->replaceGlobalValues(ID, rowinds(), rowvals());
+    // "Replace global values" means modify the values, but not the
+    // structure of the sparse matrix.  If the specified columns
+    // aren't already populated in this row on this process, then this
+    // method throws an exception.  If you want to modify the
+    // structure (by adding new entries), you'll need to call
+    // insertGlobalValues().
+    A->replaceGlobalValues (idOfFirstRow, rowinds (), rowvals ());
   }
 
   // Call fillComplete() again to signal that we are done changing the
   // matrix.
-  A->fillComplete();
+  A->fillComplete ();
 
-  // Iterate (again)
-  lambda = powerMethod<Scalar,Ordinal>(A, niters, tolerance, verbose);  
+  // Run the power method again.
+  lambda = powerMethod<mat_type> (*A, niters, tolerance, out);  
 
   return 0;
 }
 
 
-template <class Scalar, class Ordinal>
-Scalar 
-powerMethod (const Teuchos::RCP<const Tpetra::Operator<Scalar,Ordinal> > &A, 
-	     size_t niters, 
-	     typename Teuchos::ScalarTraits<Scalar>::magnitudeType tolerance, 
-	     bool verbose) 
+template <class TpetraOperatorType>
+typename TpetraOperatorType::scalar_type
+powerMethod (const TpetraOperatorType& A,
+             const size_t niters, 
+             const typename Teuchos::ScalarTraits<typename TpetraOperatorType::scalar_type>::magnitudeType tolerance,
+	     std::ostream& out)
 {
-  using Teuchos::ScalarTraits;
-  typedef ScalarTraits<Scalar> STS;
-  typedef typename STS::magnitudeType Magnitude;
-  typedef ScalarTraits<Magnitude> STM;
+  using std::endl;
+  typedef typename TpetraOperatorType::scalar_type scalar_type;
+  typedef typename TpetraOperatorType::local_ordinal_type local_ordinal_type;
+  typedef typename TpetraOperatorType::global_ordinal_type global_ordinal_type;
+  typedef typename TpetraOperatorType::node_type node_type;
 
-  // Create three vectors for iterating the power method.  The second
-  // "false" argument means do not bother initializing them to zero.
-  // Since the power method computes z = A*q, q should be in the
-  // domain of A and z should be in the range.  The residual vector
-  // "resid" is of course in the range of A.
-  Tpetra::Vector<Scalar,Ordinal> q (A->getDomainMap(), false);
-  Tpetra::Vector<Scalar,Ordinal> z (A->getRangeMap(), false);
-  Tpetra::Vector<Scalar,Ordinal> resid (A->getRangeMap(), false);
+  typedef Teuchos::ScalarTraits<scalar_type> STS;
+  typedef typename STS::magnitudeType magnitude_type;
+  typedef Teuchos::ScalarTraits<magnitude_type> STM;
 
-  // Fill the starting vector z with random numbers.
+  // The type of a Tpetra vector with the same template parameters as those of A.
+  typedef Tpetra::Vector<scalar_type, local_ordinal_type, global_ordinal_type, node_type> vec_type;
+
+  // Create three vectors for iterating the power method.  Since the
+  // power method computes z = A*q, q should be in the domain of A and
+  // z should be in the range.  (Obviously the power method requires
+  // that the domain and the range are equal, but it's a good idea to
+  // get into the habit of thinking whether a particular vector
+  // "belongs" in the domain or range of the matrix.)  The residual
+  // vector "resid" is of course in the range of A.
+  vec_type q (A.getDomainMap ());
+  vec_type z (A.getRangeMap ());
+  vec_type resid (A.getRangeMap ());
+
+  // Fill the iteration vector z with random numbers to start.  Don't
+  // have grand expectations about the quality of our pseudorandom
+  // number generator; this is usually good enough for eigensolvers.
   z.randomize();
 
-  // lambda: the current approximate eigenvalue of maximum magnitude.
-  // normz: the 2-norm of the vector z
-  // residual: the 2-norm of the residual vector "resid"
-  Scalar lambda = STS::zero();
-  Magnitude normz = STM::zero();
-  Magnitude residual = STM::zero();
+  // lambda: the current approximation of the eigenvalue of maximum magnitude.
+  // normz: the 2-norm of the current iteration vector z.
+  // residual: the 2-norm of the current residual vector "resid"
+  scalar_type lambda = STS::zero();
+  magnitude_type normz = STM::zero();
+  magnitude_type residual = STM::zero();
 
-  const Scalar one  = STS::one();
-  const Scalar zero = STM::zero();
+  const scalar_type one  = STS::one();
+  const scalar_type zero = STS::zero();
 
+  // How often to report progress in the power method.  Reporting
+  // progress requires computing a residual which can be expensive.
+  // However, if you don't compute the residual often enough, you
+  // might keep iterating even after you've converged.
+  const size_t reportFrequency = 10;
+
+  // Do the power method, until the method has converged or the
+  // maximum iteration count has been reached.
   for (size_t iter = 0; iter < niters; ++iter) {
-    normz = z.norm2();                            // Compute 2-norm of z
-    q.scale(one/normz, z);                        // Set q = z / normz
-    A->apply(q, z);                               // Compute z = A*q
-    lambda = q.dot(z);                            // Approximate maximum eigenvalue: lamba = dot(q,z)
-    if (iter % 100 == 0 || iter + 1 == niters) {
-      resid.update(one, z, -lambda, q, zero);     // Compute A*q - lambda*q
-      residual = resid.norm2();
-      if (verbose) {
-        std::cout << "Iter = " << iter << "  Lambda = " << lambda 
-                  << "  Residual of A*q - lambda*q = " 
-                  << residual << std::endl;
-      }
+    normz = z.norm2 (); // Compute the 2-norm of z
+    q.scale (one / normz, z); // q := z / normz
+    A.apply (q, z);        // z := A * q
+    lambda = q.dot (z);     // Approx. max eigenvalue
+
+    // Compute and report the residual norm every reportFrequency
+    // iterations, or if we've reached the maximum iteration count.
+    if (iter % reportFrequency == 0 || iter + 1 == niters) {
+      resid.update (one, z, -lambda, q, zero); // z := A*q - lambda*q
+      residual = resid.norm2(); // 2-norm of the residual vector
+      out << "Iteration " << iter << ":" << endl
+	  << "- lambda = " << lambda << endl
+	  << "- ||A*q - lambda*q||_2 = " << residual << endl;
     } 
     if (residual < tolerance) {
+      out << "Converged after " << iter << " iterations" << endl;
+      break;
+    } else if (iter+1 == niters) {
+      out << "Failed to converge after " << niters << " iterations" << endl;
       break;
     }
   }
