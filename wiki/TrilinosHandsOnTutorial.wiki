@@ -91,6 +91,7 @@
     * [TpetraInit Basic application initialization for the Tpetra stack]
     * [TpetraVector Basic creation and manipulation of Tpetra vectors]
     * [TpetraHybridPlatform Use of Tpetra::HybridPlatform to support diverse parallel nodes]
+    * [TpetraRTI Simple use of the Tpetra Reduce/Transform Interface]
   # *[http://trilinos.sandia.gov/packages/pytrilinos PyTrilinos] tutorial materials.*
     * [http://trilinos.sandia.gov/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
     * [PyTrilinosExample Solve a simple 2D Laplace problem using PyTrilinos]
