@@ -29,6 +29,7 @@ solve (MV& X, const MV& B, const OP& A, Teuchos::RCP<OP> M)
   using Teuchos::RCP; 
   using Teuchos::rcp;
   using Teuchos::rcpFromRef; // Make a "weak" RCP from a reference.
+  typedef typename MV::scalar_type scalar_type;
 
   // Make an empty new parameter list.
   RCP<ParameterList> solverParams = parameterList();
@@ -59,7 +60,7 @@ solve (MV& X, const MV& B, const OP& A, Teuchos::RCP<OP> M)
 
   // Create a LinearProblem struct with the problem to solve.
   // A, X, B, and M are passed by (smart) pointer, not copied.
-  typedef Belos::LinearProblem<Scalar, MV, OP> problem_type;
+  typedef Belos::LinearProblem<scalar_type, MV, OP> problem_type;
   RCP<problem_type> problem = 
     rcp (new problem_type (rcpFromRef (A), rcpFromRef (X), rcpFromRef (B)));
   // You don't have to call this if you don't have a preconditioner.
