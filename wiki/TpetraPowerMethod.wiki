@@ -1,6 +1,6 @@
 #summary Using Tpetra sparse matrix and dense vector objects to implement a simple iteration (the power method).
 
-= Introduction =
+= Lesson topics =
 
 This lesson demonstrates the following:
   # How to construct a `Tpetra::CrsMatrix` (Tpetra's distributed sparse matrix)
@@ -9,11 +9,22 @@ This lesson demonstrates the following:
 
 This example is just like the Epetra power method example, but uses Tpetra objects in place of Epetra objects.  
 
-= Details =
+= Relation to other lessons =
+
+Before starting this lesson, it helps to have learned [Tpetra_Lesson01_HelloWorld how to initialize Tpetra] and [Tpetra_Lesson02_Vector how to create distributions and distributed vectors].  After completing this lesson, you might want to learn about [Tpetra_Lesson_SparseMatrixFill more efficient ways to add or modify entries in a Tpetra sparse matrix].
+
+= Filling a sparse matrix =
+
+This is the first lesson in the usual sequence which covers adding entries to ("filling") a Tpetra sparse matrix, and modifying the values of those entries after creating the matrix.  Creating and filling a Tpetra sparse matrix involves the following steps:
+  # Create the !CrsMatrix (by invoking one of its constructors
+  # Call methods to add entries to the sparse matrix
+  # Call the matrix's `fillComplete` method.  
+
+Most users will call `fillComplete` with no arguments.  If the row Map does not equal the range Map of the matrix, or if the matrix is not square, you'll need to supply the domain and range Maps to `fillComplete`.
 
 The most significant difference between Epetra and Tpetra sparse matrices, is that in order to modify the entries of a `Tpetra::CrsMatrix` once you have called `fillComplete()`, you must first call `resumeFill()`.  !Epetra_CrsMatrix has no corresponding `ResumeFill()` method, and you may modify the values of entries after FillComplete() has been called.  
 
-The reason for this difference is that Tpetra's `fillComplete()` may actually copy data into a different memory space (for example, from host CPU memory onto the discrete GPU's memory).  The values in the sparse matrix as well as its structure are stored in that memory space.  Calling `resumeFill()` signals Tpetra that you want to change either the values or the structure.
+The reason for this difference is that Tpetra's `fillComplete()` has the right to rearrange the matrix's data in ways that violate user expectations.  For example, it may give the data to a third-party library that rearranges them in an opaque way, or even copy them into a different memory space (for example, into GPU memory).  Calling `resumeFill()` signals Tpetra that you want to change either the values or the structure.
 
 = Example code =
 
