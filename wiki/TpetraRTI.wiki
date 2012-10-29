@@ -1,0 +1,141 @@
+#summary Tpetra Reduce/Transform Interface
+
+= Introduction =
+
+Tpetra RTI ("Reduce/Transform Interface") is an API by which user kernels can be submitted to Tpetra Vector and executed in parallel. This allows users to extend the native capability of `Tpetra::Vector` according to application/algorithm needs, without modifying the class. This allows the templated nature of Tpetra to be fully exploited, in a manner suitable for research involving, e.g.:
+ * multi-precision methods
+ * algorithm-specific kernels
+ * application-specific norms
+ * and more!
+
+= Details =
+
+Because Tpetra is built on the Kokkos Node API, there exists a native ability to run user kernels in a shared-memory parallel manner. Without RTI, however, this would require accessing the device pointers, manually dispatching the kernel via the underlying Kokkos node, and then handling any distributed memory component. Tpetra RTI is designed to handle as much of that as possible. RTI provides different levels of providing user kernels, with a progressive trade-off of expressibility for convenience.
+
+= Examples =
+
+This example demonstrates a few different interfaces for Tpetra RTI. It utilizes the TpetraHybridPlatform object. Users are encouraged to refer to the [Doxygen documentation http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/namespaceTpetra_1_1RTI.html]. This example is provided as part of Trilinos in `packages/tpetra/example/RTInterface/RTITutorialSimple.cpp`.
+
+
+{{{
+#include <Teuchos_GlobalMPISession.hpp>
+#include <Teuchos_XMLParameterListReader.hpp>
+#include <Teuchos_XMLParameterListHelpers.hpp>
+#include <Teuchos_DefaultMpiComm.hpp>
+
+#include <Tpetra_ConfigDefs.hpp>
+#include <Tpetra_HybridPlatform.hpp>
+#include <Tpetra_Map.hpp>
+#include <Tpetra_Vector.hpp>
+#include <Tpetra_RTI.hpp>
+
+#include <functional>
+
+template <class S>
+class AssignSecond {
+  public:
+  AssignSecond() {}
+  S operator()(const S &s1, const S &s2) {return s2;}
+};
+
+template <class Node>
+void simple_rti_examples(const Teuchos::RCP<const Teuchos::Comm<int> > &comm, const Teuchos::RCP<Node> &node)
+{
+  using Teuchos::RCP;
+  using Tpetra::RTI::reduce;
+  using Tpetra::RTI::ZeroOp;
+  using Tpetra::RTI::reductionGlob;
+  using Tpetra::RTI::unary_transform;
+  using Tpetra::RTI::binary_transform;
+  const Tpetra::global_size_t INVALID = Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid();
+  // Create a simple map with 1000 local entries per node
+  const size_t numLocal   = 1000*comm->getSize();
+  auto map = Tpetra::createContigMapWithNode<int,int>(INVALID,numLocal,comm,node);
+  auto   dx = Tpetra::createVector<double>(map),
+         dy = Tpetra::createVector<double>(map);
+
+  // Set dx to random
+  dx->randomize();
+
+  // Assign dy = dx, multiple ways!
+  // Via functor
+  binary_transform( *dy, *dx, AssignSecond<double>() );
+  // Via C++11 lambda expression
+  binary_transform( *dy, *dx, [](double, double xx){return xx;} );
+  // Via convenient macro
+  TPETRA_BINARY_TRANSFORM( dy, dx,   dx ); 
+
+  // Perform multi-precision inner product...
+  // floating point inner product with double precision accumulator
+  float fresult; double dresult;
+  auto fx = Tpetra::createVector<float>(map),
+       fy = Tpetra::createVector<float>(map);
+  TPETRA_BINARY_TRANSFORM( fx, dx, (float)dx );
+  TPETRA_BINARY_TRANSFORM( fy, dy, (float)dy );
+  // ... using a composite adaptor and standard functors
+  fresult = reduce(*fx, *fy, reductionGlob<ZeroOp<double>>(std::multiplies<float>(), std::plus<double>()) );
+  // ... using a convenience macro to generate all of that
+  fresult = TPETRA_REDUCE2( fx, fy,   fx*fy, ZeroOp<double>, std::plus<double>() );
+
+  // compare against double precision approach
+  dresult = TPETRA_REDUCE2( dx, dy,   dx*dy, ZeroOp<double>, std::plus<double>() );
+  if (comm->getRank() == 0) {
+    std::cout << " Float product/double accumulator: " << fresult << std::endl;
+    std::cout << "Double product/double accumulator: " << dresult << std::endl;
+  }
+}
+
+template <class Node>
+class runTest {
+  public:
+  static void run(Teuchos::ParameterList &myMachPL, const Teuchos::RCP<const Teuchos::Comm<int> > &comm, const Teuchos::RCP<Node> &node) 
+  {
+    std::cout << "Running test with Node==" << Teuchos::typeName(*node) << " on rank " << comm->getRank() << "/" << comm->getSize() << std::endl;
+    simple_rti_examples<Node>(comm,node);
+  }
+};
+
+int main(int argc, char **argv) {
+  Teuchos::GlobalMPISession mpisess(&argc,&argv,&std::cout);
+  Teuchos::RCP<const Teuchos::Comm<int> > comm = Teuchos::createMpiComm<int>(Teuchos::opaqueWrapper<MPI_Comm>(MPI_COMM_WORLD));
+
+  // 
+  // read machine file and initialize platform
+  // 
+  std::string machine_list(
+    "<ParameterList>                                                               "
+    "  <ParameterList name='%1=0'>                                                 "
+    "    <Parameter name='NodeType' type='string' value='Kokkos::SerialNode'/>     "
+    "  </ParameterList>                                                            "
+    "  <ParameterList name='=-1'>                                                  "
+    "    <Parameter name='NodeType' type='string' value='Kokkos::OpenMPNode'/>     "
+    "    <Parameter name='Verbose' type='int' value='0'/>                          "
+    "    <Parameter name='Num Threads' type='int' value='-1'/>                     "
+    "  </ParameterList>                                                            "
+    "  <ParameterList name='=-2'>                                                  "
+    "    <Parameter name='NodeType' type='string' value='Kokkos::TBBNode'/>        "
+    "    <Parameter name='Verbose' type='int' value='0'/>                          "
+    "    <Parameter name='Num Threads' type='int' value='-1'/>                     "
+    "  </ParameterList>                                                            "
+    "  <ParameterList name='=-3'>                                                  "
+    "    <Parameter name='NodeType' type='string' value='Kokkos::TPINode'/>        "
+    "    <Parameter name='Verbose' type='int' value='0'/>                          "
+    "    <Parameter name='Num Threads' type='int' value='0'/>                      "
+    "  </ParameterList>                                                            "
+    "  <ParameterList name='=-4'>                                                  "
+    "    <Parameter name='NodeType' type='string' value='Kokkos::ThrustGPUNode'/>  "
+    "    <Parameter name='Verbose' type='int' value='0'/>                          "
+    "    <Parameter name='Device Number' type='int' value='0'/>                    "
+    "  </ParameterList>                                                            "
+    "</ParameterList>                                                              "
+  );
+
+  Teuchos::ParameterList machPL;
+  Teuchos::updateParametersFromXmlString(machine_list, inOutArg(machPL));
+  Tpetra::HybridPlatform platform(comm,machPL);
+  platform.runUserCode<runTest>();
+
+  if (comm->getRank() == 0) std::cout << "End Result: TEST PASSED" << std::endl;
+  return 0;
+}
+}}}
