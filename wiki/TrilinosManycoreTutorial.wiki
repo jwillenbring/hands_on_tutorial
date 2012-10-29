@@ -50,13 +50,14 @@ For today's tutorial and demonstrations, we will use [https://www.users.csbsju.e
   * [TpetraExport Learn how to redistribute Tpetra vectors between two different parallel distributions using an Export object.]
   * [Tpetra_Exercises_Advanced_CrsMatrix_ExplicitTranspose Exercise your understanding of sparse matrix and vector distributions in Tpetra.]
 
-=== Ifpack2 preconditioner / smoother examples ===
+=== Solver examples with Tpetra objects ===
 
   * [Ifpack2CreatePreconditioner Create a preconditioner for a Tpetra sparse matrix using Ifpack2.]
+  * [Tpetra_Belos_CreateSolver Create a Belos iterative solver using SolverFactory, and use it to solve a linear system.]
 
 === Teuchos utilities examples ===
 
-  * [TeuchosPL Build a !ParameterList (used to pass parameters to all Trilinos packages).]
+  * [TeuchosPL Build a ParameterList (used to pass parameters to all Trilinos packages).]
   * [TeuchosRCP Use Teuchos' "smart pointer" class to manage memory safely.]
   * [TeuchosCLP Build a command-line parser (tool for changing runtime behavior of program, providing documentation for options).] [TeuchosCLP_unhighlighted [unhighlighted]]
   * [TeuchosTime Create timers and compute statistics]
