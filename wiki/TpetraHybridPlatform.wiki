@@ -6,11 +6,11 @@ Tpetra's support for multicore computing proceeds from the Kokkos shared-memory 
 
 = Details =
 
-The purpose of the HybridPlatform is to ease the use of multiple nodes by application developers. Users effectively write a main() routine, templated on the Kokkos node type. HybridPlatform uses dynamic information to dispatch the user routine on the appropriate node (according to MPI rank and a user-specified XML machine file). 
+The purpose of the !HybridPlatform is to ease the use of multiple nodes by application developers. Users effectively write a main() routine, templated on the Kokkos node type. !HybridPlatform uses dynamic information to dispatch the user routine on the appropriate node (according to MPI rank and a user-specified XML machine file). 
 
 = Example =
 
-WebTrilinos users: Modify the string `machine_list` to select a different node type.
+!WebTrilinos users: Modify the string `machine_list` to select a different node type.
 {{{
 #include <Teuchos_GlobalMPISession.hpp>
 #include <Teuchos_XMLParameterListReader.hpp>
