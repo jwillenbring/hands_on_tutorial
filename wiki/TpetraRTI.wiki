@@ -14,7 +14,7 @@ Because Tpetra is built on the Kokkos Node API, there exists a native ability to
 
 = Examples =
 
-This example demonstrates a few different interfaces for Tpetra RTI. It utilizes the TpetraHybridPlatform object. Users are encouraged to refer to the [Doxygen documentation http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/namespaceTpetra_1_1RTI.html]. This example is provided as part of Trilinos in `packages/tpetra/example/RTInterface/RTITutorialSimple.cpp`.
+This example demonstrates a few different interfaces for Tpetra RTI. It utilizes the TpetraHybridPlatform object. Users are encouraged to refer to the [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/namespaceTpetra_1_1RTI.html Doxygen documentation]. This example is provided as part of Trilinos in `packages/tpetra/example/RTInterface/RTITutorialSimple.cpp`.
 
 
 {{{
