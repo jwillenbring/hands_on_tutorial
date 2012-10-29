@@ -12,13 +12,17 @@ If you're more familiar with PETSc than Trilinos, it might help to compare how T
 
 = Details =
 
+== Validation ==
+
+It is possible to associate a "validator" function to any key/value pair in a !ParameterList.  When you or another user sets the value for that key, the validator gets called.  It checks whether the value is "valid" (whatever that means in context), and throws an exception if it is not.  Some validators do data format conversion as well.  For example, there is a validator for converting a string to an enum value.
+
 == Serialization ==
 
 !ParameterList instances can be written ("serialized") to a human-readable XML file, and read in again from an XML file.  This serialization capability is useful for getting reproducible results from Trilinos solvers, when a !ParameterList is being used as an input deck.  However, !ParameterList may be used as a general data container as well as an input deck.  In particular, it can hold some types of data that !ParameterList does not know how to serialize.  It may even hold types that do not make sense to serialize, like raw memory addresses.  !ParameterList will do its best, but you should be aware that using a raw memory address read in from an XML file probably does not make sense.
 
 !ParameterList _does_ know how to serialize basic data types like integers, floating-point numbers, and strings, as well as a few other types.  You can also teach !ParameterList how to serialize other data types by writing your own serialization module for them.
 
-This is a WebTrilinos demo and you don't have access to files on the web server, so we can't easily demonstrate the serialization capability here.  However, we encourage you to explore the !ParameterList examples and tests in the Teuchos package.
+This is a !WebTrilinos demo and you don't have access to files on the web server, so we can't easily demonstrate the serialization capability here.  However, we encourage you to explore the !ParameterList examples and tests in the Teuchos package.
 
 = Example code =
 
@@ -31,58 +35,58 @@ This is a WebTrilinos demo and you don't have access to files on the web server,
 int 
 main (int argc, char* argv[])
 {
+  using Teuchos::Array;
+  using Teuchos::ParameterList;
+  using Teuchos::RCP;
+  using Teuchos::rcp;
+  using Teuchos::tuple;
 
   std::cout << Teuchos::Teuchos_Version() << std::endl << std::endl;
 
-  // Creating an empty parameter list looks like:
-  Teuchos::ParameterList My_List;
+  // Create an empty parameter list.  You may also give it a name if you like.
+  ParameterList My_List;
 
-  // Setting parameters in this list can be easily done:
-  My_List.set("Max Iters", 1550, "Determines the maximum number of iterations in the solver");
-  My_List.set("Tolerance", 1e-10, "The tolerance used for the convergence check");
+  // Set parameters in the list.  Parameters may have any type.
+  // The optional third argument is a documentation string for that parameter.
+  My_List.set ("Max Iters", 1550, "Maximum number of iterations in the solver");
+  My_List.set ("Tolerance", 1e-10, "The tolerance used for the convergence check");
 
   // For the "Solver" option, create a validator that will automatically
-  // create documentation for this parameter but will also help in validation.
-  Teuchos::RCP<Teuchos::StringToIntegralParameterEntryValidator<int> >
-    solverValidator = Teuchos::rcp(
-      new Teuchos::StringToIntegralParameterEntryValidator<int>(
-        Teuchos::tuple<std::string>( "GMRES", "CG", "TFQMR" )
-        ,"Solver"
-        )
-      );
-  My_List.set(
-    "Solver"
-    ,"GMRES" // This will be validated by solverValidator right here!
-    ,"The type of solver to use."
-    ,solverValidator
-    );
+  // check input and also create documentation for this parameter.
+  // There are many kinds of validators; you may even implement 
+  // your own.  This particular validator restricts the input string to
+  // a finite set of values, and converts the string to an integer if it
+  // is one of those values.
+  RCP<Teuchos::StringToIntegralParameterEntryValidator<int> > solverValidator =
+    rcp (new Teuchos::StringToIntegralParameterEntryValidator<int> (tuple<std::string> ("GMRES", "CG", "TFQMR"), "Solver"));
+ 
+  // Set the "Solver" parameter.  Specify the above validator; 
+  // it will validate the "GMRES" input right here.
+  My_List.set ("Solver", "GMRES", "The type of solver to use.", solverValidator);
 
-  /* The templated ``set'' method should cast the input {\it value} to the
-     correct data type.  However, in the case where the compiler is not casting the input
-     value to the expected data type, an explicit cast can be used with the ``set'' method:
-  */
-  My_List.set("Tolerance", (float)(1e-10), "The tolerance used for the convergence check");
+  // The templated ``set'' method should cast the input value to the
+  // correct data type.  However, in the case where the compiler is not casting the input
+  // value to the expected data type, you may use an explicit cast.
+  My_List.set ("Tolerance", (float)(1e-10), "The tolerance used for the convergence check");
 
   /* Reference-counted pointers can also be passed through a Teuchos::ParameterList.
      To illustrate this we will use the Teuchos::Array class to create an array of 10 doubles
      representing an initial guess for a linear solver, whose memory is being managed by a
      Teuchos::RCP.
    */
-  Teuchos::RCP<Teuchos::Array<double> > rcp_Array =
-    Teuchos::rcp( new Teuchos::Array<double>( 10, 0.0 ) );
-  My_List.set("Initial Guess", rcp_Array, "The initial guess as a RCP to an array object.");
+  RCP<Array<double> > rcp_Array = rcp (new Array<double> (10, 0.0));
+  My_List.set ("Initial Guess", rcp_Array, "The initial guess as a RCP to an array object.");
 
-  /* A hierarchy of parameter lists can be constructed using {\tt Teuchos::ParameterList}.  This
-     means another parameter list is a valid {\it value} in any parameter list.  To create a sublist
-     in a parameter list and obtain a reference to it:
-  */
-  Teuchos::ParameterList&
-    Prec_List = My_List.sublist("Preconditioner",false,"Sublist that defines the preconditioner.");
+  // Parameter lists may be nested.  This means that a ParameterList 
+  // is a valid value in another ParameterList.  We say then that the first
+  // ParameterList is a "sublist" of the second one.  We also give you a
+  // special syntax for creating a sublist in an existing ParameterList 
+  // and obtaining a reference to it.
+  ParameterList& Prec_List = My_List.sublist ("Preconditioner", false, "Sublist that defines the preconditioner.");
 
-  // Now this parameter list can be filled with values:
-  Prec_List.set("Type", "ILU", "The type of preconditioner to use");
-  Prec_List.set("Drop Tolerance", 1e-3
-                ,"The tolerance below which entries from the\n""factorization are left out of the factors.");
+  // Fill the sublist with parameters.
+  Prec_List.set ("Type", "ILU", "The type of preconditioner to use");
+  Prec_List.set ("Drop Tolerance", 1e-3,"Drop tolerance for incomplete factorization");
 
   // The parameter list can be queried about the existance of a parameter, sublist, or type:
   // Has a solver been chosen?
@@ -93,16 +97,17 @@ main (int argc, char* argv[])
   prec_defined = My_List.isSublist("Preconditioner");
 
   // Has a tolerance been chosen and is it a double-precision number?
+  // Note the syntax for calling a method which is templated.
   bool tol_double = false;
-  tol_double = My_List.INVALID_TEMPLATE_QUALIFIER isType<double>("Tolerance");
+  tol_double = My_List.isType<double> ("Tolerance");
 
   // Has a drop tolerance been chosen and is it a double-precision number?
+  // This is a nonmember template function. 
   dtol_double = Teuchos::isParameterType<double>(Prec_List, "Drop Tolerance");
 
-  /* The last two methods for checking the parameter type are equivalent.
-     There is some question as to whether the syntax of the first type-checking
-     method is acceptable to older compilers.  Thus, the second type-checking method
-     is offered as a portable alternative.
+  /* The last two methods above for checking the parameter type are equivalent.
+     Some very old compilers might not like the syntax of the first type-checking
+     method.  Thus, we offer the second type-checking method as an alternative.
   */
   // Parameters can be retrieved from the parameter list in quite a few ways:
   // Get method that creates and sets the parameter if it doesn't exist.
@@ -111,27 +116,23 @@ main (int argc, char* argv[])
 
   float tol;
   // Get method that retrieves a parameter of a particular type.
-  tol = My_List.INVALID_TEMPLATE_QUALIFIER get<float>("Tolerance");
+  tol = My_List.get<float>("Tolerance");
 
   // Get the "Solver" value and validate!
-  std::string
-    solver = solverValidator->validateString(
-      Teuchos::getParameter<std::string>(My_List,"Solver")
-      );
+  std::string solver = solverValidator->validateString (Teuchos::getParameter<std::string> (My_List,"Solver"));
 
   /* In the above example, the first ``get'' method is a safe way of
-     obtaining a parameter when its existence is indefinite but required.
-     The second ``get'' method should be used when the existense of the parameter
-     is definite.  This method will throw an std::exception if the parameter doesn't exist.
-     The safest way to use the second ``get'' method
-     is in a try/catch block:
+     obtaining a parameter if you don't know that it exists yet in the list.
+     The second ``get'' method should be used when you know that 
+     the parameter exists in the list, since it will throw an exception 
+     if the parameter doesn't exist.  The safest way to use the second 
+     ``get'' method is in a try/catch block:
   */
   try {
-    tol = My_List.INVALID_TEMPLATE_QUALIFIER get<float>("Tolerance");
+    tol = My_List.get<float> ("Tolerance");
   }
-
   catch ( std::exception& e) {
-    tol = 1e-6;
+    tol = 1e-6; // Set a default value.
   }
 
   /* The second ``get'' method uses a syntax that may not be
@@ -139,7 +140,7 @@ main (int argc, char* argv[])
      ``get'' function that can be used in the place of the second ``get'' method:
   */
   try {
-    tol = Teuchos::getParameter<float>(My_List, "Tolerance");
+    tol = Teuchos::getParameter<float> (My_List, "Tolerance");
   }
   catch ( std::exception& e) {
     tol = 1e-6;
