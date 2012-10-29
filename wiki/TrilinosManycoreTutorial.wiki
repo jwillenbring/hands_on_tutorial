@@ -47,6 +47,7 @@ For today's tutorial and demonstrations, we will use [https://www.users.csbsju.e
   * [Tpetra_Lesson02_Vector Learn how to specify a data distribution for Tpetra objects, create distributed vectors using those distributions, and compute with the vectors.]
   * [TpetraPowerMethod Create a Tpetra sparse matrix and vectors, and use them to implement the power method] (for estimating the largest eigenvalue of the matrix).
   * [Tpetra_Lesson_SparseMatrixFill Explore trade-offs between flexibility and efficiency when adding entries to a Tpetra sparse matrix.]
+  * [TpetraExport Learn how to redistribute Tpetra vectors between two different parallel distributions using an Export object.]
   * [Tpetra_Exercises_Advanced_CrsMatrix_ExplicitTranspose Exercise your understanding of sparse matrix and vector distributions in Tpetra.]
 
 === Ifpack2 preconditioner / smoother examples ===
