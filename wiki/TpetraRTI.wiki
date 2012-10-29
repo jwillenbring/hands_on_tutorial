@@ -16,6 +16,8 @@ Because Tpetra is built on the Kokkos Node API, there exists a native ability to
 
 This example demonstrates a few different interfaces for Tpetra RTI. It utilizes the TpetraHybridPlatform object. Users are encouraged to refer to the [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/namespaceTpetra_1_1RTI.html Doxygen documentation]. 
 
+This example requires C++11 support in the compiler.
+
 This example is provided as part of Trilinos in `packages/tpetra/example/RTInterface/RTITutorialSimple.cpp`.
 
 *!WebTrilinos users*: Modify the string `machine_list` to select a different node type.
