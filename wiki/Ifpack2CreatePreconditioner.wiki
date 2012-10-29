@@ -6,9 +6,9 @@ Ifpack2 is a package that computes various kinds of preconditioners, for [http:/
 
 = Requirements =
 
-Building this example requires using the 10.8 release or later of Trilinos, because it uses a new feature of [http://trilinos.sandia.gov/packages/docs/dev/packages/teuchos/doc/html/classTeuchos_1_1TimeMonitor.html Teuchos::TimeMonitor].  If you would like to run this example with Trilinos 10.6, there are two places in the file (with comments) that require a tiny bit of editing.
+Building this example requires using the 10.8 release or later of Trilinos, because it uses a new feature of [http://trilinos.sandia.gov/packages/docs/dev/packages/teuchos/doc/html/classTeuchos_1_1TimeMonitor.html Teuchos::TimeMonitor].  If you would like to run this example with Trilinos 10.6, you will need to change the `getNewCounter` calls to `getNewTimer`.
 
-= What you might like to tweak =
+= Exercises: Things to change =
 
 == The matrix to factor ==
 
@@ -59,6 +59,7 @@ getPrecondTypeAndParameters (std::string& precondType, Teuchos::ParameterList& p
   pl.set ("relaxation: min diagonal value", minDiagVal);
 }
 }}}
+Note that the "compute condition number estimate" feature of Ifpack2 doesn't work so well with a relaxation preconditioner.
 
 == Note on performance ==
 
@@ -206,13 +207,15 @@ createPreconditioner (const Teuchos::RCP<const TpetraMatrixType>& A,
     prec->compute();
   }
 
-  err << "-- Estimating condition number" << endl;
-  magnitude_type condest = STM::one();
-  {
-    TimeMonitor mon (*condestTimer);
-    condest = prec->computeCondEst (Ifpack2::Cheap);
+  if (precondType != "RELAXATION") {
+    err << "-- Estimating condition number" << endl;
+    magnitude_type condest = STM::one();
+    {
+      TimeMonitor mon (*condestTimer);
+      condest = prec->computeCondEst (Ifpack2::Cheap);
+    }
+    out << endl << "Ifpack2 preconditioner's estimated condition number: " << condest << endl;
   }
-  out << endl << "Ifpack2 preconditioner's estimated condition number: " << condest << endl;
   return prec;
 }
 
