@@ -83,7 +83,7 @@ main(int argc, char *argv[])
    params.set<int>("Num Threads",4);
    params.set<int>("Verbose",true);
 
-// Change the TPINode in the following line to TBBNode, SerialNode or ThrustNode
+// Change the TPINode in the following line to OpenMP, TBBNode, SerialNode or ThrustNode
   RCP< Kokkos::TPINode> node = rcp(new Kokkos::TPINode(params));
   RCP<Teuchos::Comm<int> > comm = rcp(new Teuchos::SerialComm<int>());
 
