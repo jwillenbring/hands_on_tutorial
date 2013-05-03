@@ -159,9 +159,13 @@ Filling the !CrsGraph works much like filling a !CrsMatrix, except that you only
 
 = Local vs. global indices =
 
-In the sparse matrix's final state, it represents column indices as local indices (in terms of global vs. local).  This is faster for operations like sparse matrix-vector multiply.  It saves storage as well, especially if `sizeof(LocalOrdinal) < sizeof(GlobalOrdinal)`.  However, accessing or inserting entries by local index is only allowed under certain conditions.  In particular, the matrix must have a column Map, which tells it how to convert between global and local indices for the column indices of the matrix.  If you didn't create the matrix with a precomputed column Map (either in its constructor, or in the constant graph), it has to compute the column Map on its own.  It does so in `fillComplete`.
+Please see Tpetra_Lesson02_Vector for a detailed explanation of global and local indices.
+
+In the sparse matrix's final state, it represents column indices as local indices.  This is faster for operations like sparse matrix-vector multiply.  It saves storage as well, especially if `sizeof(LocalOrdinal) < sizeof(GlobalOrdinal)`.  However, accessing or inserting entries by local index is only allowed under certain conditions.  In particular, the matrix must have a column Map, which tells it how to convert between global and local indices for the column indices of the matrix.  If you didn't create the matrix with a precomputed column Map (either in its constructor, or in the constant graph), it has to compute the column Map on its own.  It does so in `fillComplete`.
 
 If the matrix doesn't have a column Map yet, you must use global indices, since local indices don't exist yet.  However, if you can use local indices, you should.  For global indices, the matrix must go to the Map to look up the corresponding local index for every global index.  Local indices only require an array access.
+
+Remember that if column indices are local, then they are counted with respect to the column Map.  Local row and column indices may not necessarily be the same.  For example, the matrix entry at position `(i_local, i_local)`, where the first `i_local` is the local row index and the second `i_local` the local column index, may not necessarily be a diagonal entry of the matrix.  However, the matrix entry at global position `(i_global, i_global)` is always a diagonal entry of the matrix.
 
 = Exercise =
 
