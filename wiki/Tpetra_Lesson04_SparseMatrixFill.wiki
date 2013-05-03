@@ -169,4 +169,4 @@ Remember that if column indices are local, then they are counted with respect to
 
 = Exercise =
 
-Start with the TpetraPowerMethod example, which uses a dynamic profile and global indices.  Try all of the different fill techniques described in this lesson.  If you like, you may also try cyclic boundary conditions instead of Dirichlet boundary conditions in the 1-D Poisson discretization.  (This makes the number of entries per row the same for all rows.) 
+Start with the Tpetra_Lesson03_PowerMethod example, which uses a dynamic profile and global indices.  Try all of the different fill techniques described in this lesson.  If you like, you may also try cyclic boundary conditions instead of Dirichlet boundary conditions in the 1-D Poisson discretization.  (This makes the number of entries per row the same for all rows.) 
