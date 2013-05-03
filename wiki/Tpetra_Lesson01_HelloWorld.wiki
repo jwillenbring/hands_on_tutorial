@@ -53,10 +53,9 @@ Please consider every code example in this lesson to begin with the following co
 = Use cases =
 
 This tutorial covers the following use cases:
-
-# A code which only uses MPI through Trilinos
-# A code which uses MPI on its own as well as through Trilinos
-# A code which does not use MPI
+  # A code which only uses MPI through Trilinos
+  # A code which uses MPI on its own as well as through Trilinos
+  # A code which does not use MPI
 
 == Initialization for a code which only uses MPI through Trilinos ==
 
