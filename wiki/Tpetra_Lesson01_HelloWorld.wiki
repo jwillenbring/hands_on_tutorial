@@ -195,22 +195,29 @@ main (int argc, char *argv[])
   // This code takes the place of whatever you do to get an MPI_Comm.
   MPI_Comm yourComm = MPI_COMM_WORLD;
 
-  // Get a pointer to the communicator object that encapsulates 
-  // your communicator.  In a very, very recent version of Trilinos,
-  // you may use the first line (commented out) instead of the 
-  // second line below.  Both of these lines assume that you are
-  // responsible for calling MPI_Comm_free on your MPI_Comm,
-  // if necessary (it's not necessary for MPI_COMM_WORLD).
-  //
-  //RCP<const Comm<int> > comm = rcp (new MpiComm<int> (yourComm));
-  RCP<const Comm<int> > comm = rcp (new MpiComm<int> (opaqueWrapper<MPI_Comm> (yourComm)));
-  
+  // If your code plans to use MPI on its own, as well as through
+  // Trilinos, you should strongly consider giving Trilinos a copy 
+  // of your MPI_Comm (created via MPI_Comm_dup).  Trilinos may in
+  // the future duplicate the MPI_Comm automatically, but it does 
+  // not currently do this.
+
+
+  // Wrap the MPI_Comm.  If you wrap it in this way, you are telling
+  // Trilinos that you are responsible for calling MPI_Comm_free on 
+  // your MPI_Comm after use, if necessary.  (It's not necessary for
+  // MPI_COMM_WORLD.)  There is a way to tell Trilinos to call 
+  // MPI_Comm_free itself; we don't show it here.
+
+  RCP<const Comm<int> > comm = rcp (new MpiComm<int> (yourComm));
+
+  // Get my process' rank, and the total number of processes.
+  // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.  
   const int myRank = comm->getRank();
   const int numProcs = comm->getSize();
 
-  // The stream to which to write output.  Only MPI Rank 0 gets to
-  // write to stdout; the other MPI processes get a "black hole
-  // stream" (see above).
+  // The stream to which to write output.  Only MPI Process 0
+  // gets to write to stdout; the other MPI processes get a 
+  // "black hole stream" which discards output (see above).
   Teuchos::oblackholestream blackHole;
   std::ostream& out = (myRank == 0) ? std::cout : blackHole;
 
