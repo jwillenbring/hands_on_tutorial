@@ -50,18 +50,25 @@ Please consider every code example in this lesson to begin with the following co
 // @HEADER
 }}}
 
+= Use cases =
 
-= Initialization for a code written from scratch =
+This tutorial covers the following use cases:
 
-This section explains how to set up the distributed-memory parallel environment for using Tpetra, in a new code.  If you want to introduce Tpetra into an existing application, please see the next section.
+# A code which only uses MPI through Trilinos
+# A code which uses MPI on its own as well as through Trilinos
+# A code which does not use MPI
+
+== Initialization for a code which only uses MPI through Trilinos ==
+
+This section explains how to set up the distributed-memory parallel environment for using Tpetra, in a code which only uses MPI through Trilinos.  If you want to introduce Tpetra into an existing MPI application, please see the next section.
 
 Tpetra was written for distributed-memory parallel programming.  It uses  [http://en.wikipedia.org/wiki/Message_Passing_Interface MPI] (the Message Passing Interface) for this.  However, Tpetra will work correctly whether or not you have built Trilinos with MPI support.  It does so by interacting with MPI through an interface called `Teuchos::Comm`.  (If you are familiar with Epetra, this interface is analogous to `Epetra_Comm`.)  If MPI is enabled, then this wraps an MPI_Comm.  Otherwise, this is a "serial communicator" with one process, analogous to MPI_COMM_SELF.
 
-Furthermore, Trilinos provides an MPI initialization interface, `Teuchos::GlobalMPISession`.  This calls MPI_Init and MPI_Finalize for you in an MPI build, and does not call them if you did not build Trilinos with MPI support.  The following code example shows how to initialize MPI (if available) and get a `Teuchos::Comm` corresponding to MPI_COMM_WORLD.
+Furthermore, Trilinos provides an MPI initialization interface, `Teuchos::GlobalMPISession`.  This calls MPI_Init and MPI_Finalize for you in an MPI build, and does not call them if you did not build Trilinos with MPI support.  The following code example shows how to initialize MPI (if available) and get a `Teuchos::Comm` corresponding to MPI_COMM_WORLD.  The example works whether or not Trilinos was build with MPI support.
 
 {{{
 //
-// Example of basic initialization for using Tpetra.
+// Initialization example for a code that only uses MPI through Tpetra.
 //
 // Includes MPI initialization, getting a Teuchos::Comm communicator,
 // and printing out Tpetra version information.
@@ -145,15 +152,16 @@ main (int argc, char *argv[])
 }
 }}}
 
-= Initialization for an existing MPI code =
+== Initialization for an existing MPI code ==
 
 Tpetra also works fine in an existing MPI code.  For this example, we assume that your code initializes MPI on its own by calling MPI_Init, and calls MPI_Finalize at the end.  It also must get an MPI_Comm (an MPI communicator) somewhere, either by using a predefined communicator such as MPI_COMM_WORLD, or by creating a new one.
 
 {{{
 //
-// Example of basic initialization for using Tpetra in an existing application
+// Initialization example for integrating Tpetra 
+// into an existing MPI application.
 //
-// Includes getting a Teuchos::Comm communicator to wrap your MPI_Comm,
+// Includes wrapping your MPI_Comm in a Teuchos::Comm,
 // and printing out Tpetra version information.
 //
 
@@ -235,13 +243,14 @@ main (int argc, char *argv[])
 }
 }}}
 
-= Initialization for an existing non-MPI code =
+== Initialization for an existing non-MPI code ==
 
 The first code example in this lesson uses !GlobalMPISession to initialize MPI.  Despite the name, in a non-MPI build of Trilinos, it does nothing.  Thus, if you built Trilinos with MPI disabled, you should feel free to invoke !GlobalMPISession in your `main` function.  However, if you are using a build of Trilinos that has MPI enabled, but you don't want to use MPI in your application, you should not use !GlobalMPISession.  Instead, you should create a !SerialComm directly as the "communicator."  The following example shows how to create a !SerialComm.
 
 {{{
 //
-// Example of non-MPI initialization for using Tpetra in an existing application
+// Initialization example for integrating Tpetra 
+// into an existing non-MPI application
 //
 
 // ... Your other include files go here ... 
