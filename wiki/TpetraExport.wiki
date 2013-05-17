@@ -2,7 +2,7 @@
 
 = Lesson topics =
 
-The TpetraVector example introduces and describes 
+The Tpetra_Lesson02_Vector example introduces and describes 
 [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html Tpetra's Map class], 
 which is Tpetra's representation of a data distribution.  This example
 builds on that by showing how to use Maps and Tpetra's 
