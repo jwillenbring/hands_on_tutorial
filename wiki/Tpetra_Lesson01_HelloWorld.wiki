@@ -215,7 +215,7 @@ main (int argc, char *argv[])
   // MPI_COMM_WORLD.)  There is a way to tell Trilinos to call 
   // MPI_Comm_free itself; we don't show it here.
 
-  RCP<const Comm<int> > comm = rcp (new MpiComm<int> (yourComm));
+  RCP<const Comm<int> > comm = rcp (new MpiComm<int> (opaqueWrapper (yourComm)));
 
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.  
