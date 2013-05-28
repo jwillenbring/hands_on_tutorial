@@ -271,7 +271,7 @@ main (int argc, char *argv[])
 {
   using std::endl;
   using Teuchos::Comm;
-  using Teuchos;:SerialComm;
+  using Teuchos::SerialComm;
   using Teuchos::RCP;
   using Teuchos::rcp;
 
