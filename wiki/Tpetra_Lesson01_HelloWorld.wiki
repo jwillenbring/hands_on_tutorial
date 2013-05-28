@@ -167,7 +167,7 @@ Tpetra also works fine in an existing MPI code.  For this example, we assume tha
 // Your code is an existing MPI code, so it presumably includes mpi.h directly.
 #include <mpi.h>  
 // ... Your other include files go here ... 
-#include <Tpetra_DefaultMpiComm.hpp>
+#include <Teuchos_DefaultMpiComm.hpp>
 #include <Tpetra_DefaultPlatform.hpp>
 #include <Tpetra_Version.hpp>
 #include <Teuchos_oblackholestream.hpp>
