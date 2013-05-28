@@ -254,7 +254,7 @@ The first code example in this lesson uses !GlobalMPISession to initialize MPI. 
 
 // ... Your other include files go here ... 
 #include <Tpetra_DefaultPlatform.hpp>
-#include <Tpetra_DefaultSerialComm.hpp>
+#include <Teuchos_DefaultSerialComm.hpp>
 #include <Tpetra_Version.hpp>
 #include <Teuchos_oblackholestream.hpp>
 
