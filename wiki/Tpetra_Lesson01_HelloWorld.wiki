@@ -189,7 +189,7 @@ main (int argc, char *argv[])
   // things like std::endl or Teuchos::RCP.
   using std::endl;
   using Teuchos::Comm;
-  using Teuchos;:MpiComm;
+  using Teuchos::MpiComm;
   using Teuchos::opaqueWrapper;
   using Teuchos::RCP;
   using Teuchos::rcp;
