@@ -3,7 +3,7 @@
 #sidebar TrilinosTutorialContents
 = Trilinos Hands-on Tutorial =
 
-== First things first: ==
+== Reference and tutorial material: ==
 
   * The Trilinos Project relies heavily upon its [http://trilinos.sandia.gov website] (click on logo above).
   * For future reference, a lot of information can be found on the [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
@@ -12,7 +12,7 @@
   * Much of the rest of 2010 TUG is also available by video [http://trilinos.sandia.gov/events/trilinos_user_group_2010/ here].
   * *A more focused manycore tutorial starts [TrilinosManycoreTutorial here].*
 
-== Let's dive in, you have two options: ==
+== Two options for running examples: ==
 
   * *!WebTrilinos*
     * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
@@ -60,6 +60,10 @@
      * [Tpetra_Lesson03_PowerMethod Lesson 3]: Learn how to implement a simple numerical algorithm (the power method) using Tpetra sparse matrices and vectors.
      * [Tpetra_Lesson04_SparseMatrixFill Lesson 4]: Learn different ways to construct a Tpetra sparse matrix.
      * [Tpetra_Lesson05_Redistribution Lesson 5]: Learn how to migrate data in a Tpetra object between two different parallel data distributions.**
+     * [Tpetra_Exercises_Advanced_CrsMatrix_ExplicitTranspose Advanced exercise]: Learn how to compute the explicit transpose of a sparse matrix.
+  # *Learn how to solve linear systems using the [http://trilinos.sandia.gov/packages/belos Belos] package of iterative linear solvers, and the [http://trilinos.sandia.gov/packages/ifpack2 Ifpack2] package of preconditioners*
+     * [Ifpack2CreatePreconditioner Create an Ifpack2 preconditioner]
+     * [SimpleTpetraBelos Solve a linear system using Belos and Ifpack2]
 
 == Examples illustrating the Epetra-based solver stack ==
 
