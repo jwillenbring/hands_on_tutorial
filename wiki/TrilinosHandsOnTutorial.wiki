@@ -120,12 +120,12 @@ For [http://trilinos.sandia.gov/packages/belos Belos'] Recycling GMRES (GCRODR) 
 
 == Learning more: ==
 
-  * [http://trilinos.sandia.gov Online reference documentation].
-  * [http://trilinos.sandia.gov/events/trilinos_user_group_2013/index.html Trilinos User Group Meeting (2013).]
-  * [http://trilinos.sandia.gov/events/trilinos_user_group_2012/index.html Trilinos User Group Meeting (2012).]
-  * [http://trilinos.sandia.gov/events/trilinos_user_group_2011/index.html Trilinos User Group Meeting (2011).]
-  * [http://trilinos.sandia.gov/events/trilinos_user_group_2010/index.html Trilinos User Group Meeting (2010).]
-  * [http://trilinos.sandia.gov/events/trilinos_user_group_2009/index.html Trilinos User Group Meeting (2009).]
-  * [http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html Trilinos User Group Meeting (2008).]
-  * [http://trilinos.sandia.gov/events/trilinos_user_group_2007/index.html Trilinos User Group Meeting (2007).]
+  * Web sites of Trilinos User Group meetings
+    * [http://trilinos.sandia.gov/events/trilinos_user_group_2013/index.html 2013]
+    * [http://trilinos.sandia.gov/events/trilinos_user_group_2013/index.html 2012]
+    * [http://trilinos.sandia.gov/events/trilinos_user_group_2011/index.html 2011]
+    * [http://trilinos.sandia.gov/events/trilinos_user_group_2010/index.html 2010]
+    * [http://trilinos.sandia.gov/events/trilinos_user_group_2009/index.html 2009]
+    * [http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html 2008]
+    * [http://trilinos.sandia.gov/events/trilinos_user_group_2007/index.html 2007]
   * [http://trilinos.sandia.gov/mail_lists.html Mail lists.]
