@@ -43,13 +43,14 @@ For today's tutorial and demonstrations, we will use [https://www.users.csbsju.e
 
 === Tpetra examples ===
 
-  * [TpetraPowerMethodWithNodeSelect Power Method Implemented in Tpetra with many node types]
-  * [Tpetra_Lesson01_HelloWorld Basic initialization (MPI if applicable) for using Tpetra]
-  * [Tpetra_Lesson02_Vector Learn how to specify a data distribution for Tpetra objects, create distributed vectors using those distributions, and compute with the vectors.]
-  * [TpetraPowerMethod Create a Tpetra sparse matrix and vectors, and use them to implement the power method] (for estimating the largest eigenvalue of the matrix).
-  * [Tpetra_Lesson_SparseMatrixFill Explore trade-offs between flexibility and efficiency when adding entries to a Tpetra sparse matrix.]
-  * [TpetraExport Learn how to redistribute Tpetra vectors between two different parallel distributions using an Export object.]
-  * [Tpetra_Exercises_Advanced_CrsMatrix_ExplicitTranspose Exercise your understanding of sparse matrix and vector distributions in Tpetra.]
+Learn how to create and use [http://trilinos.sandia.gov/packages/tpetra Tpetra] dense and sparse linear algebra objects.
+
+  * [Tpetra_Lesson01_HelloWorld Lesson 1]: "Hello world!"  Learn different ways to initialize MPI (or not) and pass an MPI communicator to Tpetra.
+  * [Tpetra_Lesson02_Vector Lesson 2]: Learn how to make a Tpetra vector, given a communicator from Lesson 1.
+  * [Tpetra_Lesson03_PowerMethod Lesson 3]: Learn how to implement a simple numerical algorithm (the power method) using Tpetra sparse matrices and vectors.
+  * [Tpetra_Lesson04_SparseMatrixFill Lesson 4]: Learn different ways to construct a Tpetra sparse matrix.
+  * [Tpetra_Lesson05_Redistribution Lesson 5]: Learn how to migrate data in a Tpetra object between two different parallel data distributions.**
+  * [Tpetra_Exercises_Advanced_CrsMatrix_ExplicitTranspose Advanced exercise]: Learn how to compute the explicit transpose of a sparse matrix.
 
 === Solver examples with Tpetra objects ===
 
