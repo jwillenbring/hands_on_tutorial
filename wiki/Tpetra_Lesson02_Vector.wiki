@@ -528,8 +528,10 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   using Teuchos::Array;
   using Teuchos::ArrayRCP;
   using Teuchos::ArrayView;
+  using Teuchos::outArg;
   using Teuchos::RCP;
   using Teuchos::rcp;
+  using Teuchos::reduceAll;
 
   // Print out the Tpetra software version information.
   out << Tpetra::version() << endl << endl;
@@ -632,18 +634,24 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
     // so be sure to ask the Vector for its dimensions, rather than the ArrayRCP.
     const size_t localLength = x->getLocalLength ();
 
-    // Count the number of entries less than 0.5.
+    // Count the local number of entries less than 0.5.
     // Use local indices to access the entries of x_data.
-    size_t count = 0;    
+    size_t localCount = 0;    
     for (size_t k = 0; k < localLength; ++k) {
       if (x_data[k] < 0.5) {
-        ++count;
+        ++localCount;
       }
     }
 
-    // Print the results of the above count.
-    out << "On Process " << comm->getRank () 
-        << ", x has " << count << " entr" << (count != 1 ? "ies" : "y") 
+    // "reduceAll" is a type-safe templated version of MPI_Allreduce.
+    // "outArg" is like taking the address using &, but it makes it 
+    // more clear that its argument is an output argument of a function.
+    size_t globalCount = 0;
+    reduceAll (*comm, Teuchos::REDUCE_SUM, 1, localCount, outArg (globalCount));
+
+    // Find the total number of entries less than 0.5, 
+    // over all processes in the Vector's communicator.
+    out << "x has " << globalCount << " entr" << (globalCount != 1 ? "ies" : "y")
         << " less than 0.5." << endl;
   }
 
