@@ -7,7 +7,7 @@ On this page we discuss current capabilities and and future plans, and provide s
 
 ----
 
-== Current Capabilities (Trilinos 11.0, Oct 2012) ==
+== Current Capabilities (Trilinos >= 11.0) ==
 
 Trilinos' Tpetra package has supported manycore compute nodes for several years.  Nevertheless, algorithms and software for these nodes are still evolving.  Presently Trilinos provides a core foundation for writing and executing code on manycore-based computers.  Specifically we provide:
 
