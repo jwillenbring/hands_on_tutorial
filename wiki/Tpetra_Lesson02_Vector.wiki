@@ -23,17 +23,17 @@ vectors together.
 
 You can find documentation for Tpetra's Map class [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/classTpetra_1_1Map.html here].
 
-== A Map assigns elements of a data structure to processes ==
+== A Map assigns entries of a data structure to processes ==
 
 === Global indices matter to you ===
 
-For you as the user, the fact that you might be parallelizing your application using MPI is really an implementation detail.  You care about what we call _global indices._  These represent the elements of a distributed object (such as rows or columns of a sparse matrix, or elements of a vector) uniquely over the entire object.  The object in turn may be distributed over multiple processes.  Just about any data structure containing elements that can be assigned an integer index can be distributed using a Map.  For most Tpetra users, this means elements of a vector, rows of a !MultiVector, or rows or columns of a sparse matrix.  However, it is not limited to these kinds of objects.  You may even use Map for your own distributed objects.
+For you as the user, the fact that you might be parallelizing your application using MPI is really an implementation detail.  You care about what we call _global indices._  These represent the entries of a distributed object (such as rows or columns of a sparse matrix, or entries of a vector) uniquely over the entire object.  The object in turn may be distributed over multiple processes.  Just about any data structure containing entries that can be assigned an integer index can be distributed using a Map.  For most Tpetra users, this means entries of a vector, rows of a Tpetra::MultiVector, or rows or columns of a sparse matrix.  However, it is not limited to these kinds of objects.  You may even use Map for your own distributed objects.
 
 A Map assigns global indices to parallel processes.  If it assigns a global index G to a process P, we say that process P _owns_ global index G.  It is legal for multiple processes to own the same global index G.  In fact, this is how we implement many useful communication patterns, including those in sparse matrix-vector multiply.  We won't go into much detail in this lesson about that.
 
 === Local indices are an implementation detail ===
 
-For efficiency, within a process, we refer to a global index using its "local index" on that process.  _Local indices_ are local to the process that owns them. If process P owns global index G, then there is a unique local index L on process P corresponding to G. If the local index L is valid on process P, then there is a unique global index G owned by P corresponding to the pair (L, P). However, multiple processes might own the same global index, so a global index G might correspond to multiple (L, P) pairs. In summary, local indices on a process correspond to object elements (e.g., sparse matrix rows or columns) owned by that process.
+For efficiency, within a process, we refer to a global index using its "local index" on that process.  _Local indices_ are local to the process that owns them. If process P owns global index G, then there is a unique local index L on process P corresponding to G. If the local index L is valid on process P, then there is a unique global index G owned by P corresponding to the pair (L, P). However, multiple processes might own the same global index, so a global index G might correspond to multiple (L, P) pairs. In summary, local indices on a process correspond to object "entries" (e.g., sparse matrix rows or columns) owned by that process.
 
 === We expose local indices for performance reasons ===
 
@@ -41,7 +41,7 @@ Local indices matter to you because it may be more efficient to use them to acce
 
 === Maps are themselves distributed data ===
 
-If a Map has N global elements over P processes, and if no one process owns all the global elements, we _never_ store all N global indices on a single process.  Some kinds of Maps require storing all the global indices, but in this case, the indices are themselves distributed over processes.  This ensures _memory scalability_ (no one process has to store all the data).
+If a Map has N global entries over P processes, and if no one process owns all the global entries, we _never_ store all N global indices on a single process.  Some kinds of Maps require storing all the global indices, but in this case, the indices are themselves distributed over processes.  This ensures _memory scalability_ (no one process has to store all the data).
 
 == Map compatibility ==
 
@@ -49,25 +49,25 @@ We mentioned above that a Map behaves much like a vector space.  For instance, i
 
 Compatibility of two Maps corresponds to [https://secure.wikimedia.org/wikipedia/en/wiki/Isomorphism isomorphism] of two vector spaces.  Two Maps that are the same are always compatible.  The `isCompatible()` criterion is less restrictive, and also less expensive to check (although checking for compatibility requires a reduction on a Boolean over all processes in the Map's communicator).  
 
-Adding together two vectors with compatible but not the same Maps is legal.  It might not make mathematical sense, depending on your application.  This is because entries of the vectors are ordered differently.  (Also, just because two vector spaces are isomorphic, doesn't necessarily mean that adding elements of one to elements of another makes sense.)  Adding together two vectors with the same Maps is both legal and mathematically sensible.
+Adding together two vectors with compatible but not the same Maps is legal.  It might not make mathematical sense, depending on your application.  This is because entries of the vectors are ordered differently.  (Also, just because two vector spaces are isomorphic, doesn't necessarily mean that adding entries of one to entries of another makes sense.)  Adding together two vectors with the same Maps is both legal and mathematically sensible.
 
 Both sameness and compatibility are commutative Boolean relations:  for example, `map1.isCompatible(map2)` means `map2.isCompatible(map1)`.
 
 Two Maps are _compatible_ when:
-  * they have the same global number of elements
-  * MPI processes in the Map's communicator that have the same MPI rank, own the same number of elements.
+  * they have the same global number of entries
+  * MPI processes in the Map's communicator that have the same MPI rank, own the same number of entries.
 
 Two Maps are _the same_ when:
   * their minimum and maximum global indices are the same
-  * they have the same global number of elements
+  * they have the same global number of entries
   * the Maps are both distributed over multiple processes, or both not distributed over multiple processes
   * the Maps have the same _index base_ (this means the smallest legal global index value, more or less)
-  * Processes that have the same rank, own the same number of elements.
-  * Processes that have the same rank, own the same elements.  That is, their elements have the same indices, in the same order.
+  * Processes that have the same rank, own the same number of entries.
+  * Processes that have the same rank, own the same entries.  That is, their entries have the same indices, in the same order.
 
 == You get to specify the types of local and global indices ==
 
-In Tpetra, the types of local and global indices are template parameters of Map, Vector, !CrsMatrix, and other distributed objects.  Local indices have type !LocalOrdinal, and global indices have type !GlobalOrdinal.  Both should be signed built-in C++ integer types.  However, you get to pick their size, based on how big your problem is.  If your problem has more than 2 billion elements, you will need a 64-bit integer type (such as `long long` or `int64_t`) for !GlobalOrdinal, but if you have enough processes so that no one process stores more than 2 billion elements locally, then you may use a 32-bit integer type (such as `int` typically, or `int32_t`) for !LocalOrdinal.  The default type of both !LocalOrdinal and !GlobalOrdinal is `int`.
+In Tpetra, the types of local and global indices are template parameters of Map, Vector, !CrsMatrix, and other distributed objects.  Local indices have type !LocalOrdinal, and global indices have type !GlobalOrdinal.  Both should be signed built-in C++ integer types.  However, you get to pick their size, based on how big your problem is.  If your problem has more than 2 billion entries, you will need a 64-bit integer type (such as `long long` or `int64_t`) for !GlobalOrdinal, but if you have enough processes so that no one process stores more than 2 billion entries locally, then you may use a 32-bit integer type (such as `int` typically, or `int32_t`) for !LocalOrdinal.  The default type of both !LocalOrdinal and !GlobalOrdinal is `int`.
 
 It is usually more efficient to use the shortest integer type possible for both local and global indices.  "Shortest" means fewest number of bits.  Fewer bits mean you use less memory and thus can solve bigger problems or use higher-quality preconditioners that solve problems in fewer iterations.  Shorter local indices can also mean better performance for local sparse matrix kernels, such as sparse matrix-vector multiply, sparse triangular solve, and smoothing (for algebraic multigrid).
 
@@ -91,7 +91,7 @@ An example of a _not_ one-to-one Map is a Map containing 101 global indices 0 ..
   * Process 2 owns 50 .. 75
   * Process 3 owns 75 .. 100
 
-Note the overlap of one global index between each "adjacent" process.  An example of a mathematical problem with an overlapping distribution like this would be a 1-D linear finite element or finite difference discretization, where elements are distributed with unique ownership among the processes, but the boundary node between two adjacent elements on different processes is shared among those two processes.
+Note the overlap of one global index between each "adjacent" process.  An example of a mathematical problem with an overlapping distribution like this would be a 1-D linear finite element or finite difference discretization, where entries are distributed with unique ownership among the processes, but the boundary node between two adjacent entries on different processes is shared among those two processes.
 
 === Contiguous or noncontiguous, uniform or not ===
 
@@ -111,7 +111,7 @@ Note that Process 3 in this example owns 26 global indices, whereas the other pr
 
 _Globally distributed_ means that all of the following are true:
   # The Map's communicator has more than one process. 
-  # There is at least one process in the Map's communicator, whose local number of elements does not equal the number of global elements. (That is, not all the elements are replicated over all the processes.)
+  # There is at least one process in the Map's communicator, whose local number of entries does not equal the number of global entries. (That is, not all the entries are replicated over all the processes.)
 
 If at least one of the above are not true, then we call the Map _locally replicated_.  The two terms are mutually exclusive. 
 
@@ -234,8 +234,8 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   typedef double scalar_type;
 
   // The "LocalOrdinal" (LO) type is the type of "local" indices.
-  // Both Epetra and Tpetra index local elements differently than
-  // global elements.  Tpetra exploits this so that you can use a
+  // Both Epetra and Tpetra index local entries differently than
+  // global entries.  Tpetra exploits this so that you can use a
   // shorter integer type for local indices.  This saves bandwidth
   // when computing sparse matrix-vector products.
   typedef int local_ordinal_type;
@@ -299,16 +299,16 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   //
 
   // The total (global, i.e., over all MPI processes) number of
-  // elements in the Map.  Tpetra's global_size_t type is an unsigned
+  // entries in the Map.  Tpetra's global_size_t type is an unsigned
   // type and is at least 64 bits long on 64-bit machines.
   //
-  // For this example, we scale the global number of elements in the
+  // For this example, we scale the global number of entries in the
   // Map with the number of MPI processes.  That way, you can run this
   // example with any number of MPI processes and every process will
-  // still have a positive number of elements.
-  const Tpetra::global_size_t numGlobalElements = comm->getSize() * 5;
+  // still have a positive number of entries.
+  const Tpetra::global_size_t numGlobalEntries = comm->getSize() * 5;
 
-  // Tpetra can index the elements of a Map starting with 0 (C style),
+  // Tpetra can index the entries of a Map starting with 0 (C style),
   // 1 (Fortran style), or any base you want.  1-based indexing is
   // handy when interfacing with Fortran.  We choose 0-based indexing
   // here.
@@ -322,7 +322,7 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   // immutable objects.  If you want a new data distribution, create a
   // new Map.
   RCP<const map_type> contigMap = 
-    rcp (new map_type (numGlobalElements, indexBase, comm, 
+    rcp (new map_type (numGlobalEntries, indexBase, comm, 
 		       Tpetra::GloballyDistributed, node));
 
   // contigMap is contiguous by construction.
@@ -330,16 +330,16 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
     "The supposedly contiguous Map isn't contiguous.");
 
   // Let's create a second Map.  It will have the same number of
-  // global elements per process, but will distribute them
+  // global entries per process, but will distribute them
   // differently, in round-robin (1-D cyclic) fashion instead of
   // contiguously.
   RCP<const map_type> cyclicMap;
   {
     // We'll use the version of the Map constructor that takes, on
-    // each MPI process, a list of the global elements in the Map
+    // each MPI process, a list of the global entries in the Map
     // belonging to that process.  You can use this constructor to
     // construct an overlapping (also called "not 1-to-1") Map, in
-    // which one or more elements are owned by multiple processes.  We
+    // which one or more entries are owned by multiple processes.  We
     // don't do that here; we make a nonoverlapping (also called
     // "1-to-1") Map.
     Array<global_ordinal_type>::size_type numEltsPerProc = 5;
@@ -350,7 +350,7 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
     for (Array<global_ordinal_type>::size_type k = 0; k < numEltsPerProc; ++k)
       elementList[k] = myRank + k*numProcs;
     
-    cyclicMap = rcp (new map_type (numGlobalElements, elementList, indexBase, 
+    cyclicMap = rcp (new map_type (numGlobalEntries, elementList, indexBase, 
 				   comm, node));
   }
 
@@ -575,7 +575,7 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
   // MPI process.  Pass in the Kokkos Node, so that this line of code
   // will work with any Kokkos Node type.
   RCP<const map_type> contigMap = 
-    rcp (new map_type (numGlobalElements, indexBase, comm, 
+    rcp (new map_type (numGlobalEntries, indexBase, comm, 
 		       Tpetra::GloballyDistributed, node));
 
   //////////////////////////////////////////////////////////////////////
