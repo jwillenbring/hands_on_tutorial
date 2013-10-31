@@ -15,10 +15,10 @@
 == Two options for running examples: ==
 
   * *!WebTrilinos*
-    * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Web Trilinos: Version 11.0, MPI/OpenMP-enabled]: Go here unless you know what you are doing.
-    * [http://trilinos.sandia.gov/packages/webtrilinos WebTrilinos] is a scientific portal, a web-based environment to use several Trilinos packages through the web.
-    * *Note:* Only packages that Trilinos was configured with can be used through the WebTrilinos interfaces.
-    * Installed at St. John's University, MN.  The following versions are available (the examples below use the C++ interface):
+    * This is a web page interface to Trilinos.  It gives you a text box in which you can paste, type, or edit code.  That code will compile against a recent release of Trilinos.
+    * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Click here] to access Web Trilinos (Version 11.0, MPI/OpenMP-enabled).
+    * !WebTrilinos is installed at St. John's University, MN.
+    * Here is a list of all available Trilinos versions:
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP-enabled]
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-OpenMP-RTI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP/RTI-enabled]
            * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.8/c++/index.html Trilinos 10.8, MPI-enabled]
