@@ -93,7 +93,7 @@
     * [NOXNewton Solve a simple nonlinear system using NOX]
     * [NOXNewton2 Solve a simple nonlinear system using NOX]
 
-== Examples illustrating other packages
+== Examples illustrating other packages ==
 
   # *[http://trilinos.sandia.gov/packages/pytrilinos PyTrilinos] tutorial materials.*
     * [http://trilinos.sandia.gov/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
