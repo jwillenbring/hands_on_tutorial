@@ -647,7 +647,7 @@ exampleRoutine (const Teuchos::RCP<const Teuchos::Comm<int> >& comm,
     // "outArg" is like taking the address using &, but it makes it 
     // more clear that its argument is an output argument of a function.
     size_t globalCount = 0;
-    reduceAll<int, size_t> (*comm, Teuchos::REDUCE_SUM, 1, localCount, outArg (globalCount));
+    reduceAll<int, size_t> (*comm, Teuchos::REDUCE_SUM, localCount, outArg (globalCount));
 
     // Find the total number of entries less than 0.5, 
     // over all processes in the Vector's communicator.
