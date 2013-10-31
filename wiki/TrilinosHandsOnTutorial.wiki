@@ -71,11 +71,11 @@
     * [GaleriLinearSystem Generate a matrix, discretized 2D Laplacian on a Cartesian grid.]
     * Try generating matrices for some different operators, the list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
   # *Get started with the [http://trilinos.sandia.gov/packages/tpetra Tpetra] package.*
-     * [Tpetra_Lesson01_HelloWorld A simple Hello World program.]
-     * [Tpetra_Lesson02_Vector Building a Tpetra Vector.]
-     * [Tpetra_Lesson03_PowerMethod The power method again, using Tpetra.]
-     * [Tpetra_Lesson04_SparseMatrixFill Construct a sparse matrix object.]
-     * [Tpetra_Lesson05_Redistribution More advanced: Redistribute an existing object.]**
+     * [Tpetra_Lesson01_HelloWorld Lesson 1]: "Hello world!"  Learn different ways to initialize MPI (or not) and pass an MPI communicator to Tpetra.
+     * [Tpetra_Lesson02_Vector Lesson 2]: Learn how to make a Tpetra vector, given a communicator from Lesson 1.
+     * [Tpetra_Lesson03_PowerMethod Lesson 3]: Learn how to implement a simple numerical algorithm (the power method) using Tpetra sparse matrices and vectors.
+     * [Tpetra_Lesson04_SparseMatrixFill Lesson 4]: Learn different ways to construct a Tpetra sparse matrix.
+     * [Tpetra_Lesson05_Redistribution Lesson 5]: Learn how to migrate data in a Tpetra object between two different parallel data distributions.**
   # *Create an algebraic preconditioner using the [http://trilinos.sandia.gov/packages/ifpack  Ifpack] package.*
     * [IfpackFactory Create a preconditioner using the Ifpack preconditioner factory.]
     * Try generating different preconditioners:
