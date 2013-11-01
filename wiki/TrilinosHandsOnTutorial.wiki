@@ -14,43 +14,54 @@
 == Two options for running examples: ==
 
   * *!WebTrilinos*
-    * This is a web page interface to Trilinos.  It gives you a text box in which you can paste, type, or edit code.  That code will compile against a recent release of Trilinos.
     * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Click here] to access Web Trilinos (Version 11.0, MPI/OpenMP-enabled).
-    * !WebTrilinos is installed at St. John's University, MN.
-    * Here is a list of all available Trilinos versions:
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP-enabled]
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-OpenMP-RTI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP/RTI-enabled]
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.8/c++/index.html Trilinos 10.8, MPI-enabled]
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-TBB-10.8.3/c++/index.html Trilinos 10.8, TBB-enabled]
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.8.3/c++/index.html Trilinos 10.8, CUDA-enabled]
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Trilinos development branch (10.7), MPI-enabled]
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.6/c++/index.html Trilinos 10.6, MPI-enabled]
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-10.4/c++/index.html Trilinos 10.4, serial]
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/c++/index.html Trilinos 10.4, MPI-enabled]
+    * Access to this site is password protected.  Login information will be given during live tutorials as needed.
+    * This page you a text box in which you can paste, type, or edit C++ code.  That code will compile, link against a recent release of Trilinos, and run.  The web page will show you the resulting output, or any compiler errors if the code has syntax errors.
+      * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
+      * You can't read or write files, but you can embed input data in your program as a string.
+    * !WebTrilinos is installed on a server at St. John's University, MN.
+    * Other versions of Trilinos are available.  List of available versions:
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP-enabled]
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-OpenMP-RTI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP/RTI-enabled]
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.8/c++/index.html Trilinos 10.8, MPI-enabled]
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-TBB-10.8.3/c++/index.html Trilinos 10.8, TBB-enabled]
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.8.3/c++/index.html Trilinos 10.8, CUDA-enabled]
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Trilinos development branch (10.7), MPI-enabled]
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.6/c++/index.html Trilinos 10.6, MPI-enabled]
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-10.4/c++/index.html Trilinos 10.4, serial]
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/c++/index.html Trilinos 10.4, MPI-enabled]
 <wiki:comment>
-           * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.6.1/c++/index.html Trilinos 10.7 (dev), CUDA-enabled]
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.6.1/c++/index.html Trilinos 10.7 (dev), CUDA-enabled]
 </wiki:comment>
     * In addition to the C++ interfaces, a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/MatrixPortal/index.html Matrix Portal interface] and a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/python/index.html Python interface] are also available.
-    * Access to this site is password protected.  Login information will be given during live tutorials as needed.
-    * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
   * *Download and build the examples on your machine*
     # Download [http://trilinos.sandia.gov/download Trilinos]
     # Download and install CMake (if not already done).  
-          * The latest CMake release can be downloaded from [http://www.cmake.org/cmake/resources/software.html here].
-    # Download and install Clapack (if you don't have LAPACK and BLAS already).  
-          * Get Clapack from [http://www.netlib.org/clapack/clapack-3.2.1-CMAKE.tgz here].  
-          * Use CMake to build Clapack.
+      * The latest CMake release can be downloaded from [http://www.cmake.org/cmake/resources/software.html here].
+    # Make sure that you have the BLAS and LAPACK installed.
+      * Trilinos' build infrastructure can find the default system BLAS and LAPACK libraries on GNU/Linux and MacOS X systems.  
+      * In some cases, you may have to help Trilinos find your BLAS and LAPACK libraries, especially if they are not in default locations or have different names.  Please refer to the installation documentation for more details.
+      * If you do not have the BLAS and LAPACK on your system, one option is to download and install CLAPACK.
+        * Download CLAPACK [http://www.netlib.org/clapack/clapack-3.2.1-CMAKE.tgz here].  
+        * Use CMake to build CLAPACK.
     # Build and install Trilinos. 
-          * An example script is [BuildScript here].  
-          * You can find other scripts in the Trilinos distribution Trilinos/sample_scripts directory.  
-          * You can also use the CMake gui, or the text-gui ccmake.
-    # Get Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
+      # Find a configuration script suitable for your system.
+        * An example script is [BuildScript here].  You may need to modify the script.
+        * You can find other scripts in the Trilinos distribution Trilinos/sample_scripts directory.  
+        * You can also use the CMake graphical user interface, or the console-based interface `ccmake`.
+      # Use the script to run CMake.
+      # Run `make` and `make install`.  You may specify the `-j <N>` flag for a parallel build.
+    # Build your program against Trilinos.  You have two options: use CMake, or use a Makefile.
+      * CMake option
+      * Makefile option
+        # Get an example Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
           * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
           * You can find the Makefile.export.package_name files once you have built and installed Trilinos.  
           * They will be in the include directory of your installation directory.  
-          * Example: {{{TrilinosInstall/include/Makefile.export.Epetra.}}}
-    # Customize the Makefile to your situation (the example Makefile uses only the Epetra package, but Makefile.export.package_name files are available for all packages).
-    # Add Example code into a file called main.cpp and build away!
+          * Example: {{{TrilinosInstall/include/Makefile.export.Epetra}}}.
+        # Customize the Makefile to your situation.  
+          * The example Makefile uses only the Epetra package, but Makefile.export.package_name files are available for all packages.
+        # Add your code into a file called main.cpp and build away!
 
 == Examples illustrating the Tpetra-based solver stack ==
 
