@@ -1,12 +1,14 @@
-#summary Create Belos iterative linear solver for Tpetra sparse linear system
+#summary Use Belos and Ifpack2 to solve Tpetra linear systems
 
 = Introduction =
 
-The Belos package implements several different iterative linear solver algorithms.  These include standard solvers like CG, GMRES, Transpose-Free QMR, and LSQR, as well as algorithms specifically designed to accelerate solution of systems with multiple right-hand sides.
+The [http://trilinos.sandia.gov/packages/belos/ Belos] package implements several different iterative linear solver algorithms.  These include standard solvers like CG, GMRES, Transpose-Free QMR, and LSQR, as well as algorithms specifically designed to accelerate solution of systems with multiple right-hand sides.  The [http://trilinos.sandia.gov/packages/ifpack2/ Ifpack2] package implements relaxation, incomplete factorization, and domain decomposition preconditioners and smoothers.  The code examples in this lesson illustrate how to create and use a Belos GMRES solver with an Ifpack2 preconditioner, to solve a [http://trilinos.sandia.gov/packages/tpetra/ Tpetra] sparse linear system.
 
-This example shows how to create and use a Belos GMRES solver with an Ifpack2 preconditioner.
+= Code examples =
 
-= Code example = 
+== Create and use a preconditioner for a single linear system ==
+
+This example shows how to create and use a Belos GMRES solver with an Ifpack2 preconditioner, to solve a single linear system.
 
 {{{
 #include <Tpetra_CrsMatrix.hpp>
@@ -423,4 +425,12 @@ main (int argc, char *argv[])
 
   return 0;
 }
+}}}
+
+
+== Create and use a preconditioner for a sequence of linear systems ==
+
+This example (in progress) shows how to create and use a Belos GMRES solver with an Ifpack2 preconditioner, to solve a sequence of linear systems, where the values in the sparse matrix change but the structure of the sparse matrix does not.
+
+{{{
 }}}
