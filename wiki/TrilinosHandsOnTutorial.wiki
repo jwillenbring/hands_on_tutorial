@@ -74,7 +74,7 @@
      * [Tpetra_Exercises_Advanced_CrsMatrix_ExplicitTranspose Advanced exercise]: Learn how to compute the explicit transpose of a sparse matrix.
   # *Learn how to solve linear systems using the [http://trilinos.sandia.gov/packages/belos Belos] package of iterative linear solvers, and the [http://trilinos.sandia.gov/packages/ifpack2 Ifpack2] package of preconditioners*
      * [Ifpack2CreatePreconditioner Create an Ifpack2 preconditioner]
-     * [SimpleTpetraBelos Solve a linear system using Belos and Ifpack2]
+     * [Tpetra_Belos_CreateSolver Solve a linear system using Belos and Ifpack2]
 
 == Examples illustrating the Epetra-based solver stack ==
 
