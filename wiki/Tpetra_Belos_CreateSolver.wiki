@@ -829,6 +829,7 @@ main (int argc, char *argv[])
   //
   // Change one value in the matrix, on Process 0.
   //
+  A->resumeFill ();
   if (myRank == 0) {
     ArrayView<const global_ordinal_type> myGlobalRows = A->getRowMap ()->getNodeElementList ();
     if (myGlobalRows.size () > 0) {
@@ -843,6 +844,8 @@ main (int argc, char *argv[])
                               arrayView (&updateVal, 1));
     }
   }
+  A->fillComplete (A->getDomainMap (), A->getRangeMap ());
+
 
   // We changed a value in the matrix, but did not change the matrix's
   // structure (the pattern of stored "nonzero" entries).  Thus, we
