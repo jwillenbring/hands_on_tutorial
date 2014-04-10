@@ -21,6 +21,7 @@
       * You can't read or write files, but you can embed input data in your program as a string.
     * !WebTrilinos is installed on a server at St. John's University, MN.
     * Other versions of Trilinos are available.  List of available versions:
+      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-OpenMP-RTI-shared-11.6/c++/index.html] Trilinos 11.6, MPI/OpenMP-enabled]
       * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP-enabled]
       * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-OpenMP-RTI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP/RTI-enabled]
       * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.8/c++/index.html Trilinos 10.8, MPI-enabled]
