@@ -13,8 +13,7 @@
 == Three options for running examples: ==
 
   * Student accounts on paratools07.rrt.net
-    * Tutorial uses [https://github.com/jwillenbring/Trilinos_tutorial
- Trilinos tutorial on Github]
+    * Tutorial material lives on [https://github.com/jwillenbring/Trilinos_tutorial Github]
     * Steps to get started
       # `git clone https://github.com/jwillenbring/Trilinos_tutorial.git`
       # `cd Trilinos_tutorial`
