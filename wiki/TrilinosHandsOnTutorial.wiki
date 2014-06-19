@@ -12,15 +12,20 @@
 
 == Three options for running examples: ==
 
-  * Student accounts on paratools07.rrt.net
+  * Student shell accounts
     * Tutorial material lives on [https://github.com/jwillenbring/Trilinos_tutorial Github]
     * Steps to get started
+      # Log in to student account on paratools07.rrt.net
       # `git clone https://github.com/jwillenbring/Trilinos_tutorial.git`
       # `cd Trilinos_tutorial`
       # `source ./setup.sh`  (loads MPI and Trilinos modules)
       # `cd cmake_build`
       # `./live-cmake`  (builds all the examples)
       # Change into build subdirectories to run examples by hand
+
+  * Trilinos virtual machine (VM)
+    * VM with same build environment as the student shell accounts
+    * We won't cover this today, but you can download it and try it at home
 
   * *!WebTrilinos*: Web interface to edit, build, and run C++ code
     * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Click here] to access Web Trilinos (Version 11.9).
@@ -29,32 +34,28 @@
       * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
       * You can't read or write files, but you can embed input data in your program as a string.
     * !WebTrilinos is installed on a server at St. John's University, MN.
-  * *Use an installed Trilinos with our Trilinos tutorial directory*
-  * *Download and build the examples on your machine*
+
+  * Build Trilinos yourself on your computer
+    # Prerequisites:
+      * C++ and C compiler
+      * [http://www.cmake.org/cmake/resources/software.html CMake] version >= 2.8
+      * BLAS and LAPACK libraries
+      * MPI (Message Passing Interface) (optional)
     # Download [http://trilinos.sandia.gov/download Trilinos]
-    # Download and install CMake (if not already done).  
-      * The latest CMake release can be downloaded from [http://www.cmake.org/cmake/resources/software.html here].
-    # Make sure that you have the BLAS and LAPACK installed.
-      * Trilinos' build infrastructure can find the default system BLAS and LAPACK libraries on GNU/Linux and MacOS X systems.  
-      * In some cases, you may have to help Trilinos find your BLAS and LAPACK libraries, especially if they are not in default locations or have different names.  Please refer to the installation documentation for more details.
-      * If you do not have the BLAS and LAPACK on your system, one option is to download and install CLAPACK.
-        * Download CLAPACK [http://www.netlib.org/clapack/clapack-3.2.1-CMAKE.tgz here].  
-        * Use CMake to build CLAPACK.
-    # Build and install Trilinos. 
-      # Find a configuration script suitable for your system.
+    # Find a configuration script suitable for your system.
         * An example script is [BuildScript here].  You may need to modify the script.
-        * You can find other scripts in the Trilinos distribution Trilinos/sample_scripts directory.  
+        * You can find other scripts in the Trilinos distribution's `sample_scripts` directory.  
         * You can also use the CMake graphical user interface, or the console-based interface `ccmake`.
       # Use the script to run CMake.
       # Run `make` and `make install`.  You may specify the `-j <N>` flag for a parallel build.
     # Build your program against Trilinos.  You have two options: use CMake, or use a Makefile.
-      * CMake option
-      * Makefile option
+      * CMake: See CMakeFindPackageTrilinosExample
+      * Makefile
         # Get an example Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
           * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
           * You can find the Makefile.export.package_name files once you have built and installed Trilinos.  
           * They will be in the include directory of your installation directory.  
-          * Example: {{{TrilinosInstall/include/Makefile.export.Epetra}}}.
+          * Example: `TrilinosInstall/include/Makefile.export.Epetra`.
         # Customize the Makefile to your situation.  
           * The example Makefile uses only the Epetra package, but Makefile.export.package_name files are available for all packages.
         # Add your code into a file called main.cpp and build away!
