@@ -46,8 +46,8 @@
         * An example script is [BuildScript here].  You may need to modify the script.
         * You can find other scripts in the Trilinos distribution's `sample_scripts` directory.  
         * You can also use the CMake graphical user interface, or the console-based interface `ccmake`.
-      # Use the script to run CMake.
-      # Run `make` and `make install`.  You may specify the `-j <N>` flag for a parallel build.
+    # Use the script to run CMake.
+    # Run `make` and `make install`.  You may specify the `-j <N>` flag for a parallel build.
     # Build your program against Trilinos.  You have two options: use CMake, or use a Makefile.
       * CMake: See CMakeFindPackageTrilinosExample
       * Makefile
