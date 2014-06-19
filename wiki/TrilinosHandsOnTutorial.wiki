@@ -3,14 +3,14 @@
 #sidebar TrilinosTutorialContents
 = Trilinos Hands-on Tutorial =
 
-== Reference and tutorial material: ==
+== Reference and tutorial material ==
 
-  * The Trilinos Project relies heavily upon its [http://trilinos.sandia.gov website] (click on logo above).
+  * [http://trilinos.sandia.gov Trilinos website] (click on logo above)
   * Each Trilinos package has [http://trilinos.sandia.gov/packages/  Doxygen documentation].
-  * For future reference, a lot of information can be found on the [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
-  * Several previous Trilinos User Group meetings included a video-recorded tutorial that uses the website.  See links below.
+  * [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
+  * See links below to slides and video recordings of tutorials from previous Trilinos User Group meetings.
 
-== Three options for running examples: ==
+== Four options for running examples ==
 
   * Student shell accounts
     * Tutorial material lives on [https://github.com/jwillenbring/Trilinos_tutorial Github]
@@ -22,15 +22,18 @@
       # `cd cmake_build`
       # `./live-cmake`  (builds all the examples)
       # Change into build subdirectories to run examples by hand
+    * We may do all but the last one or two steps for you; stay tuned!
 
   * Trilinos virtual machine (VM)
     * VM with same build environment as the student shell accounts
     * We won't cover this today, but you can download it and try it at home
 
   * *!WebTrilinos*: Web interface to edit, build, and run C++ code
-    * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Click here] to access Web Trilinos (Version 11.9).
+    * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Click here] to access WebTrilinos (Trilinos version 11.9).
     * Access to this site is password protected.  Login information will be given during live tutorials as needed.
-    * This page you a text box in which you can paste, type, or edit C++ code.  That code will compile, link against a recent release of Trilinos, and run.  The web page will show you the resulting output, or any compiler errors if the code has syntax errors.
+    * This page gives you a text box in which you can paste, type, or edit C++ code.
+      * That code will compile and link against a recent release of Trilinos, and run.
+      * The web page will show you the resulting output.
       * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
       * You can't read or write files, but you can embed input data in your program as a string.
     * !WebTrilinos is installed on a server at St. John's University, MN.
@@ -57,7 +60,8 @@
           * They will be in the include directory of your installation directory.  
           * Example: `TrilinosInstall/include/Makefile.export.Epetra`.
         # Customize the Makefile to your situation.  
-          * The example Makefile uses only the Epetra package, but Makefile.export.package_name files are available for all packages.
+          * The example Makefile uses only the Epetra package, but `Makefile.export.$PACKAGE_NAME` files are available for all packages.
+          * You may also include `Makefile.export.Trilinos` to get all Trilinos packages.
         # Add your code into a file called main.cpp and build away!
 
 == Examples illustrating the Tpetra-based solver stack ==
