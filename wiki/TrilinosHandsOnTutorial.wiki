@@ -12,57 +12,61 @@
 
 == Four options for running examples ==
 
-  * Student shell accounts
-    * Tutorial material lives on [https://github.com/jwillenbring/Trilinos_tutorial Github]
-    * Steps to get started
-      # Log in to student account on paratools07.rrt.net
-      # `git clone https://github.com/jwillenbring/Trilinos_tutorial.git`
-      # `cd Trilinos_tutorial`
-      # `source ./setup.sh`  (loads MPI and Trilinos modules)
-      # `cd cmake_build`
-      # `./live-cmake`  (builds all the examples)
-      # Change into build subdirectories to run examples by hand
-    * We may do all but the last one or two steps for you; stay tuned!
+=== Student shell accounts ===
 
-  * Trilinos virtual machine (VM)
-    * VM with same build environment as the student shell accounts
-    * We won't cover this today, but you can download it and try it at home
+  * Tutorial material lives on [https://github.com/jwillenbring/Trilinos_tutorial Github]
+  * Steps to get started
+    # Log in to student account on paratools07.rrt.net
+    # `git clone https://github.com/jwillenbring/Trilinos_tutorial.git`
+    # `cd Trilinos_tutorial`
+    # `source ./setup.sh`  (loads MPI and Trilinos modules)
+    # `cd cmake_build`
+    # `./live-cmake`  (builds all the examples)
+    # Change into build subdirectories to run examples by hand
+  * We may do all but the last one or two steps for you; stay tuned!
 
-  * *!WebTrilinos*: Web interface to edit, build, and run C++ code
-    * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Click here] to access WebTrilinos (Trilinos version 11.9).
-    * Access to this site is password protected.  Login information will be given during live tutorials as needed.
-    * This page gives you a text box in which you can paste, type, or edit C++ code.
-      * That code will compile and link against a recent release of Trilinos, and run.
-      * The web page will show you the resulting output.
-      * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
-      * You can't read or write files, but you can embed input data in your program as a string.
-    * !WebTrilinos is installed on a server at St. John's University, MN.
+===  Trilinos virtual machine (VM) ===
 
-  * Build Trilinos yourself on your computer
-    # Prerequisites:
-      * C++ and C compiler
-      * [http://www.cmake.org/cmake/resources/software.html CMake] version >= 2.8
-      * BLAS and LAPACK libraries
-      * MPI (Message Passing Interface) (optional)
-    # Download [http://trilinos.sandia.gov/download Trilinos]
-    # Find a configuration script suitable for your system.
-        * An example script is [BuildScript here].  You may need to modify the script.
-        * You can find other scripts in the Trilinos distribution's `sample_scripts` directory.  
-        * You can also use the CMake graphical user interface, or the console-based interface `ccmake`.
-    # Use the script to run CMake.
-    # Run `make` and `make install`.  You may specify the `-j <N>` flag for a parallel build.
-    # Build your program against Trilinos.  You have two options: use CMake, or use a Makefile.
-      * CMake: See CMakeFindPackageTrilinosExample
-      * Makefile
-        # Get an example Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
-          * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
-          * You can find the Makefile.export.package_name files once you have built and installed Trilinos.  
-          * They will be in the include directory of your installation directory.  
-          * Example: `TrilinosInstall/include/Makefile.export.Epetra`.
-        # Customize the Makefile to your situation.  
-          * The example Makefile uses only the Epetra package, but `Makefile.export.$PACKAGE_NAME` files are available for all packages.
-          * You may also include `Makefile.export.Trilinos` to get all Trilinos packages.
-        # Add your code into a file called main.cpp and build away!
+  * VM with same build environment as the student shell accounts
+  * We won't cover this today, but you can download it and try it at home
+
+=== *!WebTrilinos*: Web interface to edit, build, and run C++ code ===
+
+  * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Click here] to access WebTrilinos (Trilinos version 11.9).
+  * Access to this site is password protected.  Login information will be given during live tutorials as needed.
+  * This page gives you a text box in which you can paste, type, or edit C++ code.
+    * That code will compile and link against a recent release of Trilinos, and run.
+    * The web page will show you the resulting output.
+    * Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
+    * You can't read or write files, but you can embed input data in your program as a string.
+  * !WebTrilinos is installed on a server at St. John's University, MN.
+
+=== Build Trilinos yourself on your computer ===
+
+  # Prerequisites
+    * C++ and C compiler
+    * [http://www.cmake.org/cmake/resources/software.html CMake] version >= 2.8
+    * BLAS and LAPACK libraries
+    * MPI (Message Passing Interface) (optional)
+  # Download [http://trilinos.sandia.gov/download Trilinos]
+  # Find a configuration script suitable for your system.
+      * An example script is [BuildScript here].  You may need to modify the script.
+      * You can find other scripts in the Trilinos distribution's `sample_scripts` directory.  
+      * You can also use the CMake graphical user interface, or the console-based interface `ccmake`.
+  # Use the script to run CMake.
+  # Run `make` and `make install`.  You may specify the `-j <N>` flag for a parallel build.
+  # Build your program against Trilinos.  You have two options: use CMake, or use a Makefile.
+    * CMake: See CMakeFindPackageTrilinosExample
+    * Makefile
+      # Get an example Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
+        * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
+        * You can find the Makefile.export.package_name files once you have built and installed Trilinos.  
+        * They will be in the include directory of your installation directory.  
+        * Example: `TrilinosInstall/include/Makefile.export.Epetra`.
+      # Customize the Makefile to your situation.  
+        * The example Makefile uses only the Epetra package, but `Makefile.export.$PACKAGE_NAME` files are available for all packages.
+        * You may also include `Makefile.export.Trilinos` to get all Trilinos packages.
+      # Add your code into a file called main.cpp and build away!
 
 == Examples illustrating the Tpetra-based solver stack ==
 
