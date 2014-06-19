@@ -12,6 +12,17 @@
 
 == Three options for running examples: ==
 
+  * Student accounts on paratools07.rrt.net
+    * Tutorial uses [https://github.com/jwillenbring/Trilinos_tutorial
+ Trilinos tutorial on Github]
+    * Steps to get started
+      # `git clone https://github.com/jwillenbring/Trilinos_tutorial.git`
+      # `cd Trilinos_tutorial`
+      # `source ./setup.sh`  (loads MPI and Trilinos modules)
+      # `cd cmake_build`
+      # `./live-cmake`  (builds all the examples)
+      # Change into build subdirectories to run examples by hand
+
   * *!WebTrilinos*: Web interface to edit, build, and run C++ code
     * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Click here] to access Web Trilinos (Version 11.9).
     * Access to this site is password protected.  Login information will be given during live tutorials as needed.
