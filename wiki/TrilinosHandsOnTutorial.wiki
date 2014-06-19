@@ -8,33 +8,18 @@
   * The Trilinos Project relies heavily upon its [http://trilinos.sandia.gov website] (click on logo above).
   * Each Trilinos package has [http://trilinos.sandia.gov/packages/  Doxygen documentation].
   * For future reference, a lot of information can be found on the [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
-  * Trilinos has a Tutorial document that you can find [http://trilinos.sandia.gov/Trilinos10.6Tutorial.pdf here].
   * Several previous Trilinos User Group meetings included a video-recorded tutorial that uses the website.  See links below.
 
-== Two options for running examples: ==
+== Three options for running examples: ==
 
-  * *!WebTrilinos*
+  * *!WebTrilinos*: Web interface to edit, build, and run C++ code
     * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Click here] to access Web Trilinos (Version 11.9).
     * Access to this site is password protected.  Login information will be given during live tutorials as needed.
     * This page you a text box in which you can paste, type, or edit C++ code.  That code will compile, link against a recent release of Trilinos, and run.  The web page will show you the resulting output, or any compiler errors if the code has syntax errors.
       * *Reminder:* Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
       * You can't read or write files, but you can embed input data in your program as a string.
     * !WebTrilinos is installed on a server at St. John's University, MN.
-    * Other versions of Trilinos are available.  List of available versions:
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-OpenMP-RTI-shared-11.6/c++/index.html Trilinos 11.6, MPI/OpenMP-enabled]
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP-enabled]
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-OpenMP-RTI-shared-11.0/c++/index.html Trilinos 11.0, MPI/OpenMP/RTI-enabled]
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.8/c++/index.html Trilinos 10.8, MPI-enabled]
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-TBB-10.8.3/c++/index.html Trilinos 10.8, TBB-enabled]
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.8.3/c++/index.html Trilinos 10.8, CUDA-enabled]
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Trilinos development branch (10.7), MPI-enabled]
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.6/c++/index.html Trilinos 10.6, MPI-enabled]
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-10.4/c++/index.html Trilinos 10.4, serial]
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/c++/index.html Trilinos 10.4, MPI-enabled]
-<wiki:comment>
-      * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-CUDA-10.6.1/c++/index.html Trilinos 10.7 (dev), CUDA-enabled]
-</wiki:comment>
-    * In addition to the C++ interfaces, a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/MatrixPortal/index.html Matrix Portal interface] and a [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/python/index.html Python interface] are also available.
+  * *Use an installed Trilinos with our Trilinos tutorial directory*
   * *Download and build the examples on your machine*
     # Download [http://trilinos.sandia.gov/download Trilinos]
     # Download and install CMake (if not already done).  
@@ -79,12 +64,15 @@
 
 == Examples illustrating the Epetra-based solver stack ==
 
-  # *Learn how to use [http://trilinos.sandia.gov/packages/epetra Epetra] dense and sparse linear algebra objects.*
-    * [EpetraSimpleVector Beginner: Construct some vectors and perform basic operations.]
-    * [EpetraPowerMethod Intermediate: Find the dominant eigenpair of a matrix using the power method.]**
+  # *Learn how to create and use Epetra dense and sparse linear algebra objects*
+     * [EpetraLesson01 Lesson 1]: "Hello world!"  Learn different ways to initialize MPI (or not) and pass an MPI communicator to Epetra.
+     * [EpetraLesson02 Lesson 2]: Learn how to make an Epetra vector, given a communicator from Lesson 1.
+     * [EpetraLesson03 Lesson 3]: Learn how to implement a simple numerical algorithm (the power method) using Epetra sparse matrices and vectors.
+     * [EpetraLesson04 Lesson 4]: Learn different ways to construct an Epetra sparse matrix.
+     * [EpetraLesson05 Lesson 5]: Learn how to migrate data in an Epetra object between two different parallel data distributions.
   # *Generate test linear systems using the [http://trilinos.sandia.gov/packages/galeri Galeri] package.*
     * [GaleriLinearSystem Generate a matrix, discretized 2D Laplacian on a Cartesian grid.]
-    * Try generating matrices for some different operators, the list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
+    * Try generating matrices for some different operators.  The list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
   # *Create an algebraic preconditioner using the [http://trilinos.sandia.gov/packages/ifpack  Ifpack] package.*
     * [IfpackFactory Create a preconditioner using the Ifpack preconditioner factory.]
     * Try generating different preconditioners:
@@ -134,7 +122,7 @@ For [http://trilinos.sandia.gov/packages/belos Belos'] Recycling GMRES (GCRODR) 
 
   * Web sites of Trilinos User Group meetings
     * [http://trilinos.sandia.gov/events/trilinos_user_group_2013/index.html 2013]
-    * [http://trilinos.sandia.gov/events/trilinos_user_group_2013/index.html 2012]
+    * [http://trilinos.sandia.gov/events/trilinos_user_group_2012/index.html 2012]
     * [http://trilinos.sandia.gov/events/trilinos_user_group_2011/index.html 2011]
     * [http://trilinos.sandia.gov/events/trilinos_user_group_2010/index.html 2010]
     * [http://trilinos.sandia.gov/events/trilinos_user_group_2009/index.html 2009]
