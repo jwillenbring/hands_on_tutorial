@@ -58,7 +58,7 @@ Please read the BuildScript page to learn how to set Trilinos' build configurati
   # Run `make` and `make install`.  You may specify the `-j <N>` flag for a parallel build.
 
 Once you have built and installed Trilinos, you may build your program with Trilinos.  You have two options: use CMake, or use a Makefile.
-  * CMake: See CMakeFindPackageTrilinosExample
+  * CMake: See [https://code.google.com/p/trilinos/wiki/CMakeFindPackageTrilinosExample our example]
   * Makefile
     # Get an example Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
       * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
