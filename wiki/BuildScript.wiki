@@ -129,10 +129,30 @@ Trilinos has some support for OpenMP and CUDA (Nvidia's programming
 model for GPUs).  The former is easier to enable; the latter takes a
 bit more effort.
 
-== Expert build options ==
+== Telling Trilinos where to find libraries ==
 
-  * `HAVE_GCC_ABI_DEMANGLE`: Setting this option to ON improves debugging messages, if you are using the GNU Compiler Collection's compilers.
-  * `CMAKE_VERBOSE_MAKEFILE`: Set to ON (or TRUE) if you prefer a "noisy" build.
+We call libraries that Trilinos may use, but that are not part of Trilinos' build system, "third-party libraries" (TPLs).  Trilinos only has two required TPLs: the BLAS, and LAPACK.  We will discuss these in the next section.
+
+=== BLAS and LAPACK ===
+
+In many cases, CMake may be able to find the BLAS and LAPACK libraries for you, if you have them installed.  This means you might not have to do anything!  Generally, on GNU/Linux or MacOS, I do not have to tell CMake where to find the BLAS or LAPACK; it finds them for me.  However, if CMake can't find them, or if you want to use a different BLAS or LAPACK implementation, you will need to tell CMake where to look.  This is where things get a bit tricky, because there are about as many ways to point to the BLAS and LAPACK as there are implementations of these libraries.  They might live in different directories; they might have nonstandard names; the BLAS and LAPACK might even live in the same library!  Some implementations have such complicated link lines that they provide a [https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor web tool] to help users.  We can't possibly enumerate all the choices here.  I recommend looking in the `sampleScripts` subdirectory of the base Trilinos source directory for examples.  Common options to set include
+
+  * `BLAS_LIBRARY_DIRS`
+  * `BLAS_LIBRARY_NAMES`
+  * `LAPACK_LIBRARY_DIRS`
+  * `LAPACK_LIBRARY_NAMES`
+
+=== Other third-party libraries ===
+
+Trilinos supports a huge number of optional third-party libraries.  You don't need them to build Trilinos, but enabling them may enable useful functionality.  For example, if you enable support for the sparse direct factorization implementation [http://crd-legacy.lbl.gov/~xiaoye/SuperLU/ SuperLU], Trilinos' Amesos and Amesos2 packages will provide wrappers for SuperLU that can accept an Epetra resp. Tpetra sparse matrix as input.  This will in turn let you use SuperLU as a coarse-grid solver in the algebraic multigrid package MueLu.
+
+Here are the options I set to enable support for SuperLU when I build Trilinos.  Note that I install SuperLU in my home directory.  You may have a system installation of SuperLU.
+
+  * `TPL_ENABLE_SuperLU:BOOL=ON`
+  * `SuperLU_INCLUDE_DIRS:FILEPATH=$HOME/pkg/superlu-4.3-clang-3.2/include`
+  * `SuperLU_LIBRARY_DIRS:FILEPATH=$HOME/pkg/superlu-4.3-clang-3.2/lib`
+
+Some Trilinos packages have many optional dependencies on third-party libraries.  This especially includes packages which offer a unified interface to many TPLs, like Zoltan and Zoltan2 for graph partitioning and load balancing, or Amesos and Amesos2 for sparse direct factorizations.  You should read these packages' documentation to find the recommended list of TPLs that make them most useful.
 
 == Enabling Trilinos packages ==
 
@@ -142,9 +162,14 @@ bit more effort.
 Enabling a package will enable _all_ required dependencies for that
 package.  For example, enabling Ifpack2 will enable Tpetra and
 Teuchos, since Ifpack2 requires these packages.
-  
+
   * `Trilinos_ENABLE_TESTS`: If ON, build the tests for all packages that are to be built.
   * `Trilinos_ENABLE_EXAMPLES`: If ON, build the examples for all packages that are to be built.
 
 You may also enable or disable tests and examples individually for
 each package.
+
+== Expert build options ==
+
+  * `CMAKE_VERBOSE_MAKEFILE`: Set to ON (or TRUE) if you prefer to see what `make` is doing, while it is doing it.  This is helpful for debugging configuration issues, like incorrect BLAS or LAPACK paths.
+  * `HAVE_GCC_ABI_DEMANGLE`: Setting this option to ON improves debugging messages, if you are using the GNU Compiler Collection's compilers.
