@@ -23,7 +23,7 @@ directory.  Thus, once you have Trilinos' source directory at some
 path `$TRILINOS_PATH`, create a separate build directory and run your
 `do-configure` script in the build directory.
 
-= Sample "do-configure" script =
+= Sample "do-configure" script for building with MPI =
 
 {{{
 #!/bin/sh
@@ -63,7 +63,46 @@ cmake \
 -D Trilinos_ENABLE_EXAMPLES:BOOL=ON \
 $EXTRA_ARGS \
 $TRILINOS_PATH
+}}}
 
+= Sample "do-configure" script for building without MPI =
+
+{{{
+#!/bin/bash
+
+# Set this to the root of your Trilinos source directory.
+TRILINOS_PATH=../Trilinos
+
+#
+# You can invoke this shell script with additional command-line
+# arguments.  They will be passed directly to CMake.
+#
+EXTRA_ARGS=$@
+
+#
+# Each invocation of CMake caches the values of build options in a
+# CMakeCache.txt file.  If you run CMake again without deleting the
+# CMakeCache.txt file, CMake won't notice any build options that have
+# changed, because it found their original values in the cache file.
+# Deleting the CMakeCache.txt file before invoking CMake will insure
+# that CMake learns about any build options you may have changed.
+# Experience will teach you when you may omit this step.
+#
+rm -f CMakeCache.txt
+
+#
+# Enable the Epetra, Tpetra, and Belos packages.
+#
+cmake \
+  -D Trilinos_ENABLE_Fortran:BOOL=OFF \
+  -D CMAKE_BUILD_TYPE:STRING=DEBUG \
+  -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF \
+  -D Trilinos_ENABLE_TESTS:BOOL=ON \
+  -D Trilinos_ENABLE_Epetra:BOOL=ON \
+  -D Trilinos_ENABLE_Belos:BOOL=ON \
+  -D Trilinos_ENABLE_Tpetra:BOOL=ON \
+$EXTRA_ARGS \
+$TRILINOS_PATH
 }}}
 
 = A sampling of Trilinos configuration options =
@@ -157,11 +196,36 @@ Some Trilinos packages have many optional dependencies on third-party libraries.
 == Enabling Trilinos packages ==
 
   * `Trilinos_ENABLE_ALL_PACKAGES`: If you like, you can build _all_ of Trilinos, but you don't have to.
-  * `Trilinos_ENABLE_$PACKAGE`: If ON (or TRUE), build `$PACKAGE`.  For example, `Trilinos_ENABLE_Epetra` enables the Epetra package.
+  * `Trilinos_ENABLE_${PACKAGE}`: If ON (or TRUE), enable Trilinos package `${PACKAGE}`.  For example, `Trilinos_ENABLE_Epetra` enables the Epetra package.
 
 Enabling a package will enable _all_ required dependencies for that
 package.  For example, enabling Ifpack2 will enable Tpetra and
-Teuchos, since Ifpack2 requires these packages.
+Teuchos, since Ifpack2 requires these packages.  Also, enabling tests
+or examples (see below) may enable other packages that are required
+for those tests or examples.  For example, if I enable Belos, Epetra,
+and Tpetra, and turn on tests and examples, my build will enable the
+following other packages by default: Teuchos, ThreadPool, Kokkos,
+Zoltan, Triutils, EpetraExt, Xpetra, Isorropia, AztecOO, Galeri,
+Amesos, Ifpack, and ML.
+
+If `Trilinos_ENABLE_ALL_PACKAGES` is OFF (its default value) and I do
+not enable any packages, then no packages will be built.  CMake will
+print an error in this case:
+{{{
+***
+*** WARNING:  There were no packages configured so no libraries or tests/examples will be built!
+***
+}}}
+If `Trilinos_ENABLE_ALL_PACKAGES` is ON and I do not explicitly enable
+any package by name, CMake will enable _some_ packages (despite the
+name of the option).  The packages it will enable depends on many
+things, like whether MPI is enabled, what third-party libraries you
+have available, whether you enabled tests or examples, and whether the
+package is set to build by default (it must be marked as "primary
+stable").  For example, on my computer, 37 packages are enabled by
+default if MPI is ON.
+
+== Enabling tests or examples ==
 
   * `Trilinos_ENABLE_TESTS`: If ON, build the tests for all packages that are to be built.
   * `Trilinos_ENABLE_EXAMPLES`: If ON, build the examples for all packages that are to be built.
@@ -171,6 +235,8 @@ each package.
 
 == Expert build options ==
 
+  * `BUILD_SHARED_LIBS`: If ON, build dynamic shared libraries.  Else, build static shared libraries.  This is useful on systems that do not support dynamic shared libraries.
   * `CMAKE_CXX_FLAGS`: Set any C++ compiler flags that you may want to set.  This is especially useful for options affecting which warnings to print, or language options like `-ansi -pedantic`.
   * `CMAKE_VERBOSE_MAKEFILE`: Set to ON (or TRUE) if you prefer to see what `make` is doing, while it is doing it.  This is helpful for debugging configuration issues, like incorrect BLAS or LAPACK paths.
   * `HAVE_GCC_ABI_DEMANGLE`: Setting this option to ON improves debugging messages, if you are using the GNU Compiler Collection's compilers.
+  * `Trilinos_ENABLE_EXPLICIT_INSTANTIATION`: This is OFF by default.  Setting this to ON may improve build times for applications, while slowing down the Trilinos build time.
