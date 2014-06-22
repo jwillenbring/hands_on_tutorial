@@ -171,5 +171,6 @@ each package.
 
 == Expert build options ==
 
+  * `CMAKE_CXX_FLAGS`: Set any C++ compiler flags that you may want to set.  This is especially useful for options affecting which warnings to print, or language options like `-ansi -pedantic`.
   * `CMAKE_VERBOSE_MAKEFILE`: Set to ON (or TRUE) if you prefer to see what `make` is doing, while it is doing it.  This is helpful for debugging configuration issues, like incorrect BLAS or LAPACK paths.
   * `HAVE_GCC_ABI_DEMANGLE`: Setting this option to ON improves debugging messages, if you are using the GNU Compiler Collection's compilers.
