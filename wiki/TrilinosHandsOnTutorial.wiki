@@ -7,7 +7,7 @@
 
   * [http://trilinos.sandia.gov Trilinos website] (click on logo above)
   * Each Trilinos package has [http://trilinos.sandia.gov/packages/  Doxygen documentation].
-  * [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"] page.
+  * [http://trilinos.org/?page_id=95 Trilinos "Getting Started"] page.
   * See links below to slides and video recordings of tutorials from previous Trilinos User Group meetings.
 
 == Four options for running examples ==
