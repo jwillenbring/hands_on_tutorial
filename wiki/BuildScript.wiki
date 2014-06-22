@@ -26,7 +26,7 @@ path `$TRILINOS_PATH`, create a separate build directory and run your
 = Sample "do-configure" script for building with MPI =
 
 {{{
-#!/bin/sh
+#!/bin/bash
 
 # Set this to the root of your Trilinos source directory.
 TRILINOS_PATH=../Trilinos
@@ -49,18 +49,15 @@ EXTRA_ARGS=$@
 rm -f CMakeCache.txt
 
 #
-# Enable _only_ the Epetra package.
+# Enable all primary stable Trilinos packages.
 #
 cmake \
--D CMAKE_INSTALL_PREFIX:PATH=$HOME/pkg/Trilinos/Serial \
--D CMAKE_BUILD_TYPE:STRING=RELEASE \
--D CMAKE_CXX_COMPILER:FILEPATH=g++ \
--D CMAKE_C_COMPILER:FILEPATH=gcc \
--D CMAKE_Fortran_COMPILER:FILEPATH=gfortran \
--D Trilinos_ENABLE_ALL_PACKAGES:BOOL=FALSE \
--D Trilinos_ENABLE_Epetra:BOOL=ON \
--D Trilinos_ENABLE_TESTS:BOOL=ON \
--D Trilinos_ENABLE_EXAMPLES:BOOL=ON \
+  -D CMAKE_INSTALL_PREFIX:FILEPATH="${HOME}/pkg/Trilinos/Mpi" \
+  -D CMAKE_BUILD_TYPE:STRING=RELEASE \
+  -D TPL_ENABLE_MPI:BOOL=ON \
+  -D MPI_BASE_DIR:FILEPATH="${HOME}/pkg/openmpi-1.6.1" \
+  -D MPI_EXEC:FILEPATH="${HOME}/pkg/openmpi-1.6.1/bin/mpiexec" \
+  -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=ON \
 $EXTRA_ARGS \
 $TRILINOS_PATH
 }}}
@@ -91,16 +88,12 @@ EXTRA_ARGS=$@
 rm -f CMakeCache.txt
 
 #
-# Enable the Epetra, Tpetra, and Belos packages.
+# Enable all primary stable Trilinos packages.
 #
 cmake \
-  -D Trilinos_ENABLE_Fortran:BOOL=OFF \
-  -D CMAKE_BUILD_TYPE:STRING=DEBUG \
-  -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=OFF \
-  -D Trilinos_ENABLE_TESTS:BOOL=ON \
-  -D Trilinos_ENABLE_Epetra:BOOL=ON \
-  -D Trilinos_ENABLE_Belos:BOOL=ON \
-  -D Trilinos_ENABLE_Tpetra:BOOL=ON \
+  -D CMAKE_INSTALL_PREFIX:FILEPATH="${HOME}/pkg/Trilinos/Serial" \
+  -D CMAKE_BUILD_TYPE:STRING=RELEASE \
+  -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=ON \
 $EXTRA_ARGS \
 $TRILINOS_PATH
 }}}
@@ -155,26 +148,54 @@ reasons, we call a build without MPI a "serial" build.  (A "serial"
 build may still use threads or other parallel programming models
 inside, but it does not use MPI.)  The default build is a serial
 build.  CMake will do its best in that case to find compilers.  You
-might not need to tell CMake anything at all!  However, in some cases,
-you may need to help it find compilers.  Here are some options you may
-use:
+might not need to tell CMake anything at all!  On GNU/Linux and MacOS
+systems, it will use the GNU Compiler Collection by default.  However,
+in some cases, you may need to help it find compilers.  Here are some
+options you may use:
 
   * `CMAKE_CXX_COMPILER`: The C++ compiler to use when building Trilinos.  Most Trilinos packages are implemented in C++.
   * `CMAKE_C_COMPILER`: The C compiler to use when building Trilinos.  Some parts of Trilinos are implemented in C.
-  * `CMAKE_Fortran_COMPILER`: The Fortran compiler to use when building Trilinos.  Some parts of Trilinos are implemented in Fortran.  You may disable Fortran if you do not have a Fortran compiler.  See the `Trilinos_ENABLE_Fortran` option.
-  * `Trilinos_ENABLE_Fortran`: Set to OFF (or FALSE) to disable use of Fortran.  This is handy if your build environment lacks a Fortran compiler.  Fortran is enabled by default, so you must set this to OFF if you do not have a Fortran compiler.
+  * `CMAKE_Fortran_COMPILER`: The Fortran compiler to use when building Trilinos.
+  * `Trilinos_ENABLE_Fortran`: Set to OFF (or FALSE) to disable use of Fortran.
+
+Some parts of Trilinos are implemented in Fortran, but Fortran is not
+required in order to build Trilinos.  You may disable Fortran if you
+do not have a Fortran compiler, by setting the
+`Trilinos_ENABLE_Fortran` option to OFF.  (It is ON by default.)  This
+is handy if your build environment lacks a Fortran compiler.  Fortran
+is enabled by default, so you must set this to OFF if you do not have
+a Fortran compiler.
 
 Trilinos has some support for OpenMP and CUDA (Nvidia's programming
 model for GPUs).  The former is easier to enable; the latter takes a
-bit more effort.
+bit more effort.  We will not cover these in this tutorial.
 
 == Telling Trilinos where to find libraries ==
 
-We call libraries that Trilinos may use, but that are not part of Trilinos' build system, "third-party libraries" (TPLs).  Trilinos only has two required TPLs: the BLAS, and LAPACK.  We will discuss these in the next section.
+We call libraries that Trilinos may use, but that are not part of
+Trilinos' build system, "third-party libraries" (TPLs).  Trilinos only
+has two required TPLs: the BLAS, and LAPACK.  We will discuss these in
+the next section.
 
 === BLAS and LAPACK ===
 
-In many cases, CMake may be able to find the BLAS and LAPACK libraries for you, if you have them installed.  This means you might not have to do anything!  Generally, on GNU/Linux or MacOS, I do not have to tell CMake where to find the BLAS or LAPACK; it finds them for me.  However, if CMake can't find them, or if you want to use a different BLAS or LAPACK implementation, you will need to tell CMake where to look.  This is where things get a bit tricky, because there are about as many ways to point to the BLAS and LAPACK as there are implementations of these libraries.  They might live in different directories; they might have nonstandard names; the BLAS and LAPACK might even live in the same library!  Some implementations have such complicated link lines that they provide a [https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor web tool] to help users.  We can't possibly enumerate all the choices here.  I recommend looking in the `sampleScripts` subdirectory of the base Trilinos source directory for examples.  Common options to set include
+In many cases, CMake may be able to find the BLAS and LAPACK libraries
+for you, if you have them installed.  This means you might not have to
+do anything!  Generally, on GNU/Linux or MacOS, I do not have to tell
+CMake where to find the BLAS or LAPACK; it finds them for me.
+However, if CMake can't find them, or if you want to use a different
+BLAS or LAPACK implementation, you will need to tell CMake where to
+look.  This is where things get a bit tricky, because there are about
+as many ways to point to the BLAS and LAPACK as there are
+implementations of these libraries.  They might live in different
+directories; they might have nonstandard names; the BLAS and LAPACK
+might even live in the same library!  Some implementations have such
+complicated link lines that they provide a
+[https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
+web tool] to help users.  We can't possibly enumerate all the choices
+here.  I recommend looking in the `sampleScripts` subdirectory of the
+base Trilinos source directory for examples.  Common options to set
+include
 
   * `BLAS_LIBRARY_DIRS`
   * `BLAS_LIBRARY_NAMES`
@@ -183,15 +204,30 @@ In many cases, CMake may be able to find the BLAS and LAPACK libraries for you, 
 
 === Other third-party libraries ===
 
-Trilinos supports a huge number of optional third-party libraries.  You don't need them to build Trilinos, but enabling them may enable useful functionality.  For example, if you enable support for the sparse direct factorization implementation [http://crd-legacy.lbl.gov/~xiaoye/SuperLU/ SuperLU], Trilinos' Amesos and Amesos2 packages will provide wrappers for SuperLU that can accept an Epetra resp. Tpetra sparse matrix as input.  This will in turn let you use SuperLU as a coarse-grid solver in the algebraic multigrid package MueLu.
+Trilinos supports a huge number of optional third-party libraries.
+You don't need them to build Trilinos, but enabling them may enable
+useful functionality.  For example, if you enable support for the
+sparse direct factorization implementation
+[http://crd-legacy.lbl.gov/~xiaoye/SuperLU/ SuperLU], Trilinos' Amesos
+and Amesos2 packages will provide wrappers for SuperLU that can accept
+an Epetra resp. Tpetra sparse matrix as input.  This will in turn let
+you use SuperLU as a coarse-grid solver in the algebraic multigrid
+package MueLu.
 
-Here are the options I set to enable support for SuperLU when I build Trilinos.  Note that I install SuperLU in my home directory.  You may have a system installation of SuperLU.
+Here are the options I set to enable support for SuperLU when I build
+Trilinos.  Note that I install SuperLU in my home directory.  You may
+have a system installation of SuperLU.
 
   * `TPL_ENABLE_SuperLU:BOOL=ON`
   * `SuperLU_INCLUDE_DIRS:FILEPATH=$HOME/pkg/superlu-4.3-clang-3.2/include`
   * `SuperLU_LIBRARY_DIRS:FILEPATH=$HOME/pkg/superlu-4.3-clang-3.2/lib`
 
-Some Trilinos packages have many optional dependencies on third-party libraries.  This especially includes packages which offer a unified interface to many TPLs, like Zoltan and Zoltan2 for graph partitioning and load balancing, or Amesos and Amesos2 for sparse direct factorizations.  You should read these packages' documentation to find the recommended list of TPLs that make them most useful.
+Some Trilinos packages have many optional dependencies on third-party
+libraries.  This especially includes packages which offer a unified
+interface to many TPLs, like Zoltan and Zoltan2 for graph partitioning
+and load balancing, or Amesos and Amesos2 for sparse direct
+factorizations.  You should read these packages' documentation to find
+the recommended list of TPLs that make them most useful.
 
 == Enabling Trilinos packages ==
 
@@ -224,6 +260,10 @@ have available, whether you enabled tests or examples, and whether the
 package is set to build by default (it must be marked as "primary
 stable").  For example, on my computer, 37 packages are enabled by
 default if MPI is ON.
+
+If you only wish to enable certain packages and do not want to enable
+all the default packages, you must set `Trilinos_ENABLE_ALL_PACKAGES`
+to OFF, and then explicitly enable the packages you want.
 
 == Enabling tests or examples ==
 
