@@ -4,8 +4,19 @@
 
 Trilinos uses the CMake build system.  If you are familiar with the
 GNU Autotools, running CMake is a little bit like running the
-"configure" script.  After that come the familiar "make" and "make
-install" steps.  It's typical to invoke CMake indirectly by writing a
+`configure` script.  After that come the familiar `make` and `make
+install` steps.
+
+Your best source for learning how to build Trilinos is the quick reference guide in the root of Trilinos' source directory.  It comes in three formats:
+  * `TrilinosBuildQuickRef.html` (HTML)
+  * `TrilinosBuildQuickRef.pdf` (PDF)
+  * `TrilinosBuildQuickRef.rst` [http://en.wikipedia.org/wiki/ReStructuredText (reStructuredText)]
+
+Ross Bartlett spent a lot of time explaining all the build options in great detail.  It may not be the "quickest" of "quick-start guides," but it's worth reading if you want to learn about all the build options that Trilinos supports.
+
+= Running CMake to configure Trilinos =
+
+It's typical to invoke CMake indirectly by writing a
 `do-configure` script, which is a short executable shell script that
 invokes CMake with the desired build options.  The shell script below
 is an example of a `do-configure` script.  You may make it executable
