@@ -118,6 +118,7 @@ Once you have built and installed Trilinos, you may build your program with Tril
 
   # *[http://trilinos.sandia.gov/packages/pytrilinos PyTrilinos] tutorial materials.*
     * [http://trilinos.sandia.gov/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
+    * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/python/index.html !WebTrilinos for Python]
     * [PyTrilinosExample Solve a simple 2D Laplace problem using PyTrilinos]
   # *Learn how to use utilities in the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*
     * *Basic Support Tools*
