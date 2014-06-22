@@ -43,6 +43,8 @@
 
 === Build Trilinos yourself on your computer ===
 
+Please read the BuildScript page to learn how to set Trilinos' build configuration options.
+
   # Prerequisites
     * C++ and C compiler
     * [http://www.cmake.org/cmake/resources/software.html CMake] version >= 2.8
