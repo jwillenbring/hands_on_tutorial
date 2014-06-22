@@ -1,20 +1,31 @@
-#summary Use Anasazi's Block Krylov-Schur to solve a generalized eigenvalue problem, with Epetra and AztecOO.
+#summary Use Anasazi's Block Krylov-Schur to solve a generalized eigenvalue problem, using inverse iteration with Epetra and AztecOO.
 
-= Introduction =
+This example computes the eigenvalues of smallest magnitude of a
+generalized eigenvalue problem K x = λ M x, using Anasazi's
+implementation of the block Krylov-Schur method.  It implements
+inverse iteration using an AztecOO iterative linear solver with an
+Ifpack preconditioner.
 
-This example computes the eigenvalues of smallest magnitude of the
-discretized 2D Laplacian operator using the block Krylov-Schur method.
-This problem shows the construction of an inner-outer iteration using
-AztecOO as the linear solver within Anasazi.  An IFPACK preconditioner
-is constructed to precondition the linear solver.  This operator is
-discretized using linear finite elements and constructed as an Epetra
-matrix, then passed into the AztecOO solver to perform the
-shift-invert operation to be used within the Krylov decomposition.
-The specifics of the block Krylov-Schur method can be set by the user.
+Anasazi computes the smallest-magnitude eigenvalues using a
+shift-and-invert strategy.  For simplicity, the code below uses a
+shift of zero.  It illustrates the general pattern for using Anasazi
+for this problem:
 
-Users typically access Anasazi's solvers through subclasses of
-[http://trilinos.sandia.gov/packages/docs/dev/packages/anasazi/doc/html/classAnasazi_1_1SolverManager.html SolverManager].  In this case, [http://trilinos.sandia.gov/packages/docs/dev/packages/anasazi/doc/html/classAnasazi_1_1BlockKrylovSchurSolMgr.html BlockKrylovSchurSolMgr] presents an
-interface to the block Krylov-Schur algorithm.
+  # Construct an "operator" A such that Az = K^{-1} M z.
+
+  # Use Anasazi to solve Az = σ z, which is a spectral
+     transformation of the original problem K x = λ M x.
+
+  # The eigenvalues of the original problem are the inverses of the
+     eigenvalues of the transformed problem.
+
+The "operator A such that A z = K^{-1} M z" is a subclass of
+Epetra_Operator.  The Apply method of that operator takes the vector
+b, and computes x = K^{-1} M b.  It does so first by applying the
+matrix M, and then by solving the linear system K x = M b for x.
+Trilinos implements many different ways to solve linear systems.  The
+example below uses an iterative linear solver provided by the AztecOO
+package, with an Ifpack preconditioner, to solve linear systems.
 
 = Code example =
 
