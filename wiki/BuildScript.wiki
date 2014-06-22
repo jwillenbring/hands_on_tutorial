@@ -48,19 +48,21 @@ EXTRA_ARGS=$@
 #
 rm -f CMakeCache.txt
 
+#
+# Enable _only_ the Epetra package.
+#
 cmake \
 -D CMAKE_INSTALL_PREFIX:PATH=$HOME/pkg/Trilinos/Serial \
 -D CMAKE_BUILD_TYPE:STRING=RELEASE \
 -D CMAKE_CXX_COMPILER:FILEPATH=g++ \
 -D CMAKE_C_COMPILER:FILEPATH=gcc \
 -D CMAKE_Fortran_COMPILER:FILEPATH=gfortran \
--D HAVE_GCC_ABI_DEMANGLE:BOOL=ON \
 -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=FALSE \
 -D Trilinos_ENABLE_Epetra:BOOL=ON \
 -D Trilinos_ENABLE_TESTS:BOOL=ON \
 -D Trilinos_ENABLE_EXAMPLES:BOOL=ON \
 $EXTRA_ARGS \
-../
+$TRILINOS_PATH
 
 }}}
 
