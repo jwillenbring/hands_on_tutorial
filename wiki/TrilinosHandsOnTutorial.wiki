@@ -106,7 +106,9 @@ Once you have built and installed Trilinos, you may build your program with Tril
     * [MLAztecOO2 Solve a linear system _Ax=b_ using ML and AztecOO, but setting some multigrid options]
   # *Solve a linear system using the [http://trilinos.sandia.gov/packages/ifpack Ifpack] and [http://trilinos.sandia.gov/packages/belos Belos] packages.*
     * [IfpackBelos2 Solve a linear system _Ax=b_ using Ifpack and Belos]**
-  # *Compute some eigenpairs using the [http://trilinos.sandia.gov/packages/anasazi Anasazi] package.*
+  # *Solve some eigenvalue problems using the [http://trilinos.sandia.gov/packages/anasazi Anasazi] package.*
+    * [AnasaziBlockKrylovSchurEpetraExGenAmesos Compute the smallest eigenpairs of a generalized eigenvalue problem, using the block Krylov-Schur eigensolver, implementing inverse iteration using the KLU sparse direct solver through Amesos]
+    * [AnasaziBlockKrylovSchurEpetraExGenAztecOO Compute the smallest eigenpairs of a generalized eigenvalue problem, using the block Krylov-Schur eigensolver, implementing inverse iteration using an AztecOO iterative linear solver with an Ifpack preconditioner]
     * [AnasaziBlockDavidson Compute the smallest eigenpairs of a discretized 2D Laplacian using the block Davidson solver.]
     * [AnasaziLOBPCG Compute the smallest eigenpairs of a discretized 2D Laplacian using the LOBPCG solver.]
     * [AnasaziBlockKrylovSchurSVD Compute the dominant singular values of a 2D discretization of a simple kernel using the block Krylov-Schur solver.]**
