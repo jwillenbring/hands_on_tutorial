@@ -66,15 +66,83 @@ $EXTRA_ARGS \
 
 = A sampling of Trilinos configuration options =
 
+== Installation settings ==
+
+You should always set the following options.
+
   * `CMAKE_INSTALL_PREFIX`: Path to install Trilinos (for `make install`)
-  * `CMAKE_BUILD_TYPE`: DEBUG or RELEASE.
+  * `CMAKE_BUILD_TYPE`: DEBUG or RELEASE.  This affects CMake's choice of optimization flags.
+
+== MPI and compilers ==
+
+Trilinos uses MPI (the Message Passing Interface for
+distributed-memory programming), but does not require it.  Your first
+choice is whether or not to use MPI.  
+
+=== Building with MPI ===
+
+If you want to use MPI, you must tell Trilinos this:
+
+  * `TPL_ENABLE_MPI:BOOL=ON`
+
+This may be all that you need!  CMake will do its best to find and use
+your system's MPI installation.  However, in some cases, you may need
+to help CMake find MPI, or point it to one of several different MPI
+versions you might have installed.  The easiest way to start doing
+this is to tell CMake where to find the "base directory" of the MPI
+installation.  The base directory is where the system puts that MPI
+installation's libraries, header files, and executables.  If you need
+to do this, replace `${MPI_BASE_DIR}` in the line below with your MPI
+base directory.
+
+  * `MPI_BASE_DIR:FILEPATH=${MPI_BASE_DIR}`
+
+In some cases, you might need to tell MPI where to find various
+compilers, or the executable that runs MPI programs (usually, but not
+always, called `mpiexec` or `mpirun`).  If all those executables are
+in the same directory, you may simply specify that directory with the
+`MPI_BIN_DIR` option.  Otherwise, you may set paths to each executable
+separately: e.g., `MPI_EXEC`, `MPI_CXX_COMPILER`, or `MPI_C_COMPILER`.
+These options take a path, like `MPI_BASE_DIR` above.  There are many
+other options that tell CMake how to build against and run MPI
+programs.
+
+=== Building without MPI ===
+
+Trilinos does not require MPI in order to build.  For historical
+reasons, we call a build without MPI a "serial" build.  (A "serial"
+build may still use threads or other parallel programming models
+inside, but it does not use MPI.)  The default build is a serial
+build.  CMake will do its best in that case to find compilers.  You
+might not need to tell CMake anything at all!  However, in some cases,
+you may need to help it find compilers.  Here are some options you may
+use:
+
   * `CMAKE_CXX_COMPILER`: The C++ compiler to use when building Trilinos.  Most Trilinos packages are implemented in C++.
   * `CMAKE_C_COMPILER`: The C compiler to use when building Trilinos.  Some parts of Trilinos are implemented in C.
-  * `CMAKE_Fortran_COMPILER`: The Fortran compiler to use when building Trilinos.  Some parts of Trilinos are implemented in Fortran.  Fortran is _not_ required to build Trilinos.
+  * `CMAKE_Fortran_COMPILER`: The Fortran compiler to use when building Trilinos.  Some parts of Trilinos are implemented in Fortran.  You may disable Fortran if you do not have a Fortran compiler.  See the `Trilinos_ENABLE_Fortran` option.
+  * `Trilinos_ENABLE_Fortran`: Set to OFF (or FALSE) to disable use of Fortran.  This is handy if your build environment lacks a Fortran compiler.  Fortran is enabled by default, so you must set this to OFF if you do not have a Fortran compiler.
+
+Trilinos has some support for OpenMP and CUDA (Nvidia's programming
+model for GPUs).  The former is easier to enable; the latter takes a
+bit more effort.
+
+== Expert build options ==
+
   * `HAVE_GCC_ABI_DEMANGLE`: Setting this option to ON improves debugging messages, if you are using the GNU Compiler Collection's compilers.
   * `CMAKE_VERBOSE_MAKEFILE`: Set to ON (or TRUE) if you prefer a "noisy" build.
+
+== Enabling Trilinos packages ==
+
   * `Trilinos_ENABLE_ALL_PACKAGES`: If you like, you can build _all_ of Trilinos, but you don't have to.
   * `Trilinos_ENABLE_$PACKAGE`: If ON (or TRUE), build `$PACKAGE`.  For example, `Trilinos_ENABLE_Epetra` enables the Epetra package.
+
+Enabling a package will enable _all_ required dependencies for that
+package.  For example, enabling Ifpack2 will enable Tpetra and
+Teuchos, since Ifpack2 requires these packages.
+  
   * `Trilinos_ENABLE_TESTS`: If ON, build the tests for all packages that are to be built.
   * `Trilinos_ENABLE_EXAMPLES`: If ON, build the examples for all packages that are to be built.
 
+You may also enable or disable tests and examples individually for
+each package.
