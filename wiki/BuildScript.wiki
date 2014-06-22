@@ -178,8 +178,7 @@ is enabled by default, so you must set this to OFF if you do not have
 a Fortran compiler.
 
 Trilinos has some support for OpenMP and CUDA (Nvidia's programming
-model for GPUs).  The former is easier to enable; the latter takes a
-bit more effort.  We will not cover these in this tutorial.
+model for GPUs).  To enable OpenMP, just set `Trilinos_ENABLE_OpenMP` to ON.  (It's not enough to add the compiler flag that turns on OpenMP; you have to tell Trilinos to build OpenMP-enabled code.)  Enabling CUDA is a bit more complicated, so we do not cover it in this tutorial.
 
 == Telling Trilinos where to find libraries ==
 
