@@ -56,18 +56,19 @@ Please read the BuildScript page to learn how to set Trilinos' build configurati
     * You may modify the script by hand, use the CMake graphical user interface, or use the console-based interface `ccmake`.
   # Use the script to run CMake.
   # Run `make` and `make install`.  You may specify the `-j <N>` flag for a parallel build.
-  # Build your program against Trilinos.  You have two options: use CMake, or use a Makefile.
-    * CMake: See CMakeFindPackageTrilinosExample
-    * Makefile
-      # Get an example Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
-        * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
-        * You can find the Makefile.export.package_name files once you have built and installed Trilinos.  
-        * They will be in the include directory of your installation directory.  
-        * Example: `TrilinosInstall/include/Makefile.export.Epetra`.
-      # Customize the Makefile to your situation.  
-        * The example Makefile uses only the Epetra package, but `Makefile.export.$PACKAGE_NAME` files are available for all packages.
-        * You may also include `Makefile.export.Trilinos` to get all Trilinos packages.
-      # Add your code into a file called main.cpp and build away!
+
+Once you have built and installed Trilinos, you may build your program with Trilinos.  You have two options: use CMake, or use a Makefile.
+  * CMake: See CMakeFindPackageTrilinosExample
+  * Makefile
+    # Get an example Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
+      * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
+      * You can find the Makefile.export.package_name files once you have built and installed Trilinos.  
+      * They will be in the include directory of your installation directory.  
+      * Example: `TrilinosInstall/include/Makefile.export.Epetra`.
+    # Customize the Makefile to your situation.  
+      * The example Makefile uses only the Epetra package, but `Makefile.export.$PACKAGE_NAME` files are available for all packages.
+      * You may also include `Makefile.export.Trilinos` to get all Trilinos packages.
+    # Add your code into a file called main.cpp and build away!
 
 == Examples illustrating the Tpetra-based solver stack ==
 
