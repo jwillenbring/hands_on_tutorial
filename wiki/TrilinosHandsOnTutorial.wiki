@@ -113,7 +113,7 @@ also work with Epetra matrices and vectors, and any preconditioner
 that implements `Epetra_Operator`.  The latter includes Ifpack
 preconditioners.
 
-  * [IfpackAztecOO Solve a linear system Ax = b using Ifpack and AztecOO]**
+  * [IfpackAztecOO Solve a linear system using Ifpack and AztecOO]**
 
 === Solve a linear system using ML and AztecOO ===
 
@@ -121,10 +121,11 @@ The [http://trilinos.sandia.gov/packages/ml ML] package implements
 multilevel solvers, including algebraic multigrid.  You may use ML's
 solvers as preconditioners if you like; this is the way most of our
 users use ML.  The following examples show how to do this with the
-iterative linear solvers provided by the !AztecOO package.
+iterative linear solvers provided by the
+[http://trilinos.sandia.gov/packages/aztecoo/ AztecOO] package.
 
-  * [MLAztecOO Solve a linear system Ax = b using ML (black-box) and AztecOO]**
-  * [MLAztecOO2 Solve a linear system Ax = b using ML and AztecOO, but setting some multigrid options]
+  * [MLAztecOO Use ML as a black-box preconditioner with AztecOO]**
+  * [MLAztecOO2 Use ML as a preconditioner with AztecOO, but set some multigrid options]
 
 === Solve a linear system using Belos ===
 
@@ -136,7 +137,7 @@ subspace recycling.  Once you learn how to use Belos with Epetra
 objects, it is easy to learn how to use Belos with Tpetra or other
 linear algebra implementations.
 
-  * [IfpackBelos2 Solve a linear system Ax = b using Ifpack and Belos]**
+  * [IfpackBelos2 Solve a linear system using Ifpack and Belos]**
 
 === Solve a nonlinear system using NOX ===
 
@@ -164,6 +165,10 @@ solvers.
 
     * [AnasaziBlockKrylovSchurEpetraExGenAmesos Inverse iteration using the KLU sparse direct solver through Amesos.]
     * [AnasaziBlockKrylovSchurEpetraExGenAztecOO Inverse iteration using an AztecOO iterative linear solver with an Ifpack preconditioner.]
+
+=== Zoltan tutorial ===
+
+The Zoltan developers generously contributed a [ZoltanHandsOnTutorial hands-on tutorial] of their own.
 
 == Examples illustrating other packages ==
 
