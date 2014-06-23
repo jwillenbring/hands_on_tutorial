@@ -1,4 +1,12 @@
-#summary Simple Example to do graph partition and migration using Zoltan. This is the same examples as in zoltan/examples/C/problemGraph.c
+#summary Zoltan example: graph partition and migration
+
+This is the same example as zoltan/examples/C/migrateGRAPH.c.  The example uses Zoltan's distributed directory utility to create a global directory of object (graph vertex) locations.  It uses Zoltan's migration capabilities to move the graph vertices.
+
+In this example, partition numbers and process ranks are the same.
+In general, the number of partitions need not equal the number
+of processes.
+
+Note that in order to make this example work with !WebTrilinos, we changed the code so that it reads the example graph from an embedded string in the program, rather than from a file.  Doing this quickly required using the [http://www.gnu.org/software/libc/manual/html_node/String-Streams.html GNU libc extension] `fmemopen`.  This gives functionality in C equivalent to std::istringstream in C++.  As a result, this example will ONLY build if linking against GNU libc.  !WebTrilinos uses GCC and GNU libc, so this example will build with !WebTrilinos.
 
 {{{
 /*
@@ -68,6 +76,74 @@
 /* Name of file containing graph to be partitioned */
 
 static char *fname="graph.txt";
+
+/*
+ * mfh 23 June 2014: In order to make this example work with
+ * WebTrilinos, I changed the code so that it reads the example graph
+ * from the string below, rather than from the file graph.txt.  Doing
+ * this quickly required using the GNU libc extension fmemopen():
+ *
+ * http://www.gnu.org/software/libc/manual/html_node/String-Streams.html
+ *
+ * This gives functionality in C equivalent to std::istringstream in
+ * C++.  As a result, this example will ONLY build if linking against
+ * GNU libc.
+ */
+static char graphString[] = "##\n"
+"## This simple structure is used by many of the nightly Zoltan tests.\n"
+"## It can be interpreted as a mesh, a graph, a hypergraph, or simply\n"
+"## as 25 objects to be partitioned.\n"
+"##\n"
+"##  21----22----23----24---25\n"
+"##  |     |     |     |    |\n"
+"##  16----17----18----19---20\n"
+"##  |     |     |     |    |\n"
+"##  11----12----13----14---15\n"
+"##  |     |     |     |    |\n"
+"##  6-----7-----8-----9----10\n"
+"##  |     |     |     |    |\n"
+"##  1-----2-----3-----4----5\n"
+"##\n"
+"##  Regarded as a graph, there are 25 vertices with connectivity\n"
+"##  described by the arcs in the diagram.\n"
+"##\n"
+"\n"
+"##  Number of vertices:\n"
+"25\n"
+"\n"
+"##  Number of vertex neighbors:\n"
+"80\n"
+"\n"
+"##  Here we list for each vertex, its global ID, its number of neighbors, and\n"
+"##  the global ID of each of its neighbors.\n"
+"##\n"
+"\n"
+"1   2  2  6\n"
+"2   3  1  3  7\n"
+"3   3  2  8  4\n"
+"4   3  3  9  5\n"
+"5   2  4  10\n"
+"6   3  1  7  11\n"
+"7   4  6  2  8  12\n"
+"8   4  7  3  9  13\n"
+"9   4  8  4  10  14\n"
+"10  3  9  5  15\n"
+"11  3  6  12  16\n"
+"12  4  11  7  13  17\n"
+"13  4  12  8  14  18\n"
+"14  4  13  9  15  19\n"
+"15  3  14  10  20\n"
+"16  3  11  17  21\n"
+"17  4  16  12  18  22\n"
+"18  4  17  13  19  23\n"
+"19  4  18  14  20  24\n"
+"20  3  19  15  25\n"
+"21  2  16  22\n"
+"22  3  21  17  23\n"
+"23  3  22  18  24\n"
+"24  3  23  19  25\n"
+"25  2  24  20";
+
 
 /***************************************************************************/
 /* Structure to hold graph data */
@@ -190,14 +266,14 @@ int *nextProc;
 /* Application-defined query functions used in migrating *******************
  *
  * Migration strategy:
- *   The data sent for each vertex is the list 
+ *   The data sent for each vertex is the list
  *   of the vertex neighbor global IDs.
  *   At the pack query function, copy the vertex
  *   data to the Zoltan-supplied buffer.
- *   At the mid-migrate query function, rewrite 
+ *   At the mid-migrate query function, rewrite
  *   the local graph data omitting the
  *   exported vertices.
- *   At the unpack query function, copy the 
+ *   At the unpack query function, copy the
  *   new vertices to the local graph data.
  */
 /***************************************************************************/
@@ -231,8 +307,8 @@ static void pack_object_messages(void *data, int gidSize, int lidSize,
   *ierr = ZOLTAN_OK;
   graph = (GRAPH_DATA *)data;
 
-  /* For each exported vertex, write its neighbor 
-   * global IDs to the supplied buffer 
+  /* For each exported vertex, write its neighbor
+   * global IDs to the supplied buffer
    */
 
   for (i=0; i < num_ids; i++){
@@ -413,7 +489,8 @@ int main(int argc, char *argv[])
   ** Read graph from input file and distribute it
   ******************************************************************/
 
-  fp = fopen(fname, "r");
+  /*fp = fopen(fname, "r");*/
+  fp = fmemopen (graphString, strlen (graphString), "r");
   if (!fp){
     if (myRank == 0) fprintf(stderr,"ERROR: Can not open %s\n",fname);
     MPI_Finalize();
@@ -444,7 +521,7 @@ int main(int argc, char *argv[])
                            0);                     /* debug level */
 
   parts = (int *) malloc(myGraph.numMyVertices * sizeof(int));
-  lids = (ZOLTAN_ID_TYPE *) 
+  lids = (ZOLTAN_ID_TYPE *)
           malloc(myGraph.numMyVertices * sizeof(ZOLTAN_ID_TYPE));
 
   for (i=0; i < myGraph.numMyVertices; i++){
@@ -812,7 +889,8 @@ GRAPH_DATA *send_graph;
 
     bufsize = 512;
 
-    fp = fopen(fname, "r");
+    /*fp = fopen(fname, "r");*/
+    fp = fmemopen (graphString, strlen (graphString), "r");
 
     /* Get the number of vertices */
 
@@ -1013,7 +1091,7 @@ GRAPH_DATA *send_graph;
       if (send_count[1] > 0){
         MPI_Recv(graph->nborGID,send_count[1], ZOLTAN_ID_MPI_TYPE, 0,
                  id_tag + 2, MPI_COMM_WORLD, &status);
-        MPI_Recv(graph->nborPart,send_count[1], MPI_INT, 0, 
+        MPI_Recv(graph->nborPart,send_count[1], MPI_INT, 0,
                  id_tag + 3, MPI_COMM_WORLD, &status);
       }
     }
