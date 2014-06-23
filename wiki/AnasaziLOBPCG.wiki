@@ -3,7 +3,7 @@
 = Introduction =
 
 This example computes the eigenvalues of largest magnitude of an
-eigenvalue problem $A x = \lambda x$, using Anasazi's implementation
+eigenvalue problem A x = λ x, using Anasazi's implementation
 of the LOBPCG (Locally Optimal Block-Preconditioned Conjugate
 Gradient) method.
 
