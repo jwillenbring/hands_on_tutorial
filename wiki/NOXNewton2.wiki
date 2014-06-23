@@ -339,6 +339,8 @@ main (int argc, char **argv)
   using Teuchos::parameterList;
   using Teuchos::RCP;
   using Teuchos::rcp;
+  using std::cout;
+  using std::endl;
 
 #ifdef HAVE_MPI
   MPI_Init(&argc, &argv);
