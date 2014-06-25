@@ -30,16 +30,6 @@
     # Modify `./live-cmake` as necessary for your build environment
     # Run `./live-cmake` and continue from there
 
-===  Trilinos virtual machine (VM) ===
-
-  * VM with same build environment as the student shell accounts
-  * We won't cover this today, but you can download it and try it at home
-  * *NOTE*: The VM file is *QUITE LARGE* (11116475904 bytes)
-  * Download locations:
-    * [http://tau.uoregon.edu/livedvd/latest.ova University of Oregon (HTTP)]
-    * [ftp://paratools08.rrp.net/hpclinux/latest.ova ParaTools, Inc. (FTP)]
-  * `wopr.nic.uoregon.edu:~livetau/HPCLinux_June14.2.ova`
-
 === *!WebTrilinos*: Web interface to edit, build, and run C++ code ===
 
   * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Click here] to access !WebTrilinos (Trilinos version 11.9).
@@ -50,6 +40,16 @@
     * Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
     * You can't read or write files, but you can embed input data in your program as a string.
   * !WebTrilinos is installed on a server at St. John's University, MN.
+
+===  Trilinos virtual machine (VM) ===
+
+  * VM with same build environment as the student shell accounts
+  * We won't cover this today, but you can download it and try it at home
+  * *NOTE*: The VM file is *QUITE LARGE* (11116475904 bytes)
+  * Download locations:
+    * [http://tau.uoregon.edu/livedvd/latest.ova University of Oregon (HTTP)]
+    * [ftp://paratools08.rrp.net/hpclinux/latest.ova ParaTools, Inc. (FTP)]
+  * `wopr.nic.uoregon.edu:~livetau/HPCLinux_June14.2.ova`
 
 === Build Trilinos yourself on your computer ===
 
