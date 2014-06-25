@@ -12,18 +12,23 @@
 
 == Four options for running examples ==
 
-=== Student shell accounts ===
+=== Student shell accounts (VECPAR 2014 only) ===
 
   * Tutorial material lives on [https://github.com/jwillenbring/Trilinos_tutorial Github]
   * Steps to get started
-    # Log in to student account on paratools07.rrt.net
-    # `git clone https://github.com/jwillenbring/Trilinos_tutorial.git`
+    # Log in to `wopr.nic.uoregon.edu`
+    # `ssh nucN` where `N` is one of 01, 02, ..., 09, 10, ..., 15
     # `cd Trilinos_tutorial`
     # `source ./setup.sh`  (loads MPI and Trilinos modules)
     # `cd cmake_build`
     # `./live-cmake`  (builds all the examples)
     # Change into build subdirectories to run examples by hand
-  * We may do all but the last one or two steps for you; stay tuned!
+  * We may do the last one or two steps for you; stay tuned!
+  * You may also use the Trilinos tutorial on your computer:
+    # `git clone https://github.com/jwillenbring/Trilinos_tutorial.git`
+    # `cd Trilinos_tutorial`
+    # Modify `./live-cmake` as necessary for your build environment
+    # Run `./live-cmake` and continue from there
 
 ===  Trilinos virtual machine (VM) ===
 
