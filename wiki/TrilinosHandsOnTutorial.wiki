@@ -5,8 +5,8 @@
 
 == Reference and tutorial material ==
 
-  * [http://trilinos.sandia.gov Trilinos website] (click on logo above)
-  * Each Trilinos package has [http://trilinos.sandia.gov/packages/  Doxygen documentation].
+  * [http://trilinos.org Trilinos website] (click on logo above)
+  * Each Trilinos package has [http://trilinos.org/packages/  Doxygen documentation].
   * [http://trilinos.org/?page_id=95 Trilinos "Getting Started"] page.
   * See links below to slides and video recordings of tutorials from previous Trilinos User Group meetings.
 
@@ -60,7 +60,7 @@ Please read the BuildScript page to learn how to set Trilinos' build configurati
     * [http://www.cmake.org/cmake/resources/software.html CMake] version >= 2.8
     * BLAS and LAPACK libraries
     * MPI (Message Passing Interface) (optional)
-  # Download [http://trilinos.sandia.gov/download Trilinos]
+  # Download [http://trilinos.org/download Trilinos]
   # Find a configuration script suitable for your system.
   # Copy the script into your build directory and modify it if necessary.
     * You may modify the script by hand, use the CMake graphical user interface, or use the console-based interface `ccmake`.
@@ -70,8 +70,8 @@ Please read the BuildScript page to learn how to set Trilinos' build configurati
 Once you have built and installed Trilinos, you may build your program with Trilinos.  You have two options: use CMake, or use a Makefile.
   * CMake: See [https://code.google.com/p/trilinos/wiki/CMakeFindPackageTrilinosExample our example]
   * Makefile
-    # Get an example Makefile from [http://trilinos.sandia.gov/Export_Makefile_example.txt here].
-      * Learn about the Makefile and the Makefile.export system [http://trilinos.sandia.gov/Export_Makefile.txt here].
+    # Get an example Makefile from [http://trilinos.org/oldsite/Export_Makefile_example.txt here].
+      * Learn about the Makefile and the Makefile.export system [http://trilinos.org/oldsite/Export_Makefile.txt here].
       * You can find the Makefile.export.package_name files once you have built and installed Trilinos.  
       * They will be in the include directory of your installation directory.  
       * Example: `TrilinosInstall/include/Makefile.export.Epetra`.
@@ -82,14 +82,14 @@ Once you have built and installed Trilinos, you may build your program with Tril
 
 == Examples illustrating the Tpetra-based solver stack ==
 
-  # *Learn how to create and use [http://trilinos.sandia.gov/packages/tpetra Tpetra] dense and sparse linear algebra objects.*
-     * [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html Lesson 1]: "Hello world!"  Learn different ways to initialize MPI (or not) and pass an MPI communicator to Tpetra.
-     * [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson02.html Lesson 2]: Learn how to make a Tpetra vector, given a communicator from Lesson 1.
-     * [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson03.html Lesson 3]: Learn how to implement a simple numerical algorithm (the power method) using Tpetra sparse matrices and vectors.
-     * [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson04.html Lesson 4]: Learn different ways to construct a Tpetra sparse matrix.
-     * [http://trilinos.sandia.gov/packages/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson05.html Lesson 5]: Learn how to migrate data in a Tpetra object between two different parallel data distributions.**
+  # *Learn how to create and use [http://trilinos.org/packages/tpetra Tpetra] dense and sparse linear algebra objects.*
+     * [http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html Lesson 1]: "Hello world!"  Learn different ways to initialize MPI (or not) and pass an MPI communicator to Tpetra.
+     * [http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson02.html Lesson 2]: Learn how to make a Tpetra vector, given a communicator from Lesson 1.
+     * [http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson03.html Lesson 3]: Learn how to implement a simple numerical algorithm (the power method) using Tpetra sparse matrices and vectors.
+     * [http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson04.html Lesson 4]: Learn different ways to construct a Tpetra sparse matrix.
+     * [http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson05.html Lesson 5]: Learn how to migrate data in a Tpetra object between two different parallel data distributions.**
      * [Tpetra_Exercises_Advanced_CrsMatrix_ExplicitTranspose Advanced exercise]: Learn how to compute the explicit transpose of a sparse matrix.
-  # *Learn how to solve linear systems using the [http://trilinos.sandia.gov/packages/belos Belos] package of iterative linear solvers, and the [http://trilinos.sandia.gov/packages/ifpack2 Ifpack2] package of preconditioners*
+  # *Learn how to solve linear systems using the [http://trilinos.org/packages/belos Belos] package of iterative linear solvers, and the [http://trilinos.org/packages/ifpack2 Ifpack2] package of preconditioners*
      * [Ifpack2CreatePreconditioner Create an Ifpack2 preconditioner]
      * [Tpetra_Belos_CreateSolver Solve a linear system using Belos and Ifpack2]
 
@@ -105,18 +105,18 @@ Once you have built and installed Trilinos, you may build your program with Tril
 === Generate test linear systems using the [http://trilinos.sandia.gov/packages/galeri Galeri] package ===
 
   * [GaleriLinearSystem Generate a matrix, discretized 2D Laplacian on a Cartesian grid.]
-  * Try generating matrices for some different operators.  The list of supported operators is [http://trilinos.sandia.gov/packages/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
+  * Try generating matrices for some different operators.  The list of supported operators is [http://trilinos.org/docs/dev/packages/galeri/doc/html/gl_GalleryCrsMatrix.html here].**
 
-=== Create an algebraic preconditioner using the [http://trilinos.sandia.gov/packages/ifpack  Ifpack] package ===
+=== Create an algebraic preconditioner using the [http://trilinos.org/packages/ifpack  Ifpack] package ===
 
   * [IfpackFactory Create a preconditioner using the Ifpack preconditioner factory.]
   * Try generating different preconditioners:
     * The preconditioners supported in the factory interface are: "IC", "ICT", "ILU", "ILUT", and "Amesos".
-    * The list of supported parameters for the factory is [http://trilinos.sandia.gov/packages/docs/dev/packages/ifpack/doc/html/index.html#ifp_params here].**
+    * The list of supported parameters for the factory is [http://trilinos.org/docs/dev/packages/ifpack/doc/html/index.html#ifp_params here].**
 
 === Solve a linear system using AztecOO ===
 
-The [http://trilinos.sandia.gov/packages/aztecoo AztecOO] package
+The [http://trilinos.org/packages/aztecoo AztecOO] package
 implements iterative linear solvers.  It wraps an earlier library
 which provided its own linear algebra implementation.  !AztecOO can
 also work with Epetra matrices and vectors, and any preconditioner
@@ -127,19 +127,19 @@ preconditioners.
 
 === Solve a linear system using ML and AztecOO ===
 
-The [http://trilinos.sandia.gov/packages/ml ML] package implements
+The [http://trilinos.org/packages/ml ML] package implements
 multilevel solvers, including algebraic multigrid.  You may use ML's
 solvers as preconditioners if you like; this is the way most of our
 users use ML.  The following examples show how to do this with the
 iterative linear solvers provided by the
-[http://trilinos.sandia.gov/packages/aztecoo/ AztecOO] package.
+[http://trilinos.org/packages/aztecoo/ AztecOO] package.
 
   * [MLAztecOO Use ML as a black-box preconditioner with AztecOO]**
   * [MLAztecOO2 Use ML as a preconditioner with AztecOO, but set some multigrid options]
 
 === Solve a linear system using Belos ===
 
-The [http://trilinos.sandia.gov/packages/belos Belos] package
+The [http://trilinos.org/packages/belos Belos] package
 implements iterative linear solvers.  Unlike AztecOO, Belos can work
 with just about any linear algebra implementation.  Belos also
 provides block solvers and other algorithmic optimizations, like
@@ -151,14 +151,14 @@ linear algebra implementations.
 
 === Solve a nonlinear system using NOX ===
 
-The [http://trilinos.sandia.gov/packages/nox NOX] package implements iterative nonlinear solvers.
+The [http://trilinos.org/packages/nox NOX] package implements iterative nonlinear solvers.
 
   * [NOXNewton Example 1: Newton's method]
   * [NOXNewton2 Example 2: Newton's method]
 
 === Solve eigenvalue problems using Anasazi ===
 
-The [http://trilinos.sandia.gov/packages/anasazi Anasazi] package
+The [http://trilinos.org/packages/anasazi Anasazi] package
 implements several different iterative solvers for both standard (A x
 = \lambda x) and generalized (K x = \lambda M x) eigenvalue problems.
 The first two examples show the simple use case of finding a few of
@@ -182,8 +182,8 @@ The Zoltan developers generously contributed a [ZoltanHandsOnTutorial hands-on t
 
 == Examples illustrating other packages ==
 
-  # *[http://trilinos.sandia.gov/packages/pytrilinos PyTrilinos] tutorial materials.*
-    * [http://trilinos.sandia.gov/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
+  # *[http://trilinos.org/packages/pytrilinos PyTrilinos] tutorial materials.*
+    * [http://trilinos.org/oldsite/packages/pytrilinos/PyTrilinosTutorial.pdf  PyTrilinos tutorial slides]
     * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/python/index.html WebTrilinos for Python]
     * [PyTrilinosExample Solve a simple 2D Laplace problem using PyTrilinos]
   # *Learn how to use utilities in the [http://trilinos.sandia.gov/packages/teuchos Teuchos] package.*
@@ -199,7 +199,7 @@ The Zoltan developers generously contributed a [ZoltanHandsOnTutorial hands-on t
 
 == Other examples ==
 
-Some examples don't work with the web tutorial, since they read from files.  You can try them out by downloading Trilinos and looking in the examples in the source tree.  For example, the [http://trilinos.sandia.gov/packages/intrepid Intrepid] discretizations package has examples in the `packages/trilinoscouplings/examples/scaling/` directory.  The following might be of interest:
+Some examples don't work with the web tutorial, since they read from files.  You can try them out by downloading Trilinos and looking in the examples in the source tree.  For example, the [http://trilinos.org/packages/intrepid Intrepid] discretizations package has examples in the `packages/trilinoscouplings/examples/scaling/` directory.  The following might be of interest:
     * example_CurlLSFEM.cpp: driver for solving div-curl first order system in 3D with tangential boundary condition using curl-conforming elements
     * example_DivLSFEM.cpp: driver for the same system with normal boundary condition and div-conforming elements
     * example_Poisson.cpp: solving the Poisson equation using a Galerkin finite element method
@@ -207,11 +207,11 @@ Some examples don't work with the web tutorial, since they read from files.  You
 == Learning more: ==
 
   * Web sites of Trilinos User Group meetings
-    * [http://trilinos.sandia.gov/events/trilinos_user_group_2013/index.html 2013]
-    * [http://trilinos.sandia.gov/events/trilinos_user_group_2012/index.html 2012]
-    * [http://trilinos.sandia.gov/events/trilinos_user_group_2011/index.html 2011]
-    * [http://trilinos.sandia.gov/events/trilinos_user_group_2010/index.html 2010]
-    * [http://trilinos.sandia.gov/events/trilinos_user_group_2009/index.html 2009]
-    * [http://trilinos.sandia.gov/events/trilinos_user_group_2008/index.html 2008]
-    * [http://trilinos.sandia.gov/events/trilinos_user_group_2007/index.html 2007]
-  * [http://trilinos.sandia.gov/mail_lists.html Mail lists.]
+    * [http://trilinos.org/community/events/trilinos-user-group-2013/ 2013]
+    * [http://trilinos.org/community/events/trilinos-user-group-meeting-2012/ 2012]
+    * [http://trilinos.org/community/events/trilinos-user-group-meeting-2011/ 2011]
+    * [http://trilinos.org/community/events/trilinos-user-group-meeting-2010/ 2010]
+    * [http://trilinos.org/community/events/trilinos-user-group-meeting-2009/ 2009]
+    * [http://trilinos.org/community/events/trilinos-user-group-meeting-2008/ 2008]
+    * [http://trilinos.org/community/events/trilinos-user-group-meeting-2007/ 2007]
+  * [http://trilinos.org/community/mail-lists/ Mail lists.]
