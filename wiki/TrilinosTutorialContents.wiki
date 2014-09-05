@@ -1,5 +1,5 @@
-  * [http://trilinos.sandia.gov/ Trilinos Home Page]
-  * [http://trilinos.sandia.gov/getting_started.html Trilinos "Getting Started"]
+  * [http://trilinos.org/ Trilinos Home Page]
+  * [http://trilinos.org/about/getting-started/ Trilinos "Getting Started"]
   * WebTrilinos
     * [https://www.users.csbsju.edu/trilinos/WebTrilinosSERIAL-10.4/c++/index.html Serial Portal (Password required)]
     * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI-shared-10.4/c++/index.html  MPI Portal (Password required)]
