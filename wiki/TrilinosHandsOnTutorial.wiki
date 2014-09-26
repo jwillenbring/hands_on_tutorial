@@ -41,7 +41,7 @@
     * You can't read or write files, but you can embed input data in your program as a string.
   * !WebTrilinos is installed on a server at St. John's University, MN.
 
-===  Trilinos virtual machine (VM) ===
+===  HPCLinux virtual machine (VM) ===
 
   * HPCLinux VM with same build environment as the student shell accounts
   * We won't cover this today, but you can download it and try it at home
@@ -50,7 +50,7 @@
     * [http://tau.uoregon.edu/livedvd/latest.ova University of Oregon (HTTP)]
     * [ftp://paratools08.rrp.net/hpclinux/latest.ova ParaTools, Inc. (FTP)]
   * `wopr.nic.uoregon.edu:~livetau/HPCLinux_June14.2.ova`
-  * VM [http://www.paratools.com/HPCLinux setup instructions] from ParaTools
+  * VM [http://www.paratools.com/HPCLinux setup instructions] from `ParaTools`
 
 === Build Trilinos yourself on your computer ===
 
