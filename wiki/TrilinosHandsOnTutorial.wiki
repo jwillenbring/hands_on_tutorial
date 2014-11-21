@@ -52,6 +52,10 @@
   * `wopr.nic.uoregon.edu:~livetau/HPCLinux_June14.2.ova`
   * VM [http://www.paratools.com/HPCLinux setup instructions] from `ParaTools`
 
+===  MueLu virtual machine (VM) ===
+
+  * VM and accompanying PDF delivering the [http://trilinos.org/packages/muelu/muelu-tutorial/ MueLu tutorial]
+
 === Build Trilinos yourself on your computer ===
 
 Please read the BuildScript page to learn how to set Trilinos' build configuration options.
