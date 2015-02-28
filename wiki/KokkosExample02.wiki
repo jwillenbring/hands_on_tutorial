@@ -1,7 +1,5 @@
 #summary Simple Kokkos Example 2
 
-= Introduction =
-
 Simple Kokkos Parallel For
 
 
