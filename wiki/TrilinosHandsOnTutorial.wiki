@@ -32,7 +32,7 @@
 
 === *!WebTrilinos*: Web interface to edit, build, and run C++ code ===
 
-  * [https://www.users.csbsju.edu/trilinos/WebTrilinosMPI/c++/index.html Click here] to access !WebTrilinos (Trilinos version 11.9).
+  * [http://trilinos.csbsju.edu/WebTrilinosMPI-OpenMP-shared-11.14/c++/index.html Click here] to access !WebTrilinos (Trilinos version 11.14).
   * Access to this site is password protected.  Login information will be given during live tutorials as needed.
   * This page gives you a text box in which you can paste, type, or edit C++ code.
     * That code will compile and link against a recent release of Trilinos, and run.
