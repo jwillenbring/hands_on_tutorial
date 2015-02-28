@@ -46,10 +46,13 @@ int main (int argc, char* argv[]) {
   Kokkos::View<double*> forcingTerm ("forcing term", numLclNodes);
 
   // Set the forcing term.  We picked it so that we can know the exact
-  // solution of the heat equation.
+  // solution of the heat equation, namely
+  //
+  // u(x) = -4.0 * (x - 0.5) * (x - 0.5) + 1.0 + (T_left - T_right)x.
   Kokkos::parallel_for (numLclNodes, [=] (const LO node) {
       const double x = x_left + node * dx;
-      forcingTerm(node) = -4.0 * (x - 0.5) * (x - 0.5) + 1.0;
+
+      forcingTerm(node) = -8.0;
       // We multiply dx*dx into the forcing term, so the matrix's
       // entries don't need to know it.
       forcingTerm(node) *= dx * dx;
@@ -245,7 +248,7 @@ int main (int argc, char* argv[]) {
 
   Kokkos::DualView<double**, Kokkos::LayoutLeft> x_lcl ("b", numLclRows, 1);
   x_lcl.modify<Kokkos::DualView<double**, Kokkos::LayoutLeft>::t_dev::execution_space> ();
-  Kokkos::deep_copy (Kokkos::subview (b_lcl.d_view, Kokkos::ALL (), 0), temperature);
+  Kokkos::deep_copy (Kokkos::subview (x_lcl.d_view, Kokkos::ALL (), 0), temperature);
   Tpetra::Vector<> x (A.getDomainMap (), x_lcl);
 
   //
@@ -257,5 +260,6 @@ int main (int argc, char* argv[]) {
   Kokkos::finalize ();
   MPI_Finalize ();
 }
+
 
 }}}
