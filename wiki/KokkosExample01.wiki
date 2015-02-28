@@ -1,6 +1,5 @@
-#summary One-sentence summary of this page.
+#summary Simple Kokkos Initialization Program
 
-= Introduction =
 
 A Very Simple Kokkos Example
 
