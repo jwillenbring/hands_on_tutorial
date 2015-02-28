@@ -6,6 +6,7 @@ A Very Simple Kokkos Example
 
 
 {{{
+
 #include <Teuchos_DefaultMpiComm.hpp> // or mpi.h
 // This is the only header file you need to include for the "core"
 // part of Kokkos.  That includes Kokkos::View, Kokkos::parallel_*,
