@@ -87,12 +87,13 @@ Once you have built and installed Trilinos, you may build your program with Tril
 
 == Examples illustrating Kokkos thread-scalable expressions to generate Tpetra objects ==
 
-  # *Learn how to create and use [http://trilinos.org/packages/kokkos Kokkos] with Tpetra.*
+  # *Learn how to create and use [http://trilinos.org/packages/kokkos Kokkos] with [http://trilinos.org/packages/tpetra Tpetra].*
      * [KokkosExample01 Lesson 1]: Learn how to initialize Kokkos.
      * [KokkosExample02 Lesson 2]: Learn how to write a simple parallel for loop.
      * [KokkosExample03 Lesson 3]: Learn how to construct a local tridiagonal matrix using a thread-parallel approach.
      * [KokkosExample04 Lesson 4]: Learn how to construct Tpetra matrices and vectors from existing Kokkos arrays.
- 
+     * [KokkosExample05 Lesson 5]: Learn how to write a simple conjugate gradients solver with Tpetra/Kokkos.
+
 == Examples illustrating the Tpetra-based solver stack ==
 
   # *Learn how to create and use [http://trilinos.org/packages/tpetra Tpetra] dense and sparse linear algebra objects.*
