@@ -4,6 +4,7 @@ Simple Kokkos Parallel For
 
 
 {{{
+
 #include <Teuchos_DefaultMpiComm.hpp> // or mpi.h
 // This is the only header file you need to include for the "core"
 // part of Kokkos.  That includes Kokkos::View, Kokkos::parallel_*,
@@ -42,10 +43,13 @@ int main (int argc, char* argv[]) {
   Kokkos::View<double*> forcingTerm ("forcing term", numLclNodes);
 
   // Set the forcing term.  We picked it so that we can know the exact
-  // solution of the heat equation.
+  // solution of the heat equation, namely
+  //
+  // u(x) = -4.0 * (x - 0.5) * (x - 0.5) + 1.0 + (T_left - T_right)x.
   Kokkos::parallel_for (numLclNodes, [=] (const LO node) {
       const double x = x_left + node * dx;
-      forcingTerm(node) = -4.0 * (x - 0.5) * (x - 0.5) + 1.0;
+
+      forcingTerm(node) = -8.0;
       // We multiply dx*dx into the forcing term, so the matrix's
       // entries don't need to know it.
       forcingTerm(node) *= dx * dx;
