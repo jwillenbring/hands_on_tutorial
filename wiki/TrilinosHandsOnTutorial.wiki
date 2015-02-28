@@ -10,8 +10,9 @@
   * [http://trilinos.org/?page_id=95 Trilinos "Getting Started"] page.
   * See links below to slides and video recordings of tutorials from previous Trilinos User Group meetings.
 
-== Four options for running examples ==
+== Options for running examples ==
 
+<wiki:comment>
 === Student shell accounts (VECPAR 2014 only) ===
 
   * Tutorial material lives on [https://github.com/jwillenbring/Trilinos_tutorial Github]
@@ -30,17 +31,6 @@
     # Modify `./live-cmake` as necessary for your build environment
     # Run `./live-cmake` and continue from there
 
-=== *!WebTrilinos*: Web interface to edit, build, and run C++ code ===
-
-  * [http://trilinos.csbsju.edu/WebTrilinosMPI-OpenMP-shared-11.14/c++/index.html Click here] to access !WebTrilinos (Trilinos version 11.14).
-  * Access to this site is password protected.  Login information will be given during live tutorials as needed.
-  * This page gives you a text box in which you can paste, type, or edit C++ code.
-    * That code will compile and link against a recent release of Trilinos, and run.
-    * The web page will show you the resulting output.
-    * Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
-    * You can't read or write files, but you can embed input data in your program as a string.
-  * !WebTrilinos is installed on a server at St. John's University, MN.
-
 ===  HPCLinux virtual machine (VM) ===
 
   * HPCLinux VM with same build environment as the student shell accounts
@@ -51,6 +41,17 @@
     * [ftp://paratools08.rrp.net/hpclinux/latest.ova ParaTools, Inc. (FTP)]
   * `wopr.nic.uoregon.edu:~livetau/HPCLinux_June14.2.ova`
   * VM [http://www.paratools.com/HPCLinux setup instructions] from `ParaTools`
+</wiki:comment>
+=== *!WebTrilinos*: Web interface to edit, build, and run C++ code ===
+
+  * [http://trilinos.csbsju.edu/WebTrilinosMPI-OpenMP-shared-11.14/c++/index.html Click here] to access !WebTrilinos (Trilinos version 11.14).
+  * Access to this site is password protected.  Login information will be given during live tutorials as needed.
+  * This page gives you a text box in which you can paste, type, or edit C++ code.
+    * That code will compile and link against a recent release of Trilinos, and run.
+    * The web page will show you the resulting output.
+    * Use Ctrl+A to highlight all the example code, Ctrl+C to copy it, and Ctrl+V to paste it in the !WebTrilinos window.
+    * You can't read or write files, but you can embed input data in your program as a string.
+  * !WebTrilinos is installed on a server at St. John's University, MN.
 
 ===  !MueLu virtual machine (VM) ===
 
