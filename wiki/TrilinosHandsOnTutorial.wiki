@@ -88,7 +88,7 @@ Once you have built and installed Trilinos, you may build your program with Tril
 
 == Examples illustrating Kokkos thread-scalable expressions to generate Tpetra objects ==
 
-  If using cmake to build your own application on an installed trilinos, use the top level [CMakeLists_Kokkos01 CMakeLists.txt] and create two subdirectories for the examples below with the files [CMakeLists_Kokkos02 CMakeLists.txt file] for KokkosBasic directory and [CmakelLists_Kokkos03 CMakeLists.txt file] for KokkosTpetra directory.
+  If using cmake to build your own application on an installed trilinos, use the top level [CMakeLists_Kokkos01 CMakeLists.txt] and create two subdirectories for the examples below with the files [CMakeLists_Kokkos02 CMakeLists.txt file] for KokkosBasic directory and [CmakeLists_Kokkos03 CMakeLists.txt file] for KokkosTpetra directory.
 
   # *Learn the basics of [http://trilinos.org/packages/kokkos Kokkos]*
     * [KokkosTutorial01 Lesson 1a]: Learn how to Initialize Kokkos using functors.
