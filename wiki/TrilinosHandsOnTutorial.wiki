@@ -88,9 +88,11 @@ Once you have built and installed Trilinos, you may build your program with Tril
 
 == Examples illustrating Kokkos thread-scalable expressions to generate Tpetra objects ==
 
-  # *Learn the basics of [http://trilinos.org/packages/kokkos Kokkos]
-    * [KokkosTutorial01 Lesson 1]: Learn how to Initialize Kokkos.
-    * [KokkosTutorial02 Lesson 2]: Learn how to perform a reduction.
+  # *Learn the basics of [http://trilinos.org/packages/kokkos Kokkos]*
+    * [KokkosTutorial01 Lesson 1a]: Learn how to Initialize Kokkos using functors.
+    * [KokkosTutorial01b Lesson 1b]: Learn how to Initialize Kokkos using lambdas.
+    * [KokkosTutorial02 Lesson 2a]: Learn how to perform a reduction using functors.
+    * [KokkosTutorial02b Lesson 2b]: Learn how to perform a reduction using lambdas.
     * [KokkosTutorial03 Lesson 3]: Learn how to createa simple view.
     * [KokkosTutorial04 Lesson 4]: Learn the basic of memory spaces.
     * [KokkosTutorial05 Lesson 5]: Learn how to use atomics.
