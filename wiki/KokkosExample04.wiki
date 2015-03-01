@@ -1,4 +1,4 @@
-#summary Kokkos Simple Example 4
+#summary Simple Kokkos Example 4
 
 Simple example to build Tpetra matrix and vectors from Kokkos objects.
 
