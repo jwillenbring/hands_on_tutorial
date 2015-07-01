@@ -43,7 +43,8 @@
   * VM [http://www.paratools.com/HPCLinux setup instructions] from `ParaTools`
 </wiki:comment>
 === *!WebTrilinos*: Web interface to edit, build, and run C++ code ===
-
+  * [http://trilinos.csbsju.edu/WebTrilinosMPI-shared-12.0/c++/index.html Click here] to access !WebTrilinos (Trilinos version 12.0 C++ API).
+  * [http://trilinos.csbsju.edu/WebTrilinosMPI-shared-12.0/index.html Click here] to access !WebTrilinos (Trilinos version 12.0, General access).
   * [http://trilinos.csbsju.edu/WebTrilinosMPI-OpenMP-shared-11.14/c++/index.html Click here] to access !WebTrilinos (Trilinos version 11.14).
   * Access to this site is password protected.  Login information will be given during live tutorials as needed.
   * This page gives you a text box in which you can paste, type, or edit C++ code.
