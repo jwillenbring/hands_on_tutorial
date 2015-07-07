@@ -140,6 +140,13 @@ Once you have built and installed Trilinos, you may build your program with Tril
     * The preconditioners supported in the factory interface are: "IC", "ICT", "ILU", "ILUT", and "Amesos".
     * The list of supported parameters for the factory is [http://trilinos.org/docs/dev/packages/ifpack/doc/html/index.html#ifp_params here].**
 
+=== Solve a linear system using Amesos ===
+
+The [http://trilinos.org/packages/amesos Amesos] package
+implements direct linear solvers.  It wraps provides one native sparse direct solver called KLU and provides access to other community sparse direct solvers such as [http://crd-legacy.lbl.gov/~xiaoye/SuperLU/ SuperLU].  Amesos accepts Epetra data objects like any Trilinos solver.
+
+* [AmesosSuperLU Solve a linear system using Amesos with SuperLU] **
+
 === Solve a linear system using AztecOO ===
 
 The [http://trilinos.org/packages/aztecoo AztecOO] package
