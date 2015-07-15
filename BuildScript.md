@@ -1,0 +1,290 @@
+# Introduction #
+
+Trilinos uses the CMake build system.  If you are familiar with the
+GNU Autotools, running CMake is a little bit like running the
+`configure` script.  After that come the familiar `make` and `make
+install` steps.
+
+Your best source for learning how to build Trilinos is the quick reference guide in the root of Trilinos' source directory.  It comes in three formats:
+  * `TrilinosBuildQuickRef.html` (HTML)
+  * `TrilinosBuildQuickRef.pdf` (PDF)
+  * `TrilinosBuildQuickRef.rst` [(reStructuredText)](http://en.wikipedia.org/wiki/ReStructuredText)
+
+Ross Bartlett spent a lot of time explaining all the build options in great detail.  It may not be the "quickest" of "quick-start guides," but it's worth reading if you want to learn about all the build options that Trilinos supports.
+
+# Running CMake to configure Trilinos #
+
+It's typical to invoke CMake indirectly by writing a
+`do-configure` script, which is a short executable shell script that
+invokes CMake with the desired build options.  The shell script below
+is an example of a `do-configure` script.  You may make it executable
+in your shell environment, and then invoke it like this:
+
+```
+$ ./do-configure
+```
+
+You may name this script however you like.  It just invokes CMake to
+configure Trilinos' build options.
+
+Trilinos' build directory _must_ be separate from its source
+directory.  Thus, once you have Trilinos' source directory at some
+path `$TRILINOS_PATH`, create a separate build directory and run your
+`do-configure` script in the build directory.
+
+# Sample "do-configure" script for building with MPI #
+
+```
+#!/bin/bash
+
+# Set this to the root of your Trilinos source directory.
+TRILINOS_PATH=../Trilinos
+
+#
+# You can invoke this shell script with additional command-line
+# arguments.  They will be passed directly to CMake.
+#
+EXTRA_ARGS=$@
+
+#
+# Each invocation of CMake caches the values of build options in a
+# CMakeCache.txt file.  If you run CMake again without deleting the
+# CMakeCache.txt file, CMake won't notice any build options that have
+# changed, because it found their original values in the cache file.
+# Deleting the CMakeCache.txt file before invoking CMake will insure
+# that CMake learns about any build options you may have changed.
+# Experience will teach you when you may omit this step.
+#
+rm -f CMakeCache.txt
+
+#
+# Enable all primary stable Trilinos packages.
+#
+cmake \
+  -D CMAKE_INSTALL_PREFIX:FILEPATH="${HOME}/pkg/Trilinos/Mpi" \
+  -D CMAKE_BUILD_TYPE:STRING=RELEASE \
+  -D TPL_ENABLE_MPI:BOOL=ON \
+  -D MPI_BASE_DIR:FILEPATH="${HOME}/pkg/openmpi-1.6.1" \
+  -D MPI_EXEC:FILEPATH="${HOME}/pkg/openmpi-1.6.1/bin/mpiexec" \
+  -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=ON \
+$EXTRA_ARGS \
+$TRILINOS_PATH
+```
+
+# Sample "do-configure" script for building without MPI #
+
+```
+#!/bin/bash
+
+# Set this to the root of your Trilinos source directory.
+TRILINOS_PATH=../Trilinos
+
+#
+# You can invoke this shell script with additional command-line
+# arguments.  They will be passed directly to CMake.
+#
+EXTRA_ARGS=$@
+
+#
+# Each invocation of CMake caches the values of build options in a
+# CMakeCache.txt file.  If you run CMake again without deleting the
+# CMakeCache.txt file, CMake won't notice any build options that have
+# changed, because it found their original values in the cache file.
+# Deleting the CMakeCache.txt file before invoking CMake will insure
+# that CMake learns about any build options you may have changed.
+# Experience will teach you when you may omit this step.
+#
+rm -f CMakeCache.txt
+
+#
+# Enable all primary stable Trilinos packages.
+#
+cmake \
+  -D CMAKE_INSTALL_PREFIX:FILEPATH="${HOME}/pkg/Trilinos/Serial" \
+  -D CMAKE_BUILD_TYPE:STRING=RELEASE \
+  -D Trilinos_ENABLE_ALL_PACKAGES:BOOL=ON \
+$EXTRA_ARGS \
+$TRILINOS_PATH
+```
+
+# A sampling of Trilinos configuration options #
+
+## Installation settings ##
+
+You should always set the following options.
+
+  * `CMAKE_INSTALL_PREFIX`: Path to install Trilinos (for `make install`)
+  * `CMAKE_BUILD_TYPE`: DEBUG or RELEASE.  This affects CMake's choice of optimization flags.
+
+## MPI and compilers ##
+
+Trilinos uses MPI (the Message Passing Interface for
+distributed-memory programming), but does not require it.  Your first
+choice is whether or not to use MPI.
+
+### Building with MPI ###
+
+If you want to use MPI, you must tell Trilinos this:
+
+  * `TPL_ENABLE_MPI:BOOL=ON`
+
+This may be all that you need!  CMake will do its best to find and use
+your system's MPI installation.  However, in some cases, you may need
+to help CMake find MPI, or point it to one of several different MPI
+versions you might have installed.  The easiest way to start doing
+this is to tell CMake where to find the "base directory" of the MPI
+installation.  The base directory is where the system puts that MPI
+installation's libraries, header files, and executables.  If you need
+to do this, replace `${MPI_BASE_DIR}` in the line below with your MPI
+base directory.
+
+  * `MPI_BASE_DIR:FILEPATH=${MPI_BASE_DIR}`
+
+In some cases, you might need to tell MPI where to find various
+compilers, or the executable that runs MPI programs (usually, but not
+always, called `mpiexec` or `mpirun`).  If all those executables are
+in the same directory, you may simply specify that directory with the
+`MPI_BIN_DIR` option.  Otherwise, you may set paths to each executable
+separately: e.g., `MPI_EXEC`, `MPI_CXX_COMPILER`, or `MPI_C_COMPILER`.
+These options take a path, like `MPI_BASE_DIR` above.  There are many
+other options that tell CMake how to build against and run MPI
+programs.
+
+### Building without MPI ###
+
+Trilinos does not require MPI in order to build.  For historical
+reasons, we call a build without MPI a "serial" build.  (A "serial"
+build may still use threads or other parallel programming models
+inside, but it does not use MPI.)  The default build is a serial
+build.  CMake will do its best in that case to find compilers.  You
+might not need to tell CMake anything at all!  On GNU/Linux and MacOS
+systems, it will use the GNU Compiler Collection by default.  However,
+in some cases, you may need to help it find compilers.  Here are some
+options you may use:
+
+  * `CMAKE_CXX_COMPILER`: The C++ compiler to use when building Trilinos.  Most Trilinos packages are implemented in C++.
+  * `CMAKE_C_COMPILER`: The C compiler to use when building Trilinos.  Some parts of Trilinos are implemented in C.
+  * `CMAKE_Fortran_COMPILER`: The Fortran compiler to use when building Trilinos.
+  * `Trilinos_ENABLE_Fortran`: Set to OFF (or FALSE) to disable use of Fortran.
+
+Some parts of Trilinos are implemented in Fortran, but Fortran is not
+required in order to build Trilinos.  You may disable Fortran if you
+do not have a Fortran compiler, by setting the
+`Trilinos_ENABLE_Fortran` option to OFF.  (It is ON by default.)  This
+is handy if your build environment lacks a Fortran compiler.  Fortran
+is enabled by default, so you must set this to OFF if you do not have
+a Fortran compiler.
+
+Trilinos has some support for OpenMP and CUDA (Nvidia's programming
+model for GPUs).  To enable OpenMP, just set `Trilinos_ENABLE_OpenMP` to ON.  (It's not enough to add the compiler flag that turns on OpenMP; you have to tell Trilinos to build OpenMP-enabled code.)  Enabling CUDA is a bit more complicated, so we do not cover it in this tutorial.
+
+## Telling Trilinos where to find libraries ##
+
+We call libraries that Trilinos may use, but that are not part of
+Trilinos' build system, "third-party libraries" (TPLs).  Trilinos only
+has two required TPLs: the BLAS, and LAPACK.  We will discuss these in
+the next section.
+
+### BLAS and LAPACK ###
+
+In many cases, CMake may be able to find the BLAS and LAPACK libraries
+for you, if you have them installed.  This means you might not have to
+do anything!  Generally, on GNU/Linux or MacOS, I do not have to tell
+CMake where to find the BLAS or LAPACK; it finds them for me.
+However, if CMake can't find them, or if you want to use a different
+BLAS or LAPACK implementation, you will need to tell CMake where to
+look.  This is where things get a bit tricky, because there are about
+as many ways to point to the BLAS and LAPACK as there are
+implementations of these libraries.  They might live in different
+directories; they might have nonstandard names; the BLAS and LAPACK
+might even live in the same library!  Some implementations have such
+complicated link lines that they provide a
+[https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
+web tool] to help users.  We can't possibly enumerate all the choices
+here.  I recommend looking in the `sampleScripts` subdirectory of the
+base Trilinos source directory for examples.  Common options to set
+include
+
+  * `BLAS_LIBRARY_DIRS`
+  * `BLAS_LIBRARY_NAMES`
+  * `LAPACK_LIBRARY_DIRS`
+  * `LAPACK_LIBRARY_NAMES`
+
+### Other third-party libraries ###
+
+Trilinos supports a huge number of optional third-party libraries.
+You don't need them to build Trilinos, but enabling them may enable
+useful functionality.  For example, if you enable support for the
+sparse direct factorization implementation
+[SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/), Trilinos' Amesos
+and Amesos2 packages will provide wrappers for SuperLU that can accept
+an Epetra resp. Tpetra sparse matrix as input.  This will in turn let
+you use SuperLU as a coarse-grid solver in the algebraic multigrid
+package MueLu.
+
+Here are the options I set to enable support for SuperLU when I build
+Trilinos.  Note that I install SuperLU in my home directory.  You may
+have a system installation of SuperLU.
+
+  * `TPL_ENABLE_SuperLU:BOOL=ON`
+  * `SuperLU_INCLUDE_DIRS:FILEPATH=$HOME/pkg/superlu-4.3-clang-3.2/include`
+  * `SuperLU_LIBRARY_DIRS:FILEPATH=$HOME/pkg/superlu-4.3-clang-3.2/lib`
+
+Some Trilinos packages have many optional dependencies on third-party
+libraries.  This especially includes packages which offer a unified
+interface to many TPLs, like Zoltan and Zoltan2 for graph partitioning
+and load balancing, or Amesos and Amesos2 for sparse direct
+factorizations.  You should read these packages' documentation to find
+the recommended list of TPLs that make them most useful.
+
+## Enabling Trilinos packages ##
+
+  * `Trilinos_ENABLE_ALL_PACKAGES`: If you like, you can build _all_ of Trilinos, but you don't have to.
+  * `Trilinos_ENABLE_${PACKAGE}`: If ON (or TRUE), enable Trilinos package `${PACKAGE}`.  For example, `Trilinos_ENABLE_Epetra` enables the Epetra package.
+
+Enabling a package will enable _all_ required dependencies for that
+package.  For example, enabling Ifpack2 will enable Tpetra and
+Teuchos, since Ifpack2 requires these packages.  Also, enabling tests
+or examples (see below) may enable other packages that are required
+for those tests or examples.  For example, if I enable Belos, Epetra,
+and Tpetra, and turn on tests and examples, my build will enable the
+following other packages by default: Teuchos, ThreadPool, Kokkos,
+Zoltan, Triutils, EpetraExt, Xpetra, Isorropia, AztecOO, Galeri,
+Amesos, Ifpack, and ML.
+
+If `Trilinos_ENABLE_ALL_PACKAGES` is OFF (its default value) and I do
+not enable any packages, then no packages will be built.  CMake will
+print an error in this case:
+```
+***
+*** WARNING:  There were no packages configured so no libraries or tests/examples will be built!
+***
+```
+If `Trilinos_ENABLE_ALL_PACKAGES` is ON and I do not explicitly enable
+any package by name, CMake will enable _some_ packages (despite the
+name of the option).  The packages it will enable depends on many
+things, like whether MPI is enabled, what third-party libraries you
+have available, whether you enabled tests or examples, and whether the
+package is set to build by default (it must be marked as "primary
+stable").  For example, on my computer, 37 packages are enabled by
+default if MPI is ON.
+
+If you only wish to enable certain packages and do not want to enable
+all the default packages, you must set `Trilinos_ENABLE_ALL_PACKAGES`
+to OFF, and then explicitly enable the packages you want.
+
+## Enabling tests or examples ##
+
+  * `Trilinos_ENABLE_TESTS`: If ON, build the tests for all packages that are to be built.
+  * `Trilinos_ENABLE_EXAMPLES`: If ON, build the examples for all packages that are to be built.
+
+You may also enable or disable tests and examples individually for
+each package.
+
+## Expert build options ##
+
+  * `BUILD_SHARED_LIBS`: If ON, build dynamic shared libraries.  Else, build static shared libraries.  This is useful on systems that do not support dynamic shared libraries.
+  * `CMAKE_CXX_FLAGS`: Set any C++ compiler flags that you may want to set.  This is especially useful for options affecting which warnings to print, or language options like `-ansi -pedantic`.
+  * `CMAKE_VERBOSE_MAKEFILE`: Set to ON (or TRUE) if you prefer to see what `make` is doing, while it is doing it.  This is helpful for debugging configuration issues, like incorrect BLAS or LAPACK paths.
+  * `HAVE_GCC_ABI_DEMANGLE`: Setting this option to ON improves debugging messages, if you are using the GNU Compiler Collection's compilers.
+  * `Trilinos_ENABLE_EXPLICIT_INSTANTIATION`: This is OFF by default.  Setting this to ON may improve build times for applications, while slowing down the Trilinos build time.

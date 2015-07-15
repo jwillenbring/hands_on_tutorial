@@ -1,0 +1,40 @@
+# Purpose of exercise #
+
+This advanced Tpetra exercise tests your understanding of how Tpetra uses Import and Export data redistribution in the implementation of CrsMatrix.
+
+# Review #
+
+Tpetra's sparse matrix class, CrsMatrix, lets you compute sparse matrix-vector products ("sparse mat-vecs") with either the matrix itself, or its (conjugate) transpose.  The sparse mat-vec `y = A * x` involves the following steps:
+  1. If the domain and column Maps are not the same (the usual case), then Import from the domain Map to the column Map.
+  1. Perform the local sparse matrix-vector multiply computation.  The result vector has the row Map's distribution.
+  1. If the row and range Maps are not the same, then redistribute and combine the result using an Export from the row Map to the range Map.
+
+Recall that the matrix's associated graph (CrsGraph) keeps the Import and Export objects for performing these redistributions.  They are computed on `fillComplete()` and persist until the next `fillComplete()` call (if a `fillResume()` was done).  The "transpose mode" `x = A^T y` uses a reversed communication pattern:
+  1. If the row and range Maps are not the same, then use "reverse mode" on the CrsGraph's Export object to import from the range Map to the row Map.
+  1. Perform the local transposed sparse matrix-vector multiply computation.  The result vector has the column Map's distribution.
+  1. If the domain and column Maps are not the same (the usual case), then use "reverse mode" on the CrsGraph's Import object to export from the column Map to the domain Map.
+
+# "Transpose mode" vs. explicit transpose #
+
+The "reverse mode" feature lets the matrix resuse the precomputed Import and Export objects for the transpose mode.  This makes transpose mode more efficient.  However, applying the transpose may still be slower than applying the original matrix.  For example, the original matrix might not have needed an Export, but transpose mode usually does, since the column Map is not one-to-one in general.  Also, the local part of sparse mat-vec is often slower in transpose mode.  Applying the transpose with the standard  local sparse matrix representation, _compressed sparse row_. does not parallelize well on the node.  It also performs more memory writes than the standard representation, which affects cache reuse.
+
+This suggests that it may be worthwhile to compute an "explicit transpose" -- that is, to create an explicit copy of the transpose of the matrix, rather than invoking transpose mode.
+
+# How to compute the transpose of a CrsMatrix #
+
+Here is one way to compute the transpose of a CrsMatrix A:
+  1. On each process, extract and transpose the local data.
+  1. Create a new CrsMatrix AT, with A's column Map as AT's row Map.
+  1. Insert the transposed local data into AT.
+  1. Fill complete AT (you'll need to supply the domain and range Map, because the row Map of AT is not one to one in general).
+  1. If desired, redistribute AT (using an Export) to have a one-to-one row Map.
+
+Note that the column Map owns all of AT's local data.  This means that Step 3 can use local indices.
+
+# Exercises #
+
+Here are some exercises, in increasing order of difficulty.
+  1. Implement the above procedure for computing the explicit transpose.  You should test it on a nonsquare matrix for full generality.
+  1. What if you had to compute the transpose of several matrices with the same structure but different values?  What would be the most efficient way (in terms of both memory and run time) to do this?
+  1. What if you could access all of the local data directly, instead of row by row, as the CrsMatrix interface requires?  How much faster would that make Steps 1 and 3 above?  Does the CrsMatrix interface need to change to support this?
+  1. Investigate alternate local sparse matrix representations that make applying the transpose faster, without needing data transformations.  How much does this help performance?  Does it make changing the structure or modifying values in the matrix slower?  If so, would changing CrsMatrix's row-oriented access and modification interface help?

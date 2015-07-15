@@ -1,0 +1,653 @@
+# Lesson topics #
+
+In this lesson, we will explain how to create the simplest kind of
+Epetra linear algebra object: an <a href='http://trilinos.sandia.gov/packages/docs/dev/packages/epetra/doc/html/classEpetra__Vector.html'>Epetra_Vector</a>, whose entries are distributed over the process(es) in a communicator.  The <a href='http://trilinos.sandia.gov/packages/docs/dev/packages/epetra/doc/html/classEpetra__Map.html'>Epetra_Map</a> object describes this distribution of
+entries over processes.  You create a Map to describe the distribution
+scheme you want, and then use the Map to create objects (such as
+Vectors) that have this distribution.  We spend a little bit more time
+than you might initially wish explaining Map, but understanding it is
+important for getting the best performance out of Epetra.  We give
+examples of different distributions you can create, use their Maps to
+create Vectors, and then do some arithmetic with the Vectors.
+
+# Epetra\_Map #
+
+## A Map instance describes a data distribution ##
+
+<a href='http://trilinos.sandia.gov/packages/tpetra/'>Epetra</a> uses
+objects called "Maps" to encapsulate the details of distributing data
+over MPI processes.  Maps make data distribution into a first-class
+citizen.  Each Map instance represents a particular data distribution.
+
+You can think of a Map instance abstractly as representing a vector
+space.  If two vectors have the same map, it's like they come from the
+same vector space.  For example, you can add them together without
+performing communication.  If they come from different vector spaces,
+then you need more information to know whether it is legal to add the
+vectors together.
+
+You can find documentation for Epetra's Map class <a href='http://trilinos.sandia.gov/packages/docs/dev/packages/epetra/doc/html/classEpetra__Map.html'>here</a>.
+
+## A Map assigns entries of a data structure to processes ##
+
+### Global indices matter to you ###
+
+For you as the user, the fact that you might be parallelizing your
+application using MPI is really an implementation detail.  You care
+about what we call _global indices_. These represent the entries
+of a distributed object (such as rows or columns of a sparse matrix,
+or entries of a vector) uniquely over the entire object.  The object
+in turn may be distributed over multiple processes.  Just about any
+data structure containing entries that can be assigned an integer
+index can be distributed using a Map.  For most Epetra users, this
+means entries of a vector, rows of an <a href='http://trilinos.sandia.gov/packages/docs/dev/packages/epetra/doc/html/classEpetra__MultiVector.html'>Epetra_MultiVector</a>, or rows or columns of a sparse graph or matrix.  However, it is not limited to these kinds of objects.  You may even use Map for your own distributed objects.
+
+A Map assigns global indices to parallel processes.  If it assigns a
+global index G to a process P, we say that process P _owns_ global index G.  It is legal for multiple processes to own the same
+global index G.  In fact, this is how we implement many useful
+communication patterns, including those in sparse matrix-vector
+multiply.  We won't go into much detail in this lesson about that.
+
+### Local indices are an implementation detail ###
+
+For efficiency, within a process, we refer to a global index using its
+"local index" on that process.  _Local indices_ are local to the
+process that owns them. If process P owns global index G, then there
+is a unique local index L on process P corresponding to G. If the
+local index L is valid on process P, then there is a unique global
+index G owned by P corresponding to the pair (L, P). However, multiple
+processes might own the same global index, so a global index G might
+correspond to multiple (L, P) pairs. In summary, local indices on a
+process correspond to object "entries" (e.g., sparse matrix rows or
+columns) owned by that process.
+
+### We expose local indices for performance reasons ###
+
+Local indices matter to you because it may be more efficient to use
+them to access or modify local data than it is to use global indices.
+This is because distributed data structures must convert from global
+to local indices every time a user asks for an element by its global
+index.  This requires a table lookup in general, since a process may
+own an arbitrary subset of all the global indices, in an arbitrary
+order.  Even though local indices are an implementation detail, we
+expose them because avoiding that table lookup on each access can
+improve performance a lot.
+
+### Maps are themselves distributed data ###
+
+If a Map has N global entries over P processes, and if no one process
+owns all the global entries, we _never_ store all N global
+indices on a single process.  Some kinds of Maps require storing all
+the global indices, but in this case, the indices are themselves
+distributed over processes.  This ensures _memory scalability_
+(no one process has to store all the data).
+
+## Map compatibility ##
+
+We mentioned above that a Map behaves much like a vector space.  For
+instance, if two Vectors have the same Map, it is both legal and
+meaningful to add them together.  This makes it useful to be able to
+compare Maps.  There are two ways to compare two Maps.  Two Maps
+<tt>map1</tt> and <tt>map2</tt> may either be "compatible" or "the
+same" (<tt>map1.SameAs(map2)</tt>).
+
+Compatibility of two Maps corresponds to [isomorphism](https://secure.wikimedia.org/wikipedia/en/wiki/Isomorphism) of two vector spaces.  Two Maps that are the same are
+always compatible.  The compatibility criterion is less restrictive
+than the "sameness" criterion.  Adding together two vectors with
+compatible but not the same Maps is legal.  It might not make
+mathematical sense, depending on your application.  This is because
+entries of the vectors are ordered differently.  (Also, just because
+two vector spaces are isomorphic, doesn't necessarily mean that adding
+entries of one to entries of another makes sense.)  Adding together
+two vectors with the same Maps is both legal and mathematically
+sensible.
+
+Both sameness and compatibility are commutative Boolean relations: for
+example, <tt>map1.SameAs(map2)</tt> means <tt>map2.SameAs(map1)</tt>.
+
+Two Maps are _compatible_ when:
+  * they have the same global number of entries
+  * MPI processes in the Map's communicator that have the same MPI rank, own the same number of entries
+
+Two Maps are _the same_ when:
+  * their minimum and maximum global indices are the same
+  * they have the same global number of entries
+  * the Maps are both distributed over multiple processes, or both not distributed over multiple processes
+  * the Maps have the same _index base_ (this means the smallest legal global index value, more or less)
+  * Processes that have the same rank, own the same number of entries.
+  * Processes that have the same rank, own the same entries.  That is, their entries have the same indices, in the same order.
+
+## Types of local and global indices ##
+
+In Epetra, local indices have type <tt>int</tt>.  On most systems today,
+this is a 32-bit unsigned integer.  Originally, global ordinals could
+only have type <tt>int</tt> as well.  This meant that one could only solve problems with \f$2^{32} - 1\f$ (about two billion) "things" (e.g.,
+unknowns or matrix entries) in them.  Many Epetra users now want to
+solve even larger problems.  As a result, we added a configure-time
+option to build Epetra with 64-bit global indices, of type <tt>long<br>
+long</tt>.  This option is disabled by default, since some C++
+compilers do not implement the <tt>long long</tt> type.  (It is part
+of the C++11 language standard, but some C++98 compilers provide it as
+an extension of their C99 support.)  The <tt>long long</tt> type must
+be at least 64 bits long, and is signed.
+
+## Different categories of Maps ##
+
+### One to one ###
+
+A Map is <i>one to one</i> if each global index in the Map is owned by
+only one process.  This means that the function from global index G to
+its local index and process rank (L,P) is one to one in a mathematical
+sense ("injective").  In this case, the function is only onto
+("surjective") if there is only one process.  Knowing whether a Map is
+one-to-one is important for data redistribution, which Epetra exposes
+as the <a href='http://trilinos.sandia.gov/packages/docs/dev/packages/epetra/doc/html/classEpetra__Import.html'>Epetra_Import</a> and <a href='http://trilinos.sandia.gov/packages/docs/dev/packages/epetra/doc/html/classEpetra__Export.html'>Epetra_Export</a> operations.  We
+will cover Import and Export in subsequent lessons.
+
+An example of a one-to-one Map is a Map containing 101 global indices
+0 .. 100 and distributed over four processes, where
+<ul>
+<li> Process 0 owns 0 .. 24 </li>
+<li> Process 1 owns 25 .. 49 </li>
+<li> Process 2 owns 50 .. 74 </li>
+<li> Process 3 owns 75 .. 100 </li>
+</ul>
+
+An example of a <i>not</i> one-to-one Map is a Map containing 101
+global indices 0 .. 100 and distributed over four processes, where
+<ul>
+<li> Process 0 owns 0 .. 25 </li>
+<li> Process 1 owns 25 .. 50 </li>
+<li> Process 2 owns 50 .. 75 </li>
+<li> Process 3 owns 75 .. 100 </li>
+</ul>
+
+Note the overlap of one global index between each "adjacent" process.
+An example of a mathematical problem with an overlapping distribution
+like this would be a 1-D linear finite element or finite difference
+discretization, where entries are distributed with unique ownership
+among the processes, but the boundary node between two adjacent
+entries on different processes is shared among those two processes.
+
+### Contiguity and uniformity ###
+
+A Map is <i>contiguous</i> when each process' list of global indices
+forms an interval and is strictly increasing, and the globally minimum
+global index equals the index base. Map optimizes for the contiguous
+case. In particular, noncontiguous Maps require communication in order
+to figure out which process owns a particular global index.
+
+Note that in Epetra, "contiguous" is an optimization, not a predicate.
+Epetra may not necessarily work hard to check contiguity.  The best
+way to ensure that your Map is contiguous is to use one of the two
+constructors that always make a contiguous Map.
+
+An example of a contiguous Map is one containing 101 global indices 0
+.. 100 and distributed over four processes, where
+<ul>
+<li> Process 0 owns 0 .. 24 </li>
+<li> Process 1 owns 25 .. 49 </li>
+<li> Process 2 owns 50 .. 74 </li>
+<li> Process 3 owns 75 .. 100 </li>
+</ul>
+
+Note that Process 3 in this example owns 26 global indices, whereas
+the other processes each own 25.  We say that a Map is <i>uniform</i>
+if each process owns the same number of global indices.  The above Map
+is <i>not</i> uniform.  Map includes both a constructor for uniform
+contiguous Maps, where you specify the total number of global indices,
+and a constructor for possibly nonuniform contiguous Maps, where you
+specify the number of global indices owned by each process.
+
+### Globally distributed or locally replicated ###
+
+<i>Globally distributed</i> means that all of the following are true:
+<ol>
+<li> The Map's communicator has more than one process. </li>
+<li> There is at least one process in the Map's communicator, whose     local number of entries does not equal the number of global     entries. (That is, not all the entries are replicated over all the processes.) </li>
+</ol>
+If at least one of the above are not true, then we call the Map
+<i>locally replicated</i>.  The two terms are mutually exclusive.
+
+# Epetra\_Vector #
+
+Epetra\_Vector implements a finite-dimensional vector distributed over
+processes.  Epetra\_Vector inherits from the Epetra\_MultiVector class,
+which represents a collection of one or more vectors with the same
+Map.  Trilinos' solvers favor block algorithms, so they favors
+MultiVectors over single Vectors.  A single Vector is just a
+MultiVector containing one vector, with a few convenience methods.
+You'll find documentation for Epetra's Vector class [here](http://trilinos.sandia.gov/packages/docs/dev/packages/epetra/doc/html/classEpetra__Vector.html).
+
+Vector's interface contains some common linear algebra operations for
+vector-vector operations, including operations analogous to those in
+the BLAS 1 standard.
+
+# Code example: Initialize Maps and Vectors #
+
+The following example follows the same initialization steps as in the
+previous lesson.  It then creates two distributed Maps and some
+vectors, and does a few computations with the vectors.
+
+```
+// This defines useful macros like HAVE_MPI, which is defined if and
+// only if Epetra was built with MPI enabled.
+#include <Epetra_config.h>
+
+#ifdef HAVE_MPI
+#  include <mpi.h>
+// Epetra's wrapper for MPI_Comm.  This header file only exists if
+// Epetra was built with MPI enabled.
+#  include <Epetra_MpiComm.h>
+#else
+#  include <Epetra_SerialComm.h>
+#endif // HAVE_MPI
+
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Epetra_Version.h>
+
+#include <stdexcept>
+
+void
+exampleRoutine (const Epetra_Comm& comm,
+                std::ostream& out)
+{
+  using std::endl;
+
+  // Print out the Epetra software version.
+  if (comm.MyPID () == 0) {
+    out << Epetra_Version () << endl << endl;
+  }
+
+  // The type of global indices.  You could just set this to int,
+  // but we want the example to work for Epetra64 as well.
+#ifdef EPETRA_NO_32BIT_GLOBAL_INDICES
+  // Epetra was compiled only with 64-bit global index support, so use
+  // 64-bit global indices.
+  typedef long long global_ordinal_type;
+#else
+  // Epetra was compiled with 32-bit global index support.  If
+  // EPETRA_NO_64BIT_GLOBAL_INDICES is defined, it does not also
+  // support 64-bit indices.
+  typedef int global_ordinal_type;
+#endif // EPETRA_NO_32BIT_GLOBAL_INDICES
+
+  //////////////////////////////////////////////////////////////////////
+  // Create some Epetra_Map objects
+  //////////////////////////////////////////////////////////////////////
+
+  //
+  // Epetra has local and global Maps.  Local maps describe objects
+  // that are replicated over all participating MPI processes.  Global
+  // maps describe distributed objects.  You can do imports and
+  // exports between local and global maps; this is how you would turn
+  // locally replicated objects into distributed objects and vice
+  // versa.
+  //
+
+  // The total (global, i.e., over all MPI processes) number of
+  // entries in the Map.  This has the same type as that of global
+  // indices, so it can represent very large values if Epetra was
+  // built with 64-bit global index support.
+  //
+  // For this example, we scale the global number of entries in the
+  // Map with the number of MPI processes.  That way, you can run this
+  // example with any number of MPI processes and every process will
+  // still have a positive number of entries.
+  const global_ordinal_type numGlobalEntries = comm.NumProc () * 5;
+
+  // Tpetra can index the entries of a Map starting with 0 (C style),
+  // 1 (Fortran style), or any base you want.  1-based indexing is
+  // handy when interfacing with Fortran.  We choose 0-based indexing
+  // here.  This also has the same type as that of global indices.
+  const global_ordinal_type indexBase = 0;
+
+  // Construct a Map that puts the same number of equations on each
+  // (MPI) process.  The Epetra_Comm is passed in by value, but that's
+  // OK, because Epetra_Comm has shallow copy semantics.  (Its copy
+  // constructor and assignment operator do not call MPI_Comm_dup;
+  // they just pass along the MPI_Comm.)
+  Epetra_Map contigMap (numGlobalEntries, indexBase, comm);
+
+  // contigMap is contiguous by construction.
+  if (! contigMap.LinearMap ()) {
+    throw std::logic_error ("The supposedly contiguous Map isn't contiguous.");
+  }
+
+  // Let's create a second Map.  It will have the same number of
+  // global entries per process, but will distribute them differently,
+  // in round-robin (1-D cyclic) fashion instead of contiguously.
+
+  // We'll use the version of the Map constructor that takes, on each
+  // MPI process, a list of the global indices in the Map belonging to
+  // that process.  You can use this constructor to construct an
+  // overlapping (also called "not 1-to-1") Map, in which one or more
+  // entries are owned by multiple processes.  We don't do that here;
+  // we make a nonoverlapping (also called "1-to-1") Map.
+  const int numGblIndsPerProc = 5;
+  global_ordinal_type* gblIndList = new global_ordinal_type [numGblIndsPerProc];
+
+  const int numProcs = comm.NumProc ();
+  const int myRank = comm.MyPID ();
+  for (int k = 0; k < numGblIndsPerProc; ++k) {
+    gblIndList[k] = myRank + k*numProcs;
+  }
+
+  Epetra_Map cyclicMap (numGlobalEntries, numGblIndsPerProc,
+                        gblIndList, indexBase, comm);
+  // The above constructor makes a deep copy of the input index list,
+  // so it's safe to deallocate that list after this constructor
+  // completes.
+  if (gblIndList != NULL) {
+    delete [] gblIndList;
+    gblIndList = NULL;
+  }
+
+  // If there's more than one MPI process in the communicator,
+  // then cyclicMap is definitely NOT contiguous.
+  if (comm.NumProc () > 1 && cyclicMap.LinearMap ()) {
+    throw std::logic_error ("The cyclic Map claims to be contiguous.");
+  }
+
+  // contigMap and cyclicMap should always be compatible.  However, if
+  // the communicator contains more than 1 process, then contigMap and
+  // cyclicMap are NOT the same.
+  // if (! contigMap.isCompatible (*cyclicMap)) {
+  //   throw std::logic_error ("contigMap should be compatible with cyclicMap, "
+  //                           "but it's not.");
+  // }
+  if (comm.NumProc () > 1 && contigMap.SameAs (cyclicMap)) {
+    throw std::logic_error ("contigMap should not be the same as cyclicMap.");
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // We have maps now, so we can create vectors.
+  //////////////////////////////////////////////////////////////////////
+
+  // Create an Epetra_Vector with the contiguous Map we created above.
+  // This version of the constructor will fill the vector with zeros.
+  // The Vector constructor takes a Map by value, but that's OK,
+  // because Epetra_Map has shallow copy semantics.  It uses reference
+  // counting internally to avoid copying data unnecessarily.
+  Epetra_Vector x (contigMap);
+
+  // The copy constructor performs a deep copy.
+  // x and y have the same Map.
+  Epetra_Vector y (x);
+
+  // Create a Vector with the 1-D cyclic Map.  Calling the constructor
+  // with false for the second argument leaves the data uninitialized,
+  // so that you can fill it later without paying the cost of
+  // initially filling it with zeros.
+  Epetra_Vector z (cyclicMap, false);
+
+  // Set the entries of z to (pseudo)random numbers.  Please don't
+  // consider this a good parallel pseudorandom number generator.
+  (void) z.Random ();
+
+  // Set the entries of x to all ones.
+  (void) x.PutScalar (1.0);
+
+  // Define some constants for use below.
+  const double alpha = 3.14159;
+  const double beta = 2.71828;
+  const double gamma = -10.0;
+
+  // x = beta*x + alpha*z
+  //
+  // This is a legal operation!  Even though the Maps of x and z are
+  // not the same, their Maps are compatible.  Whether it makes sense
+  // or not depends on your application.
+  (void) x.Update (alpha, z, beta);
+
+  (void) y.PutScalar (42.0); // Set all entries of y to 42.0
+  // y = gamma*y + alpha*x + beta*z
+  y.Update (alpha, x, beta, z, gamma);
+
+  // Compute the 2-norm of y.
+  //
+  // The norm may have a different type than scalar_type.
+  // For example, if scalar_type is complex, then the norm is real.
+  // The ScalarTraits "traits class" gives us the type of the norm.
+  double theNorm = 0.0;
+  (void) y.Norm2 (&theNorm);
+
+  // Print the norm of y on Proc 0.
+  out << "Norm of y: " << theNorm << endl;
+}
+
+//
+// The same main() driver routine as in the first Epetra lesson.
+//
+int
+main (int argc, char *argv[])
+{
+  using std::cout;
+  using std::endl;
+
+#ifdef HAVE_MPI
+  MPI_Init (&argc, &argv);
+  Epetra_MpiComm comm (MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif // HAVE_MPI
+
+  if (comm.MyPID () == 0) {
+    cout << "Total number of processes: " << comm.NumProc () << endl;
+  }
+
+  // Do something with the new Epetra communicator.
+  exampleRoutine (comm, cout);
+
+  // This tells the Trilinos test framework that the test passed.
+  if (comm.MyPID () == 0) {
+    cout << "End Result: TEST PASSED" << endl;
+  }
+
+#ifdef HAVE_MPI
+  // Since you called MPI_Init, you are responsible for calling
+  // MPI_Finalize after you are done using MPI.
+  (void) MPI_Finalize ();
+#endif // HAVE_MPI
+
+  return 0;
+}
+```
+
+# Code example: Read and modify the entries of a Vector #
+
+The following example follows the same initialization steps as in the
+previous lesson.  It then creates a distributed Epetra\_Map and a
+Epetra\_Vector, and shows how to read and modify the entries of the
+Epetra\_Vector.
+
+```
+// This defines useful macros like HAVE_MPI, which is defined if and
+// only if Epetra was built with MPI enabled.
+#include <Epetra_config.h>
+
+#ifdef HAVE_MPI
+#  include <mpi.h>
+// Epetra's wrapper for MPI_Comm.  This header file only exists if
+// Epetra was built with MPI enabled.
+#  include <Epetra_MpiComm.h>
+#else
+#  include <Epetra_SerialComm.h>
+#endif // HAVE_MPI
+
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Epetra_Version.h>
+
+void
+exampleRoutine (const Epetra_Comm& comm,
+                std::ostream& out)
+{
+  using std::endl;
+
+  // Print out the Epetra software version.
+  if (comm.MyPID () == 0) {
+    out << Epetra_Version () << endl << endl;
+  }
+
+  // The type of global indices.  You could just set this to int,
+  // but we want the example to work for Epetra64 as well.
+#ifdef EPETRA_NO_32BIT_GLOBAL_INDICES
+  // Epetra was compiled only with 64-bit global index support, so use
+  // 64-bit global indices.
+  typedef long long global_ordinal_type;
+#else
+  // Epetra was compiled with 32-bit global index support.  If
+  // EPETRA_NO_64BIT_GLOBAL_INDICES is defined, it does not also
+  // support 64-bit indices.
+  typedef int global_ordinal_type;
+#endif // EPETRA_NO_32BIT_GLOBAL_INDICES
+
+  //////////////////////////////////////////////////////////////////////
+  // Create an Epetra_Map
+  //////////////////////////////////////////////////////////////////////
+
+  // The total (global, i.e., over all MPI processes) number of
+  // entries in the Map.
+  //
+  // For this example, we scale the global number of entries in the
+  // Map with the number of MPI processes.  That way, you can run this
+  // example with any number of MPI processes and every process will
+  // still have a positive number of entries.
+  const global_ordinal_type numGlobalEntries = comm.NumProc () * 5;
+
+  // Index base of the Map.  We choose zero-based (C-style) indexing.
+  const global_ordinal_type indexBase = 0;
+
+  // Construct a Map that puts the same number of equations on each
+  // MPI process.
+  Epetra_Map contigMap (numGlobalEntries, indexBase, comm);
+
+  //////////////////////////////////////////////////////////////////////
+  // Create an Epetra_Vector
+  //////////////////////////////////////////////////////////////////////
+
+  // Create a Vector with the Map we created above.
+  // This version of the constructor will fill in the vector with zeros.
+  Epetra_Vector x (contigMap);
+
+  //////////////////////////////////////////////////////////////////////
+  // Fill the Vector with a single number, or with random numbers
+  //////////////////////////////////////////////////////////////////////
+
+  // Set all entries of x to 42.0.
+  (void) x.PutScalar (42.0);
+
+  // Print the norm of x.
+  double theNorm = 0.0;
+  (void) x.Norm2 (&theNorm);
+  out << "Norm of x (all entries are 42.0): " << theNorm << endl;
+
+  // Set the entries of x to (pseudo)random numbers.  Please don't
+  // consider this a good parallel pseudorandom number generator.
+  (void) x.Random ();
+
+  // Print the norm of x.
+  (void) x.Norm2 (&theNorm);
+  out << "Norm of x (random numbers): " << theNorm << endl;
+
+  //////////////////////////////////////////////////////////////////////
+  // Read the entries of the Vector
+  //////////////////////////////////////////////////////////////////////
+
+  {
+    const int localLength = x.MyLength ();
+
+    // Count the local number of entries less than 0.5.
+    // Use local indices to access the entries of x_data.
+    int localCount = 0;
+    for (int localIndex = 0; localIndex < localLength; ++localIndex) {
+      if (x[localIndex] < 0.5) {
+        ++localCount;
+      }
+    }
+
+    int globalCount = 0;
+    (void) comm.SumAll (&localCount, &globalCount, 1);
+
+    // Find the total number of entries less than 0.5,
+    // over all processes in the Vector's communicator.
+    out << "x has " << globalCount << " entr"
+        << (globalCount != 1 ? "ies" : "y")
+        << " less than 0.5." << endl;
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // Modify the entries of the Vector
+  //////////////////////////////////////////////////////////////////////
+
+  {
+    // Use local indices to access the entries of x_data.
+    const int localLength = x.MyLength ();
+    for (int localIndex = 0; localIndex < localLength; ++localIndex) {
+      // Add the value of the local index to every entry of x.
+      x[localIndex] += static_cast<double> (localIndex);
+    }
+
+    // Print the norm of x.
+    theNorm = 0.0;
+    (void) x.Norm2 (&theNorm);
+    out << "Norm of x (modified random numbers): " << theNorm << endl;
+  }
+}
+
+//
+// The same main() driver routine as in the previous Epetra lesson.
+//
+int
+main (int argc, char *argv[])
+{
+  using std::cout;
+  using std::endl;
+
+#ifdef HAVE_MPI
+  MPI_Init (&argc, &argv);
+  Epetra_MpiComm comm (MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif // HAVE_MPI
+
+  if (comm.MyPID () == 0) {
+    cout << "Total number of processes: " << comm.NumProc () << endl;
+  }
+
+  // Do something with the new Epetra communicator.
+  exampleRoutine (comm, cout);
+
+  // This tells the Trilinos test framework that the test passed.
+  if (comm.MyPID () == 0) {
+    cout << "End Result: TEST PASSED" << endl;
+  }
+
+#ifdef HAVE_MPI
+  // Since you called MPI_Init, you are responsible for calling
+  // MPI_Finalize after you are done using MPI.
+  (void) MPI_Finalize ();
+#endif // HAVE_MPI
+
+  return 0;
+}
+```
+
+# Things not previously explained #
+
+This lesson introduces one new topic: namely, the Teuchos memory management classes like Teuchos::Array.  We will explain them here.
+
+## Teuchos memory management classes ##
+
+Teuchos::Array is an array container, templated on the type of objects
+that it contains.  It behaves much like std::vector.  The difference
+is that Array interoperates with the other Teuchos memory management
+classes.  For example, Teuchos::ArrayView is a nonowning,
+nonpersistent view of part or all of an Array.  The std::vector class
+does not have nonowning views; passing std::vector by value copies the
+data, and there is no way to get a view of part of the std::vector.
+Array and ArrayView fix these deficiencies.  Teuchos::ArrayRCP is the
+array analog of !RCP; it allows shared ownership of an array.  For
+more details, please refer to the reference guide to the [Teuchos Memory Management Classes](http://www.cs.sandia.gov/~rabartl/TeuchosMemoryManagementSAND.pdf).
